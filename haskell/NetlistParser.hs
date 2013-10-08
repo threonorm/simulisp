@@ -1,10 +1,12 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 
 module NetlistParser (netlistParser) where
 
 import Control.Exception (assert)
 import Control.Monad
-import Control.Applicative hiding ((<|>), choice, many)
+import Control.Applicative hiding ((<|>), many)
+import Data.Char
 import Data.List
 
 import Text.Parsec hiding (token)
@@ -24,7 +26,7 @@ keyword x = token . try $ string x *> notFollowedBy identChar
 punctuation = token . char
 
 netlist = Pr <$> inputs <*> outputs <*> vars
-             <*> (keyword "IN" equations
+             <*> (keyword "IN" *> equations)
 
 ident = token ( (:) <$> identStartChar <*> many identChar )
 
@@ -39,28 +41,28 @@ vars = bigList "VAR" var
                  n_ <- optionMaybe (punctuation ':' *> many1 digit)
                  return . (x,) $ case n_ of
                    Nothing -> TBit
-                   Some s -> TBitArray (read s)
+                   Just s -> TBitArray (read s)
 
 equations = many equation
 
 equation = do z <- ident
               punctuation '='
-              e <- exp
+              e <- expr
               return (z, e)
 
 -- every choice is determined by the heading keyword except arg
 --   --> put arg at the end
-exp = choice [ k "NOT" $ Enot <$> arg
-             , k "REG" $ Ereg <$> ident
-             , k "MUX" $ Emux <$> arg <*> arg <*> arg
-             , k "ROM" $ Erom <$> int <*> int <*> arg
-             , k "RAM" $ Eram <$> int <*> int <*> int
-             , k "CONCAT" $ Econcat <$> arg <*> arg
-             , k "SELECT" $ Eselect <$> int <*> arg
-             , k "SLICE" $ Eslice <$> int <*> int <*> arg
-             , binop
-             , arg
-             ]
+expr = choice [ k "NOT" $ Enot <$> arg
+              , k "REG" $ Ereg <$> ident
+              , k "MUX" $ Emux <$> arg <*> arg <*> arg
+              , k "ROM" $ Erom <$> int <*> int <*> arg
+              , k "RAM" $ Eram <$> int <*> int <*> int
+              , k "CONCAT" $ Econcat <$> arg <*> arg
+              , k "SELECT" $ Eselect <$> int <*> arg
+              , k "SLICE" $ Eslice <$> int <*> int <*> arg
+              , binop
+              , arg
+              ]
   where
     binop = choice . map (\name op -> k name $ Ebinop op <$> arg <*> arg)
             $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]

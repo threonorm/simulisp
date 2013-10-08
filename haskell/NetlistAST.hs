@@ -48,10 +48,10 @@ data Exp = Earg Arg -- a: Argument
 -- equations: x = exp 
 type Equation = (Ident, Exp)
 
-data Program = { p_inputs  :: [Ident]        -- inputs 
-               , p_outputs :: [Ident]        -- outputs 
-               , p_vars    :: Environment Ty -- maps variables to their types
-               , p_eqs     :: [Equation]     -- equations 
-               }
+data Program = Pr { p_inputs  :: [Ident]        -- inputs 
+                  , p_outputs :: [Ident]        -- outputs 
+                  , p_vars    :: Environment Ty -- maps variables to their types
+                  , p_eqs     :: [Equation]     -- equations 
+                  }
              deriving (Show)
 
