@@ -1,3 +1,5 @@
+module NetlistAST where
+
 import Data.Array
 import qualified Data.Map as Map
 
@@ -5,14 +7,18 @@ type Ident = String
 type Environment t = Map.Map Ident t
 
 data Ty = TBit | TBitArray Int
+        deriving (Show)
 data Value = VBit Bool | VBitArray [Bool]
+           deriving (Show)
 
 data Binop = Or | Xor | And | Nand
+           deriving (Show)
 
 
 -- argument of operators (variable or constant) 
 data Arg = Avar Ident -- x 
-         | Aconst Value -- constant 
+         | Aconst Value -- constant
+         deriving (Show)
 
 -- Expressions (see MiniJazz documentation for more info on the operators) 
 data Exp = Earg Arg -- a: Argument 
@@ -37,6 +43,7 @@ data Exp = Earg Arg -- a: Argument
          | Eslice Int Int Arg
            -- SELECT i a : ith element of a 
          | Eselect Int Arg
+         deriving (Show)
 
 -- equations: x = exp 
 type Equation = (Ident, Exp)
@@ -45,5 +52,6 @@ data Program = { p_inputs  :: [Ident]        -- inputs
                , p_outputs :: [Ident]        -- outputs 
                , p_vars    :: Environment Ty -- maps variables to their types
                , p_eqs     :: [Equation]     -- equations 
-               } 
+               }
+             deriving (Show)
 
