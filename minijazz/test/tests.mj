@@ -1,0 +1,19 @@
+Fulladder(a,b,c) = (s, r) where
+  s = (a xor b) xor c;
+  r = (a and b) or ((a xor b) and c);
+end where
+
+minus(x) = (y) where
+  y = x xor c;
+  c = reg (x or y)
+end where
+
+cm2(x) = (s, r) where
+  s = reg (x xor s);
+  r = x and s
+end where
+
+clk2() = (o) where
+  o = reg(c);
+  c = not (reg (o))
+end where

@@ -1,0 +1,2 @@
+<parser.ml>: use_menhirLib
+true: use_menhir
