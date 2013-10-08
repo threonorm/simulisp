@@ -62,10 +62,10 @@ expr = choice [ k "NOT" $ Enot <$> arg
               , k "SELECT" $ Eselect <$> int <*> arg
               , k "SLICE" $ Eslice <$> int <*> int <*> arg
               , binop
-              , arg
+              , Earg <$> arg
               ]
   where
-    binop = choice . map (\name op -> k name $ Ebinop op <$> arg <*> arg)
+    binop = choice . map (\(name, op) -> k name $ Ebinop op <$> arg <*> arg)
             $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]
     k x p = keyword x *> p
     int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> many1 digit
