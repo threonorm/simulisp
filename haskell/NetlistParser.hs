@@ -8,6 +8,7 @@ import Control.Monad
 import Control.Applicative hiding ((<|>), many)
 import Data.Char
 import Data.List
+import qualified Data.Map as Map
 
 import Text.Parsec hiding (token)
 import Text.Parsec.Char
@@ -36,7 +37,7 @@ bigList header eltParser = keyword header
 
 inputs = bigList "INPUT" ident
 outputs = bigList "OUTPUT" ident
-vars = bigList "VAR" var
+vars = Map.fromList <$> bigList "VAR" var
   where var = do x <- ident
                  n_ <- optionMaybe (punctuation ':' *> many1 digit)
                  return . (x,) $ case n_ of
@@ -56,7 +57,7 @@ expr = choice [ k "NOT" $ Enot <$> arg
               , k "REG" $ Ereg <$> ident
               , k "MUX" $ Emux <$> arg <*> arg <*> arg
               , k "ROM" $ Erom <$> int <*> int <*> arg
-              , k "RAM" $ Eram <$> int <*> int <*> int
+              , k "RAM" $ Eram <$> int <*> int <*> arg <*> arg <*> arg <*> arg
               , k "CONCAT" $ Econcat <$> arg <*> arg
               , k "SELECT" $ Eselect <$> int <*> arg
               , k "SLICE" $ Eslice <$> int <*> int <*> arg
