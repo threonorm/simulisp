@@ -2,6 +2,7 @@
 
 module NetlistParser (netlistParser) where
 
+import Control.Exception (assert)
 import Control.Monad
 import Control.Applicative hiding ((<|>), choice, many)
 import Data.List
@@ -51,12 +52,26 @@ equation = do z <- ident
 --   --> put arg at the end
 exp = choice [ k "NOT" $ Enot <$> arg
              , k "REG" $ Ereg <$> ident
-             , undefined
+             , k "MUX" $ Emux <$> arg <*> arg <*> arg
+             , k "ROM" $ Erom <$> int <*> int <*> arg
+             , k "RAM" $ Eram <$> int <*> int <*> int
+             , k "CONCAT" $ Econcat <$> arg <*> arg
+             , k "SELECT" $ Eselect <$> int <*> arg
+             , k "SLICE" $ Eslice <$> int <*> int <*> arg
              , binop
              , arg
              ]
   where
+    binop = choice . map (\name op -> k name $ Ebinop op <$> arg <*> arg)
+            $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]
     k x p = keyword x *> p
+    int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> many1 digit
+    arg = try (Aconst <$> const) <|> Avar <$> ident
+    const = to_const <$> many1 bit
+    bit =     (False <$ char '0') <|> (True <$ char '1')
+          <|> (False <$ char 'f') <|> (True <$ char 't')
+    to_const [] = assert False
+    to_const [b] = VBit b
+    to_const bs = VBitArray bs
     
-
   

@@ -5,7 +5,7 @@ type Ident = String
 type Environment t = Map.Map Ident t
 
 data Ty = TBit | TBitArray Int
-data Value = VBit Bool | VBitArray (Array Bool)
+data Value = VBit Bool | VBitArray [Bool]
 
 data Binop = Or | Xor | And | Nand
 
