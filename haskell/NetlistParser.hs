@@ -73,7 +73,7 @@ expr = choice [ k "NOT" $ Enot <$> arg
     const = to_const <$> many1 bit
     bit =     (False <$ char '0') <|> (True <$ char '1')
           <|> (False <$ char 'f') <|> (True <$ char 't')
-    to_const [] = assert False
+    to_const [] = assert False undefined
     to_const [b] = VBit b
     to_const bs = VBitArray bs
     
