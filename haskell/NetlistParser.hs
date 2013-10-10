@@ -1,5 +1,4 @@
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
 
 module NetlistParser (netlistParser) where
 
@@ -19,7 +18,7 @@ import NetlistAST
 netlistParser :: Parser Program
 netlistParser = spaces *> netlist <* eof
 
-token = (<* spaces)
+token t = t <* spaces
 
 identStartChar = letter <|> char '_'
 identChar = identStartChar <|> digit <|> char '\''
@@ -68,9 +67,9 @@ expr = choice [ k "NOT" $ Enot <$> arg
     binop = choice . map (\(name, op) -> k name $ Ebinop op <$> arg <*> arg)
             $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]
     k x p = keyword x *> p
-    int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> many1 digit
+    int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> token (many1 digit)
     arg = try (Aconst <$> const) <|> Avar <$> ident
-    const = to_const <$> many1 bit
+    const = to_const <$> token (many1 bit)
     bit =     (False <$ char '0') <|> (True <$ char '1')
           <|> (False <$ char 'f') <|> (True <$ char 't')
     to_const [] = assert False undefined
