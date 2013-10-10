@@ -2,9 +2,9 @@ module Main where
 
 import Text.Parsec.String (parseFromFile)
 
-import NetlistAST
 import NetlistParser
 
+main :: IO ()
 main = do
   result <- parseFromFile netlistParser "fulladder.nl"
   case result of

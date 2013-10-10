@@ -3,14 +3,12 @@
 module NetlistParser (netlistParser) where
 
 import Control.Exception (assert)
-import Control.Monad
 import Control.Applicative hiding ((<|>), many)
 import Data.Char
 import Data.List
 import qualified Data.Map as Map
 
 import Text.Parsec hiding (token)
-import Text.Parsec.Char
 import Text.Parsec.String
 
 import NetlistAST

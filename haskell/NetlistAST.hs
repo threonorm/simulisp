@@ -1,6 +1,5 @@
 module NetlistAST where
 
-import Data.Array
 import qualified Data.Map as Map
 
 type Ident = String
