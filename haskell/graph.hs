@@ -49,15 +49,15 @@ find_roots g =
   filter (\n -> (g_edges_from g  Map.! n) ==[]) (g_nodes g)   
 
 has_cycle g =
-  isNothing . runState initial . runMaybeT . mapM_ visit $ g_nodes g
+  isNothing .snd . runState initial . runMaybeT . mapM_ visit $ g_nodes g
   where visit n = do  state<-get
                       case state Map.! n of
-                        NotVisited ->  modify $ Map.insert n InProgress
-                                       mapM_ visit $ g_edges_to g Map.! n
-                                       modify $ Map.insert n Visited   
+                        NotVisited ->do  modify $ Map.insert n InProgress
+                                         mapM_ visit $ g_edges_to g Map.! n
+                                         modify $ Map.insert n Visited   
                         InProgress -> fail "Cycle commentaire jeté"
                         Visited    -> return ()                   
-        initial = clear_marks g
+        initial = return (clear_marks g)
 
 --topological g = 
 --  case runState initial . runMaybeT . foldM visit [] $ find_roots g  of
