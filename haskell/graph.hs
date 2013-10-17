@@ -1,4 +1,3 @@
--- Search if a graph contains a cycle
 import Control.Monad.Error
 import Control.Monad.State
 import Control.Monad
@@ -20,32 +19,28 @@ data Graph a =
          g_edges_to :: Map (Node a) [Node a],
          g_edges_from :: Map (Node a) [Node a]} deriving (Show,Eq)
 
-
-
 newtype Node a = 
   Node { n_label :: a} deriving (Show,Eq)
 
-
---Frozen
 mk_graph = Graph{g_nodes=[],
                  g_edges_to = Map.empty,
-                 g_edges_from = Map.empty,
-                 }--g_visited = Map.empty  } 
+                 g_edges_from = Map.empty
+                 }
 
---Return the new graph 
 add_nodes g x =
  let n = Node {n_label = x} in
     g{ g_nodes = (n:g_nodes g)}
-       --g_visited = Map.insert n NotVisited (g_visited g)} 
 
 node_for_label g x = 
  find (\n-> (n_label n) == x) (g_nodes g)
 
 add_edge g id1 id2 = 
-  let n1 = node_for_label g id1 in
+  let n1 = node_for_label g id1 in 
   let n2 = node_for_label g id2 in
-  g{g_edges_to = Map.insert n1 (n2:(g_edges_to g Map.! n1)) (g_edges_to g),
-    g_edges_from = Map.insert n2 (n1:(g_edges_from g Map.! n2)) (g_edges_from g)}
+  case (n1,n2) of --Comment faire ça proprement ? :
+    (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g Map.! x)) (g_edges_to g),
+                      g_edges_from = Map.insert y (x:(g_edges_from g Map.! y)) (g_edges_from g)}
+    (_,_) -> mk_graph --Ceci n'arrive jamais
 
 clear_marks g =
   Map.fromList $ zip (g_nodes g) (repeat NotVisited)  
@@ -55,12 +50,25 @@ find_roots g =
 
 has_cycle g =
   isNothing . runState initial . runMaybeT . mapM_ visit $ g_nodes g
-  where visit n = case g_visited g Map.! n of
-                      NotVisited -> do modify $ Map.insert n InProgress
+  where visit n = do  state<-get
+                      case state Map.! n of
+                        NotVisited ->  modify $ Map.insert n InProgress
                                        mapM_ visit $ g_edges_to g Map.! n
                                        modify $ Map.insert n Visited   
-                      InProgress -> fail "Cycle commentaire jeté"
-                      Visited    -> return ()                   
-      
+                        InProgress -> fail "Cycle commentaire jeté"
+                        Visited    -> return ()                   
+        initial = clear_marks g
 
-  
+--topological g = 
+--  case runState initial . runMaybeT . foldM visit [] $ find_roots g  of
+--    Nothing -> []
+--    Just x -> x
+--  where initial = clear_marks g
+--        visit acc n = do 
+--          case g_visited g Map.! n of
+--          NotVisited ->   modify $ Map.insert n InProgress
+--                          l<-foldM visit [] (g_edges_to g Map.! n)
+--                          modify $ Map.insert n Visited 
+--                          return ((n_label n):l++acc)
+--          InProgress-> fail "Cycle commentaire jeté"
+--          Visited-> return acc 
