@@ -8,7 +8,7 @@ import Control.Applicative
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map 
-import Data.Map (Map)
+import Data.Map (Map, (!))
 
 data Mark =
   NotVisited
@@ -40,26 +40,26 @@ add_edge g id1 id2 =
   let n1 = node_for_label g id1 in 
   let n2 = node_for_label g id2 in
   case (n1,n2) of --Comment faire ça proprement ? :
-    (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g Map.! x)) (g_edges_to g),
-                      g_edges_from = Map.insert y (x:(g_edges_from g Map.! y)) (g_edges_from g)}
+    (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g ! x)) (g_edges_to g),
+                      g_edges_from = Map.insert y (x:(g_edges_from g ! y)) (g_edges_from g)}
     (_,_) -> mk_graph --Ceci n'arrive jamais
 
 clear_marks g =
   Map.fromList $ zip (g_nodes g) (repeat NotVisited)  
  
 find_roots g =
-  filter (\n -> (g_edges_from g  Map.! n) ==[]) (g_nodes g)   
+  filter (\n -> (g_edges_from g  ! n) ==[]) (g_nodes g)   
 
 has_cycle g =
-  isNothing .snd . runState initial . runMaybeT . mapM_ visit $ g_nodes g
-  where visit n = do  state<-get
-                      case state Map.! n of
+  isNothing . flip runStateT initial . mapM_ visit $ g_nodes g
+  where visit n = do  mark <- gets (! n)
+                      case mark of
                         NotVisited ->do  modify $ Map.insert n InProgress
-                                         mapM_ visit $ g_edges_to g Map.! n
+                                         mapM_ visit $ g_edges_to g ! n
                                          modify $ Map.insert n Visited   
                         InProgress -> fail "Cycle commentaire jeté"
                         Visited    -> return ()                   
-        initial = return (clear_marks g)
+        initial = clear_marks g
 
 --topological g = 
 --  case runState initial . runMaybeT . foldM visit [] $ find_roots g  of
@@ -67,9 +67,9 @@ has_cycle g =
 --    Just x -> x
 --  where initial = clear_marks g
 --        visit acc n = do 
---          case g_visited g Map.! n of
+--          case g_visited g ! n of
 --          NotVisited ->   modify $ Map.insert n InProgress
---                          l<-foldM visit [] (g_edges_to g Map.! n)
+--                          l<-foldM visit [] (g_edges_to g ! n)
 --                          modify $ Map.insert n Visited 
 --                          return ((n_label n):l++acc)
 --          InProgress-> fail "Cycle commentaire jeté"
