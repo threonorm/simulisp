@@ -22,17 +22,19 @@ data Graph a = Graph { g_nodes      :: [Node a]
 
 newtype Node a = Node { n_label :: a } deriving (Show, Eq, Ord)
 
-mk_graph :: Graph a
-mk_graph = Graph { g_nodes = []
-                 , g_edges_to = Map.empty
-                 , g_edges_from = Map.empty
-                 }
+makeGraphWithNodes :: [a] -> Graph a
+makeGraphWithNodes nodes = Graph { g_nodes = map Node nodes
+                                 , g_edges_to = Map.empty
+                                 , g_edges_from = Map.empty
+                                 }
 
+emptyGraph :: Graph a
+emptyGraph = makeGraphWithNodes []
+              
 add_nodes :: Graph a -> a -> Graph a
-add_nodes g x = g { g_nodes = (Node x  : g_nodes g) }
+add_nodes g x = g { g_nodes = Node x : g_nodes g }
 
-node_for_label g x = 
- find (\n-> (n_label n) == x) (g_nodes g)
+node_for_label g x = find (\n-> (n_label n) == x) $ g_nodes g
 
 add_edge g id1 id2 = 
   let n1 = node_for_label g id1 in 
@@ -40,7 +42,7 @@ add_edge g id1 id2 =
   case (n1,n2) of --Comment faire ça proprement ? :
     (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g ! x)) (g_edges_to g),
                       g_edges_from = Map.insert y (x:(g_edges_from g ! y)) (g_edges_from g)}
-    (_,_) -> mk_graph --Ceci n'arrive jamais
+    (_,_) -> emptyGraph --Ceci n'arrive jamais
 
 clear_marks :: (Ord a) => Graph a -> Map (Node a) Mark
 clear_marks g =
