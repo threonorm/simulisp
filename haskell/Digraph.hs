@@ -22,7 +22,7 @@ data Graph a =
          g_edges_from :: Map (Node a) [Node a]} deriving (Show,Eq)
 
 newtype Node a = 
-  Node { n_label :: a} deriving (Show,Eq)
+  Node { n_label :: a} deriving (Show,Eq, Ord)
 
 mk_graph = Graph{g_nodes=[],
                  g_edges_to = Map.empty,
@@ -50,6 +50,7 @@ clear_marks g =
 find_roots g =
   filter (\n -> (g_edges_from g  ! n) ==[]) (g_nodes g)   
 
+has_cycle :: (Ord a) => Graph a -> Bool
 has_cycle g =
   isNothing . flip runStateT initial . mapM_ visit $ g_nodes g
   where visit n = do  mark <- gets (! n)
@@ -61,16 +62,16 @@ has_cycle g =
                         Visited    -> return ()                   
         initial = clear_marks g
 
---topological g = 
---  case runState initial . runMaybeT . foldM visit [] $ find_roots g  of
---    Nothing -> []
---    Just x -> x
---  where initial = clear_marks g
---        visit acc n = do 
---          case g_visited g ! n of
---          NotVisited ->   modify $ Map.insert n InProgress
---                          l<-foldM visit [] (g_edges_to g ! n)
---                          modify $ Map.insert n Visited 
---                          return ((n_label n):l++acc)
---          InProgress-> fail "Cycle commentaire jeté"
---          Visited-> return acc 
+
+topological :: (Ord a) => Graph a -> Maybe [a]
+topological g = 
+  flip evalStateT initial . foldM visit [] $ find_roots g 
+  where initial = clear_marks g
+        visit acc n = do mark <- gets (! n)
+                         case mark of
+                           NotVisited -> do modify $ Map.insert n InProgress
+                                            l <- foldM visit [] (g_edges_to g ! n)
+                                            modify $ Map.insert n Visited 
+                                            return ((n_label n):l++acc)
+                           InProgress -> fail "Cycle commentaire jeté"
+                           Visited -> return acc 
