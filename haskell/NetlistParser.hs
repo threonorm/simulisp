@@ -66,8 +66,8 @@ expr = choice [ k "NOT" $ Enot <$> arg
             $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]
     k x p = keyword x *> p
     int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> token (many1 digit)
-    arg = try (Aconst <$> const) <|> Avar <$> ident
-    const = to_const <$> token (many1 bit)
+    arg = try (Aconst <$> const') <|> Avar <$> ident
+    const' = to_const <$> token (many1 bit)
     bit =     (False <$ char '0') <|> (True <$ char '1')
           <|> (False <$ char 'f') <|> (True <$ char 't')
     to_const [] = assert False undefined
