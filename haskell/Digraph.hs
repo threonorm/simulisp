@@ -1,3 +1,5 @@
+module Digraph where
+
 import Control.Monad.Error
 import Control.Monad.State
 import Control.Monad
