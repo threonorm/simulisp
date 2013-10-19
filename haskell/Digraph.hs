@@ -3,7 +3,6 @@ module Digraph where
 import Control.Monad.Error
 import Control.Monad.State
 import Control.Monad
-import Control.Monad.Trans.Maybe
 import Control.Applicative
 import Data.List
 import Data.Maybe
@@ -24,11 +23,13 @@ data Graph a =
 newtype Node a = 
   Node { n_label :: a} deriving (Show,Eq, Ord)
 
+mk_graph :: Graph a
 mk_graph = Graph{g_nodes=[],
                  g_edges_to = Map.empty,
                  g_edges_from = Map.empty
                  }
 
+add_nodes :: Graph a -> a -> Graph a
 add_nodes g x =
  let n = Node {n_label = x} in
     g{ g_nodes = (n:g_nodes g)}
@@ -44,9 +45,11 @@ add_edge g id1 id2 =
                       g_edges_from = Map.insert y (x:(g_edges_from g ! y)) (g_edges_from g)}
     (_,_) -> mk_graph --Ceci n'arrive jamais
 
+clear_marks :: (Ord a) => Graph a -> Map (Node a) Mark
 clear_marks g =
   Map.fromList $ zip (g_nodes g) (repeat NotVisited)  
- 
+
+find_roots :: (Ord a) => Graph a -> [Node a]
 find_roots g =
   filter (\n -> (g_edges_from g  ! n) ==[]) (g_nodes g)   
 
