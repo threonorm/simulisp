@@ -67,14 +67,16 @@ has_cycle g =
 
 
 topological :: (Ord a) => Graph a -> Maybe [a]
-topological g = 
-  flip evalStateT initial . foldM visit [] $ find_roots g 
+topological g = case find_roots g of
+    []    -> Nothing -- No roots => graph has cycle (assuming non-emptiness)
+    roots -> flip evalStateT initial . foldM visit [] $ roots
   where initial = clear_marks g
-        visit acc n = do mark <- gets (! n)
-                         case mark of
-                           NotVisited -> do modify $ Map.insert n InProgress
-                                            l <- foldM visit [] (g_edges_to g ! n)
-                                            modify $ Map.insert n Visited 
-                                            return ((n_label n):l++acc)
-                           InProgress -> fail "Cycle commentaire jeté"
-                           Visited -> return acc 
+        visit acc n = do
+          mark <- gets (! n)
+          case mark of
+            NotVisited -> do modify $ Map.insert n InProgress
+                             l <- foldM visit [] (g_edges_to g ! n)
+                             modify $ Map.insert n Visited 
+                             return ((n_label n):l++acc)
+            InProgress -> fail "Cycle commentaire jeté"
+            Visited -> return acc 
