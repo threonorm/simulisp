@@ -9,30 +9,27 @@ import Data.Maybe
 import qualified Data.Map as Map 
 import Data.Map (Map, (!))
 
-data Mark =
-  NotVisited
- | InProgress
- | Visited
- deriving (Show, Eq)
+data Mark = NotVisited        
+          | InProgress       
+          | Visited          
+          deriving (Show, Eq)
 
-data Graph a =
- Graph { g_nodes :: [Node a],
-         g_edges_to :: Map (Node a) [Node a],
-         g_edges_from :: Map (Node a) [Node a]} deriving (Show,Eq)
+data Graph a = Graph { g_nodes      :: [Node a]             
+                     , g_edges_to   :: Map (Node a) [Node a]
+                     , g_edges_from :: Map (Node a) [Node a]
+                     } deriving (Show, Eq)
+ 
 
-newtype Node a = 
-  Node { n_label :: a} deriving (Show,Eq, Ord)
+newtype Node a = Node { n_label :: a } deriving (Show, Eq, Ord)
 
 mk_graph :: Graph a
-mk_graph = Graph{g_nodes=[],
-                 g_edges_to = Map.empty,
-                 g_edges_from = Map.empty
+mk_graph = Graph { g_nodes = []
+                 , g_edges_to = Map.empty
+                 , g_edges_from = Map.empty
                  }
 
 add_nodes :: Graph a -> a -> Graph a
-add_nodes g x =
- let n = Node {n_label = x} in
-    g{ g_nodes = (n:g_nodes g)}
+add_nodes g x = g { g_nodes = (Node x  : g_nodes g) }
 
 node_for_label g x = 
  find (\n-> (n_label n) == x) (g_nodes g)
@@ -51,18 +48,18 @@ clear_marks g =
 
 find_roots :: (Ord a) => Graph a -> [Node a]
 find_roots g =
-  filter (\n -> (g_edges_from g  ! n) ==[]) (g_nodes g)   
+  filter (\n -> (g_edges_from g ! n) == []) (g_nodes g)   
 
 has_cycle :: (Ord a) => Graph a -> Bool
 has_cycle g =
   isNothing . flip runStateT initial . mapM_ visit $ g_nodes g
-  where visit n = do  mark <- gets (! n)
-                      case mark of
-                        NotVisited ->do  modify $ Map.insert n InProgress
-                                         mapM_ visit $ g_edges_to g ! n
-                                         modify $ Map.insert n Visited   
-                        InProgress -> fail "Cycle commentaire jeté"
-                        Visited    -> return ()                   
+  where visit n = do mark <- gets (! n)
+                     case mark of
+                       NotVisited -> do modify $ Map.insert n InProgress
+                                        mapM_ visit $ g_edges_to g ! n
+                                        modify $ Map.insert n Visited   
+                       InProgress -> fail "Cycle commentaire jeté"
+                       Visited    -> return ()                   
         initial = clear_marks g
 
 
