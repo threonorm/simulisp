@@ -40,8 +40,8 @@ add_node g x = g { g_nodes = Node x : g_nodes g
 
 add_edge :: (Ord a) => Graph a -> a -> a -> Graph a
 add_edge g id1 id2 =
-  g { g_edges_to   = Map.insertWith (++) n1 [n2] $ g_edges_to g
-    , g_edges_from = Map.insertWith (++) n2 [n1] $ g_edges_from g
+  g { g_edges_to   = Map.adjust (n2:) n1 $ g_edges_to g
+    , g_edges_from = Map.adjust (n1:) n2 $ g_edges_from g
     }
   where n1 = Node id1
         n2 = Node id2
