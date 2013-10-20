@@ -22,15 +22,15 @@ data Graph a = Graph { g_nodes      :: [Node a]
 
 newtype Node a = Node { n_label :: a } deriving (Show, Eq, Ord)
 
-makeGraphWithNodes :: [a] -> Graph a
-makeGraphWithNodes nodes = Graph { g_nodes = map Node nodes
-                                 , g_edges_to = Map.empty
-                                 , g_edges_from = Map.empty
-                                 }
-
 emptyGraph :: Graph a
-emptyGraph = makeGraphWithNodes []
-              
+emptyGraph = Graph { g_nodes = []
+                   , g_edges_to = Map.empty  
+                   , g_edges_from = Map.empty
+                   }
+             
+makeGraphWithNodes :: (Ord a) => [a] -> Graph a
+makeGraphWithNodes = foldl' add_node emptyGraph
+
 add_node :: (Ord a) => Graph a -> a -> Graph a
 add_node g x = g { g_nodes = Node x : g_nodes g
                  , g_edges_to   = Map.insert (Node x) [] $ g_edges_to g
