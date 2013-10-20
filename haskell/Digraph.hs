@@ -31,18 +31,20 @@ makeGraphWithNodes nodes = Graph { g_nodes = map Node nodes
 emptyGraph :: Graph a
 emptyGraph = makeGraphWithNodes []
               
-add_nodes :: Graph a -> a -> Graph a
-add_nodes g x = g { g_nodes = Node x : g_nodes g }
+add_node :: (Ord a) => Graph a -> a -> Graph a
+add_node g x = g { g_nodes = Node x : g_nodes g
+                 , g_edges_to   = Map.insert (Node x) [] $ g_edges_to g
+                 , g_edges_from = Map.insert (Node x) [] $ g_edges_from g
+                 } -- need to add empty adjacency lists to avoid
+                   -- "key not found" problems later
 
-node_for_label g x = find (\n-> (n_label n) == x) $ g_nodes g
-
-add_edge g id1 id2 = 
-  let n1 = node_for_label g id1 in 
-  let n2 = node_for_label g id2 in
-  case (n1,n2) of --Comment faire ça proprement ? :
-    (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g ! x)) (g_edges_to g),
-                      g_edges_from = Map.insert y (x:(g_edges_from g ! y)) (g_edges_from g)}
-    (_,_) -> emptyGraph --Ceci n'arrive jamais
+add_edge :: (Ord a) => Graph a -> a -> a -> Graph a
+add_edge g id1 id2 =
+  g { g_edges_to   = Map.insertWith (++) n1 [n2] $ g_edges_to g
+    , g_edges_from = Map.insertWith (++) n2 [n1] $ g_edges_from g
+    }
+  where n1 = Node id1
+        n2 = Node id2
 
 clear_marks :: (Ord a) => Graph a -> Map (Node a) Mark
 clear_marks g =
