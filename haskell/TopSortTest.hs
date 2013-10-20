@@ -9,6 +9,8 @@ exampleGood = foldl' (\g (a,b) -> add_edge g a b)
                      [("1", "21"), ("1", "22"), ("21", "333"), ("22", "333")]
 
 exampleBad =  foldl' (\g (a,b) -> add_edge g a b)
-                     (makeGraphWithNodes [1..3])
+                     (makeGraphWithNodes ([1..3] :: [Int]))
                      [(1,2),(2,3),(3,1)]
+
+
 

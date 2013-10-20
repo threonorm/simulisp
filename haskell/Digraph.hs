@@ -1,11 +1,11 @@
 module Digraph where
 
-import Control.Monad.Error
-import Control.Monad.State
-import Control.Monad
+import Prelude hiding (notElem, mapM_) -- hide monomorphic definitions
+                                       -- conflicting with Data.Foldable
+import Control.Monad.State hiding (mapM_)
 import Control.Applicative
-import Data.List
 import Data.Maybe
+import Data.Foldable
 import qualified Data.Map as Map 
 import Data.Map (Map, (!))
 
@@ -68,11 +68,12 @@ has_cycle g =
 
 
 topological :: (Ord a) => Graph a -> Maybe [a]
-topological g = case find_roots g of
-    []    -> Nothing -- No roots => graph has cycle (assuming non-emptiness)
-    roots -> flip evalStateT initial . foldM visit [] $ roots
-  where initial = clear_marks g
-        visit acc n = do
+topological g = do
+  (result, finalMarks) <- flip runStateT (clear_marks g) . foldM visit []
+                          $ find_roots g
+  guard . notElem NotVisited $ finalMarks
+  return result
+  where visit acc n = do
           mark <- gets (! n)
           case mark of
             NotVisited -> do modify $ Map.insert n InProgress
