@@ -37,7 +37,7 @@ node_for_label g x =
 add_edge g id1 id2 = 
   let n1 = node_for_label g id1 in 
   let n2 = node_for_label g id2 in
-  case (n1,n2) of --Comment faire ça proprement ? :
+  case (n1,n2) of --And in Haskell style? :
     (Just x, Just y) -> g{g_edges_to = Map.insert x (y:(g_edges_to g Map.! x)) (g_edges_to g),
                       g_edges_from = Map.insert y (x:(g_edges_from g Map.! y)) (g_edges_from g)}
     (_,_) -> mk_graph --Ceci n'arrive jamais
@@ -57,18 +57,19 @@ has_cycle g =
                                          modify $ Map.insert n Visited   
                         InProgress -> fail "Cycle commentaire jeté"
                         Visited    -> return ()                   
-        initial = return (clear_marks g)
+        initial = return $ clear_marks g
 
---topological g = 
---  case runState initial . runMaybeT . foldM visit [] $ find_roots g  of
---    Nothing -> []
---    Just x -> x
---  where initial = clear_marks g
---        visit acc n = do 
---          case g_visited g Map.! n of
---          NotVisited ->   modify $ Map.insert n InProgress
---                          l<-foldM visit [] (g_edges_to g Map.! n)
---                          modify $ Map.insert n Visited 
---                          return ((n_label n):l++acc)
---          InProgress-> fail "Cycle commentaire jeté"
---          Visited-> return acc 
+topological g = 
+  case snd. runState initial . runMaybeT . foldM visit [] $ find_roots g  of
+    Nothing -> []
+    Just x -> x
+  where initial = return $ clear_marks g
+        visit acc n =
+         do state<-get 
+            case state Map.! n of
+              NotVisited -> do  modify $ Map.insert n InProgress
+                                liste <- foldM visit [] (g_edges_to g Map.! n)
+                                modify $ Map.insert n Visited 
+                                return ((n_label n):liste++acc)
+              InProgress-> fail "Cycle commentaire jeté"
+              Visited-> return acc 
