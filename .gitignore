@@ -1,0 +1,6 @@
+# Haskell compilation byproducts
+*.hi
+*.o
+
+# Old versions of text files
+*.hs~

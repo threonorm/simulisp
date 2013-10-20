@@ -3,14 +3,12 @@
 module NetlistParser (netlistParser) where
 
 import Control.Exception (assert)
-import Control.Monad
 import Control.Applicative hiding ((<|>), many)
 import Data.Char
 import Data.List
 import qualified Data.Map as Map
 
 import Text.Parsec hiding (token)
-import Text.Parsec.Char
 import Text.Parsec.String
 
 import NetlistAST
@@ -68,8 +66,8 @@ expr = choice [ k "NOT" $ Enot <$> arg
             $ [("AND", And), ("OR", Or), ("NAND", Nand), ("XOR", Xor)]
     k x p = keyword x *> p
     int = foldl' (\x y -> 10*x + digitToInt y) 0 <$> token (many1 digit)
-    arg = try (Aconst <$> const) <|> Avar <$> ident
-    const = to_const <$> token (many1 bit)
+    arg = try (Aconst <$> const') <|> Avar <$> ident
+    const' = to_const <$> token (many1 bit)
     bit =     (False <$ char '0') <|> (True <$ char '1')
           <|> (False <$ char 'f') <|> (True <$ char 't')
     to_const [] = assert False undefined
