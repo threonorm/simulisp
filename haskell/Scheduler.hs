@@ -34,7 +34,9 @@ read_exp exp =
 schedule :: Program -> Maybe Program -- error = combinatorial cycle
 schedule prog = f <$> G.topological depGraph
   where eqs = p_eqs prog
-        depGraph = makeEdges . G.makeGraphWithNodes $ map fst p_eqs
-        makeEdges = foldl' addEdges 
-
-
+        depGraph = makeEdges . G.makeGraphWithNodes $ map fst eqs
+        makeEdges g = foldl' addDeps g eqs
+        addDeps g (label, expr) = foldl' (\acc x -> G.add_edge acc x label) g
+                                  $ read_exp expr
+        eqMap = Map.fromList $ map (\(a,b) -> (a, (a,b))) eqs
+        f toposort = prog { p_eqs = (eqMap !) <$> toposort }
