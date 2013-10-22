@@ -2,9 +2,11 @@ module Main where
 
 import Text.Parsec.String (parseFromFile)
 import System.Environment
+import Data.Maybe
 
 import NetlistParser
 import NetlistPrint
+import Scheduler 
 
 main :: IO ()
 main = do
@@ -12,5 +14,6 @@ main = do
   result <- parseFromFile netlistParser (filename ++ ".nl")
   case result of
     Left err -> putStrLn "error: " >> print err
-    Right prog -> printProgToFile prog (filename ++ "-sorted.nl")
-
+    Right prog -> case schedule prog of
+        Just a -> printProgToFile a (filename ++ "-sorted.nl")
+        Nothing -> putStrLn "Topo"

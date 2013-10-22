@@ -10,6 +10,7 @@ import qualified Data.Map as Map
 import Data.Map (Map, (!))
 
 import NetlistAST
+import NetlistParser
 import qualified Digraph as G
 
 under_arg :: Arg -> Maybe Ident
@@ -37,7 +38,8 @@ read_exp expr =
 schedule :: Program -> Maybe Program -- error = combinatorial cycle
 schedule prog = f <$> G.topological depGraph
   where eqs = p_eqs prog
-        depGraph = makeEdges . G.makeGraphWithNodes $ map fst eqs
+        depGraph = makeEdges . G.makeGraphWithNodes . 
+                  nub $ p_inputs prog ++ (map (\(x,y)-> x) . Map.toList $ p_vars prog) ++ p_outputs prog 
         makeEdges g = foldl' addDeps g eqs
         addDeps g (label, expr) = foldl' (\acc x -> G.add_edge acc x label) g
                                   $ read_exp expr
