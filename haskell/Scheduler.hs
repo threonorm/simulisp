@@ -23,7 +23,7 @@ read_exp :: Exp -> [Ident]
 read_exp expr = 
   case expr of
          Earg arg -> maybeToList $ under_arg arg 
-         Ereg ident -> [] 
+         Ereg _ -> [] 
          Enot arg-> maybeToList $ under_arg arg 
          Ebinop _ arg1 arg2 ->nub $ mapMaybe under_arg [arg1, arg2]
          Emux arg1 arg2 arg3-> nub $ mapMaybe under_arg [arg1, arg2, arg3]   
@@ -38,10 +38,12 @@ read_exp expr =
 schedule :: Program -> Maybe Program -- error = combinatorial cycle
 schedule prog = f <$> G.topological depGraph
   where eqs = p_eqs prog
-        depGraph = makeEdges . G.makeGraphWithNodes . 
-                  nub $ p_inputs prog ++ (map (\(x,y)-> x) . Map.toList $ p_vars prog) ++ p_outputs prog 
+        depGraph = makeEdges . G.makeGraphWithNodes . nub
+                   $ p_inputs prog
+                   ++ (map fst . Map.toList $ p_vars prog)
+                   ++ p_outputs prog 
         makeEdges g = foldl' addDeps g eqs
         addDeps g (label, expr) = foldl' (\acc x -> G.add_edge acc x label) g
                                   $ read_exp expr
         eqMap = Map.fromList $ map (\(a,b) -> (a, (a,b))) eqs
-        f toposort = prog { p_eqs =  (eqMap !) <$> toposort }
+        f toposort = prog { p_eqs =  mapMaybe (flip Map.lookup eqMap) toposort }
