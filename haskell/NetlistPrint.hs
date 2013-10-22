@@ -1,13 +1,11 @@
 module NetlistPrint where
 
 import Prelude hiding (mapM_)  
-import Data.Foldable 
 import Data.List
 import Data.Char
 import qualified Data.Map as Map
 
 import NetlistAST
-import NetlistParser
     
 printProg :: Program -> String
 printProg prog =
@@ -22,8 +20,8 @@ printProg prog =
   
   where formatVar (ident,TBit) =  ident
         formatVar (ident,TBitArray n) = ident ++ " : " ++ show n
-        formatEq (ident,exp) =
-          ident++ " = " ++  f exp 
+        formatEq (ident,expr) =
+          ident++ " = " ++  f expr
         formatArg (Avar ident)= ident
         formatArg (Aconst (VBit a)) = [bitToChar a]
         formatArg (Aconst (VBitArray t)) = map bitToChar t
