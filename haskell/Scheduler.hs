@@ -12,11 +12,13 @@ import Data.Map (Map, (!))
 import NetlistAST
 import qualified Digraph as G
 
+under_arg :: Arg -> Maybe Ident
 under_arg arg =
   case arg of 
     Avar ident -> Just ident
     Aconst value -> Nothing
 
+read_exp :: Exp -> [Ident]
 read_exp exp = 
   case exp of
          Earg arg -> maybeToList $ under_arg arg 
