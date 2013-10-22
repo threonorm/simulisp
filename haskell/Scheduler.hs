@@ -44,4 +44,4 @@ schedule prog = f <$> G.topological depGraph
         addDeps g (label, expr) = foldl' (\acc x -> G.add_edge acc x label) g
                                   $ read_exp expr
         eqMap = Map.fromList $ map (\(a,b) -> (a, (a,b))) eqs
-        f toposort = prog { p_eqs = (eqMap !) <$> toposort }
+        f toposort = prog { p_eqs =  (eqMap !) <$> toposort }

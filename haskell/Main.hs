@@ -15,5 +15,5 @@ main = do
   case result of
     Left err -> putStrLn "error: " >> print err
     Right prog -> case schedule prog of
-        Just a -> printProgToFile a (filename ++ "-sorted.nl")
-        Nothing -> putStrLn "Topo"
+        Just a ->   printProgToFile a (filename ++ "-sorted.nl")
+        Nothing ->  putStrLn "Topo"
