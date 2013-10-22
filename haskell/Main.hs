@@ -1,12 +1,16 @@
 module Main where
 
 import Text.Parsec.String (parseFromFile)
+import System.Environment
 
 import NetlistParser
+import NetlistPrint
 
 main :: IO ()
 main = do
-  result <- parseFromFile netlistParser "fulladder.nl"
+  (filename:_) <- getArgs
+  result <- parseFromFile netlistParser (filename ++ ".nl")
   case result of
     Left err -> putStrLn "error: " >> print err
-    Right ast -> print ast
+    Right prog -> printProgToFile prog (filename ++ "-sorted.nl")
+

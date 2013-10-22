@@ -2,6 +2,7 @@
 
 module NetlistParser (netlistParser) where
 
+import Control.Monad
 import Control.Exception (assert)
 import Control.Applicative hiding ((<|>), many)
 import Data.Char
@@ -26,7 +27,11 @@ punctuation = token . char
 netlist = Pr <$> inputs <*> outputs <*> vars
              <*> (keyword "IN" *> equations)
 
-ident = token ( (:) <$> identStartChar <*> many identChar )
+ident = try $ do
+  foo <- token ( (:) <$> identStartChar <*> many identChar )
+  if foo `elem` ["INPUT", "OUTPUT", "VAR", "IN"]
+    then mzero
+    else return foo
 
 
 bigList header eltParser = keyword header
