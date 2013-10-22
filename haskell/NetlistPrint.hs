@@ -44,7 +44,8 @@ printProg prog =
         f (Eselect int arg) = "SELECT " ++ show int ++ formatArg arg
         
 
-
+printProgToFile :: Program -> String -> IO ()
+printProgToFile prog filename = writeFile filename $ printProg prog
 
 
 
