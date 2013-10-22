@@ -16,21 +16,22 @@ under_arg :: Arg -> Maybe Ident
 under_arg arg =
   case arg of 
     Avar ident -> Just ident
-    Aconst value -> Nothing
+    Aconst _   -> Nothing
 
 read_exp :: Exp -> [Ident]
-read_exp exp = 
-  case exp of
+read_exp expr = 
+  case expr of
          Earg arg -> maybeToList $ under_arg arg 
          Ereg ident -> [ident] 
          Enot arg-> maybeToList $ under_arg arg 
-         Ebinop binop arg1 arg2 ->nub $ mapMaybe under_arg [arg1, arg2]
+         Ebinop _ arg1 arg2 ->nub $ mapMaybe under_arg [arg1, arg2]
          Emux arg1 arg2 arg3-> nub $ mapMaybe under_arg [arg1, arg2, arg3]   
          Erom _ _ arg -> maybeToList $ under_arg arg
-         Eram _ _ arg1 arg2 arg3 arg4-> nub $  mapMaybe under_arg [arg1, arg2, arg3, arg4] 
+         Eram _ _ arg1 arg2 arg3 arg4 ->
+           nub $ mapMaybe under_arg [arg1, arg2, arg3, arg4] 
          Econcat arg1 arg2 -> nub $ mapMaybe under_arg [arg1, arg2]
-         Eslice int1 int2 arg -> maybeToList $ under_arg arg
-         Eselect int arg -> maybeToList $ under_arg arg
+         Eslice _ _ arg -> maybeToList $ under_arg arg
+         Eselect _ arg -> maybeToList $ under_arg arg
 
 
 schedule :: Program -> Maybe Program -- error = combinatorial cycle
