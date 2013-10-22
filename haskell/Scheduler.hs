@@ -22,7 +22,7 @@ read_exp :: Exp -> [Ident]
 read_exp expr = 
   case expr of
          Earg arg -> maybeToList $ under_arg arg 
-         Ereg ident -> [ident] 
+         Ereg ident -> [] 
          Enot arg-> maybeToList $ under_arg arg 
          Ebinop _ arg1 arg2 ->nub $ mapMaybe under_arg [arg1, arg2]
          Emux arg1 arg2 arg3-> nub $ mapMaybe under_arg [arg1, arg2, arg3]   
