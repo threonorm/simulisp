@@ -19,21 +19,6 @@ under_arg arg =
 
 read_exp exp = 
   case exp of
-<<<<<<< HEAD
-    |
-
-
-
-schedule :: Program -> Maybe Program -- error = combinatorial cycle
-schedule prog = f <$> G.topological depGraph
-  where eqs = p_eqs prog
-        depGraph = makeEdges . G.makeGraphWithNodes $ map fst p_eqs
-        makeEdges = foldl' addEdges 
-
-
-
-      
-=======
          Earg arg -> maybeToList $ under_arg arg 
          Ereg ident -> [ident] 
          Enot arg-> maybeToList $ under_arg arg 
@@ -45,5 +30,11 @@ schedule prog = f <$> G.topological depGraph
          Eslice int1 int2 arg -> maybeToList $ under_arg arg
          Eselect int arg -> maybeToList $ under_arg arg
 
- 
->>>>>>> 3471559ab4760e41f54a41fcc75a7f33a08f9ffe
+
+schedule :: Program -> Maybe Program -- error = combinatorial cycle
+schedule prog = f <$> G.topological depGraph
+  where eqs = p_eqs prog
+        depGraph = makeEdges . G.makeGraphWithNodes $ map fst p_eqs
+        makeEdges = foldl' addEdges 
+
+
