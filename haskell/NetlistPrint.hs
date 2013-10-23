@@ -27,21 +27,24 @@ printProg prog =
         formatArg (Aconst (VBitArray t)) = map bitToChar t
         bitToChar True = '1'
         bitToChar False = '0'
-        f (Earg arg) =  formatArg arg
-        f (Ereg ident) = "REG " ++ ident  
-        f (Enot arg) = "NOT " ++ formatArg arg
-        f (Ebinop binop arg arg2) = (map toUpper . show $ binop) ++ " "
-                                    ++ formatArg arg ++ " " ++ formatArg arg2   
-        f (Emux arg1 arg2 arg3) = "MUX " ++ 
-              ( intercalate " " . map formatArg $ [arg1,arg2,arg3] ) 
-        f (Erom int2 int1 arg) = intercalate " " 
-            ["ROM", show int2, show int1, formatArg arg] 
-        f (Eram int1 int2 arg1 arg2 arg3 arg4) = intercalate " " $ 
-            ["RAM", show int2, show int1]++(map formatArg [arg1,arg2,arg3,arg4])  
-        f (Econcat arg1 arg2) = "CONCAT "++ formatArg arg1 ++ formatArg arg2  
-        f (Eslice int1 int2 arg) = "SLICE "++ show int1 ++ 
-                                  show int2++ formatArg arg
-        f (Eselect int arg) = "SELECT " ++ show int ++ formatArg arg
+        f (Earg arg) = formatArg arg
+        f (Ereg ident) = p ["REG", ident]
+        f (Enot arg) = p ["NOT", formatArg arg]
+        f (Ebinop binop arg1 arg2) =
+          p [(map toUpper . show $ binop), formatArg arg1, formatArg arg2]
+        f (Emux arg1 arg2 arg3) =
+          p $ "MUX" : map formatArg [arg1,arg2,arg3]
+        f (Erom int2 int1 arg) =
+          p ["ROM", show int2, show int1, formatArg arg] 
+        f (Eram int1 int2 arg1 arg2 arg3 arg4) =
+          p $ ["RAM", show int2, show int1]
+              ++ (map formatArg [arg1,arg2,arg3,arg4])  
+        f (Econcat arg1 arg2) =
+          p ["CONCAT", formatArg arg1, formatArg arg2]
+        f (Eslice int1 int2 arg) =
+          p ["SLICE", show int1, show int2, formatArg arg]
+        f (Eselect int arg) = p ["SELECT", show int, formatArg arg]
+        p = intercalate " "
         
 
 printProgToFile :: Program -> FilePath -> IO ()

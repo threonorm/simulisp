@@ -18,7 +18,7 @@ read_exp expr = args2deps $ case expr of
   Earg x -> [x] 
   Ereg _   -> [] -- a register outputs its input at cycle (n-1):
                  -- no dependency on input at cycle n
-  Enot x -> [x] 
+  Enot x -> [x]
   Ebinop _ x y -> [x, y]
   Emux x y z -> [x, y, z]   
   Erom _ _ x -> [x]
