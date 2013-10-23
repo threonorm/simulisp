@@ -1,0 +1,19 @@
+fulladder(a,b,c) = (s, r) where
+  s = (a ^ b) ^ c;
+  r = (a & b) + ((a ^ b) & c);
+end where
+
+adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
+  if n = 0 then
+    o = [];
+    c_out = 0
+  else
+    (s_n1, c_n1) = adder<n-1>(a[1..], b[1..], c_in);
+    (s_n, c_out) = fulladder(a[0], b[0], c_n1);
+    o = s_n . s_n1
+  end if
+end where
+
+main(a, b) = (o, c) where
+  (o, c) = adder<1>(a,b,0)
+end where

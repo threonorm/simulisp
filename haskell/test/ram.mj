@@ -1,0 +1,14 @@
+const addr = 2
+const word = 4
+
+or_n<n>(a:[n],b:[n]) = (o:[n]) where
+  if n = 0 then
+    o = []
+  else
+    o = (a[0] and b[0]).(or_n<n-1>(a[1..], b[1..]))
+  end if
+end where
+
+main(ra:[addr], we, wa:[addr], c:[word]) = (o:[word]) where
+  o = ram<addr, word>(ra, we, wa, or_n<word>(o, c))
+end where
