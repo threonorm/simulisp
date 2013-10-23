@@ -13,27 +13,22 @@ import NetlistAST
 import NetlistParser
 import qualified Digraph as G
 
-under_arg :: Arg -> Maybe Ident
-under_arg arg =
-  case arg of 
-    Avar ident -> Just ident
-    Aconst _   -> Nothing
-
 read_exp :: Exp -> [Ident]
-read_exp expr = 
-  case expr of
-         Earg arg -> maybeToList $ under_arg arg 
-         Ereg _ -> [] 
-         Enot arg-> maybeToList $ under_arg arg 
-         Ebinop _ arg1 arg2 ->nub $ mapMaybe under_arg [arg1, arg2]
-         Emux arg1 arg2 arg3-> nub $ mapMaybe under_arg [arg1, arg2, arg3]   
-         Erom _ _ arg -> maybeToList $ under_arg arg
-         Eram _ _ arg1 arg2 arg3 arg4 ->
-           nub $ mapMaybe under_arg [arg1, arg2, arg3, arg4] 
-         Econcat arg1 arg2 -> nub $ mapMaybe under_arg [arg1, arg2]
-         Eslice _ _ arg -> maybeToList $ under_arg arg
-         Eselect _ arg -> maybeToList $ under_arg arg
-
+read_exp expr = args2deps $ case expr of
+  Earg arg -> [arg] 
+  Ereg _   -> [] -- a register outputs its input at cycle (n-1)
+                 --   => no dependency on input at cycle n
+  Enot arg -> [arg] 
+  Ebinop _ x y -> [x, y]
+  Emux x y z -> [x, y, z]   
+  Erom _ _ arg -> [arg]
+  Eram _ _ x y z w -> [x, y, z, w] 
+  Econcat x y -> [x, y]
+  Eslice _ _ arg -> [arg]
+  Eselect _ arg -> [arg]
+  where args2deps = nub . mapMaybe f
+        f (Avar ident) = Just ident
+        f (Aconst _  ) = Nothing
 
 schedule :: Program -> Maybe Program -- error = combinatorial cycle
 schedule prog = f <$> G.topological depGraph
