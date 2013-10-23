@@ -15,17 +15,18 @@ import qualified Digraph as G
 
 read_exp :: Exp -> [Ident]
 read_exp expr = args2deps $ case expr of
-  Earg arg -> [arg] 
-  Ereg _   -> [] -- a register outputs its input at cycle (n-1)
-                 --   => no dependency on input at cycle n
-  Enot arg -> [arg] 
+  Earg x -> [x] 
+  Ereg _   -> [] -- a register outputs its input at cycle (n-1):
+                 -- no dependency on input at cycle n
+  Enot x -> [x] 
   Ebinop _ x y -> [x, y]
   Emux x y z -> [x, y, z]   
-  Erom _ _ arg -> [arg]
-  Eram _ _ x y z w -> [x, y, z, w] 
+  Erom _ _ x -> [x]
+  Eram _ _ x _ _ _ -> [x] -- RAM behaves like a register:
+                          -- the only dependency is the memory address to read
   Econcat x y -> [x, y]
-  Eslice _ _ arg -> [arg]
-  Eselect _ arg -> [arg]
+  Eslice _ _ x -> [x]
+  Eselect _ x -> [x]
   where args2deps = nub . mapMaybe f
         f (Avar ident) = Just ident
         f (Aconst _  ) = Nothing
