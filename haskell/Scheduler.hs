@@ -13,8 +13,8 @@ import NetlistAST
 import NetlistParser
 import qualified Digraph as G
 
-read_exp :: Exp -> [Ident]
-read_exp expr = args2deps $ case expr of
+readExp :: Exp -> [Ident]
+readExp expr = args2deps $ case expr of
   Earg x -> [x] 
   Ereg _   -> [] -- a register outputs its input at cycle (n-1):
                  -- no dependency on input at cycle n
@@ -39,7 +39,7 @@ schedule prog = f <$> G.topological depGraph
                    ++ (map fst . Map.toList $ p_vars prog)
                    ++ p_outputs prog 
         makeEdges g = foldl' addDeps g eqs
-        addDeps g (label, expr) = foldl' (\acc x -> G.add_edge acc x label) g
-                                  $ read_exp expr
+        addDeps g (label, expr) = foldl' (\acc x -> G.addEdge acc x label) g
+                                  $ readExp expr
         eqMap = Map.fromList $ map (\(a,b) -> (a, (a,b))) eqs
         f toposort = prog { p_eqs =  mapMaybe (flip Map.lookup eqMap) toposort }
