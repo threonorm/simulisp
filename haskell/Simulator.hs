@@ -33,6 +33,8 @@ vNot v= case v of
  (VBit a) -> VBit (not a)
  (VBitArray l) -> VBitArray (map not $ l) 
 
+u :: Value -> [Bool]
+u (VBitArray x) = x   -- u for under : through the constructor
 
 simulate :: SysState -> Exp -> Value
 simulate st (Earg a) =
@@ -64,7 +66,17 @@ simulate st (Emux a1 a2 a3) =
   where vA1 = extractArg st a1
         vA2 = extractArg st a2
         vA3 = extractArg st a3
-        u (VBitArray x) = x   -- u for under : through the constructor
+
+simulate st (Eselect i a)=
+  VBit ((u $ extractArg st a  ) !! i)
+
+simulate st (Eslice i1 i2 a)=
+  VBitArray ( take (i2 - i1) . drop i1 . u $ extractArg st a )
+   
+simulate st (Econcat a1 a2) =
+  VBitArray ( (u vA1) ++ (u vA2) )   
+  where vA1 = extractArg st a1
+        vA2 = extractArg st a2 
 
 --stepSimulation :: Program -> SysState -> SysState
   
