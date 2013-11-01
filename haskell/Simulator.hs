@@ -81,6 +81,8 @@ stepSimulation st eq =
   SysState{val_vars = 
         Map.insert (fst eq) (simulate st (snd eq)) $ val_vars st}        
 
+--We could delete the overhead SysState, juste for a Map.Map
+
 simulation :: Program -> SysState -> SysState   
 simulation prog input =
  foldl stepSimulation input $ p_eqs prog 
