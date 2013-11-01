@@ -13,6 +13,7 @@ import qualified Digraph as G
 newtype SysState = 
   SysState{val_vars :: Map.Map Ident Value}
 
+
 extractArg :: SysState -> Arg -> Value
 extractArg st (Avar i) = val_vars st Map.! i 
 extractArg st (Aconst v) = v
@@ -28,21 +29,22 @@ vLogic op v1 v2 =
     (VBit a1,VBitArray l1) ->  --Idem : I'm lazy and don't want read the specs
          VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
 
+
 vNot :: Value -> Value
 vNot v= case v of 
  (VBit a) -> VBit (not a)
  (VBitArray l) -> VBitArray (map not $ l) 
 
+
 u :: Value -> [Bool]
 u (VBitArray x) = x   -- u for under : through the constructor
+
 
 simulate :: SysState -> Exp -> Value
 simulate st (Earg a) =
   extractArg st a
-
 simulate st (Enot a) =
   vNot . extractArg st $ a
-
 simulate st (Ebinop op a1 a2) =
   vLogic opTransf vA1 vA2
   where vA1 = extractArg st a1
@@ -53,30 +55,32 @@ simulate st (Ebinop op a1 a2) =
            Nand -> (\p q-> not $ p && q)
            Xor  ->(\p q->(p || q) && not (p && q)) 
            Or   -> (||)
-
 simulate st (Emux a1 a2 a3) =
   case vA1 of
-   VBitArray _ ->
+    VBitArray _ ->
            VBitArray (zipWith3 (\x y z ->if x then y else z) 
                       (u vA1) 
                       (u vA2) 
                       (u vA3))
-   VBit v1 ->
+    VBit v1 ->
            if v1 then vA2 else vA3
   where vA1 = extractArg st a1
         vA2 = extractArg st a2
         vA3 = extractArg st a3
-
 simulate st (Eselect i a)=
   VBit ((u $ extractArg st a  ) !! i)
-
 simulate st (Eslice i1 i2 a)=
   VBitArray ( take (i2 - i1) . drop i1 . u $ extractArg st a )
-   
 simulate st (Econcat a1 a2) =
   VBitArray ( (u vA1) ++ (u vA2) )   
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
---stepSimulation :: Program -> SysState -> SysState
-  
+stepSimulation :: SysState -> Equation -> SysState
+stepSimulation st eq =
+  SysState{val_vars = 
+        Map.insert (fst eq) (simulate st (snd eq)) $ val_vars st}        
+
+simulation :: Program -> SysState -> SysState   
+simulation prog input =
+ foldl stepSimulation input $ p_eqs prog 
