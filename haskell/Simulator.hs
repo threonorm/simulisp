@@ -1,9 +1,12 @@
 module Simulator where
 
+import Control.Arrow
 import Control.Applicative
 import Control.Monad
 import Data.List
-import qualified Data.Map as Map
+-- use strict maps for better performance
+-- since we know (thanks to topological sorting) the right order of evaluation
+import qualified Data.Map.Strict as Map
 import Data.Bool
 
 import NetlistAST
@@ -11,12 +14,22 @@ import Scheduler
 import qualified Digraph as G
 
 
-newtype SysState = 
-  SysState{val_vars :: Map.Map Ident Value}
+type MapI a = Map.Map Ident a
+
+-- is stronger typing desirable here ?
+-- maybe enforce immutability of the ROM by separating it ?
+type WireState = MapI Value
+data Memory = Mem { registers :: MapI Value
+                  , ram :: () -- think hard later
+                  , rom :: ()
+                  }
+data SysState = SysState { wireState :: WireState
+                         , memory :: Memory }
+type Outputs = [(Ident, Value)]
 
 
-extractArg :: SysState -> Arg -> Value
-extractArg st (Avar i) = val_vars st Map.! i 
+extractArg :: WireState -> Arg -> Value
+extractArg st (Avar i) = st Map.! i 
 extractArg st (Aconst v) = v
 
 
@@ -41,7 +54,9 @@ u :: Value -> [Bool]
 u (VBitArray x) = x   -- u for under : through the constructor
 
 
-compute :: SysState -> Exp -> Value
+-- Partial function, doesn't handle memory
+-- TODO (in the distant future): improve this with generic programming / SYB stuff
+compute :: WireState -> Exp -> Value
 compute st (Earg a) =
   extractArg st a
 compute st (Enot a) =
@@ -77,34 +92,67 @@ compute st (Econcat a1 a2) =
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
+
 simulationStep :: SysState -> Equation -> SysState
-simulationStep st eq =
-  SysState{val_vars = 
-        Map.insert (fst eq) (compute st (snd eq)) $ val_vars st}        
+simulationStep st (ident, Ereg source) =
+  -- nested record access is pretty ugly (if only we had lenses...)
+  st { memory = (memory st) { registers = newRegs } }
+  where newRegs = Map.insert ident (wireState st Map.! source)
+                  . registers . memory $ st
+simulationStep st (ident, expr) =
+  st { wireState = Map.insert ident (compute wires expr) wires }
+  where wires = wireState st
 
---We could delete the overhead SysState, juste for a Map.Map
+  
 
-simulateCycle :: Program -> SysState -> SysState   
-simulateCycle prog input =
-  foldl' simulationStep input $ p_eqs prog 
+simulateCycle :: Program -> Memory -> WireState -- old memory + inputs
+              -> (Memory, Outputs)
+simulateCycle prog oldMem inputWires =
+  (memory &&& gatherOutputs . wireState)
+  . foldl' simulationStep initialState
+  $ p_eqs prog
+  where initialState = SysState { wireState = initialWires,
+                                  memory = oldMem }
+        initialWires = inputWires `Map.union` registers oldMem
+        gatherOutputs finalWires =
+          map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
 
 -- testing function
 -- TODO: factor out the scaffolding to reuse it more generally
-simulateOneCycle :: Program -- Sorted netlist
-                 -> Maybe (Environment Value) -- Map of inputs
-                 -> Maybe [(Ident, Value)] -- outputs with possibility of error
-                                           -- TODO: refine error signaling
-simulateOneCycle prog maybeInputs =
-  gatherOutputs . simulateCycle prog . SysState <$> initialState
+initialWireState :: Program -- Sorted netlist
+                 -> Maybe (MapI Value) -- Map of inputs
+                 -> Maybe WireState -- outputs with possibility of error
+                                    -- TODO: refine error signaling
+initialWireState prog maybeInputs
+  | formalParams == [] = Just Map.empty     
+  | otherwise = gatherInputs =<< maybeInputs 
   where formalParams = p_inputs prog
-        initialState | formalParams == [] = Just Map.empty
-                     | otherwise = gatherInputs =<< maybeInputs
         gatherInputs actualParams = foldM f Map.empty formalParams
           where f acc ident = do
                   val <- Map.lookup ident actualParams
-                  guard $ True -- test right kind of argument later
+                  guard $ True -- TODO: test right kind of argument
                   return $ Map.insert ident val acc
-        gatherOutputs (SysState finalState) =
-          map (\i -> (i, finalState Map.! i)) $ p_outputs prog
+
+iteratedSimulation :: Program -> Maybe [WireState] -> [[(Ident, Value)]]
+iteratedSimulation prog maybeInputs =
+  -- Two cases:
+  -- * if we have no input: simulate infinitely (with laziness)
+  -- * if we're given a list of inputs: we simulate until the inputs run out
+  let inputWires = maybe (repeat Map.empty) id maybeInputs
+      initialMemory = Mem { registers = initRegs, ram = (), rom = () } in
+  trace (simulateCycle prog) initialMemory inputWires
+  where initRegs = Map.fromList . flip zip (repeat (VBit False)) $ regs
+        regs = map fst . filter isReg $ p_eqs prog
+        isReg (_, (Ereg _)) = True
+        isReg _             = False
 
 
+-- Custom list builder function, not quite zipWith or scanl
+-- trace f a0 [x0, ...] = [y1, ...]
+-- where (a1, y1) = f a0 x0
+--       (a2, y2) = f a1 x1
+--       etc. 
+trace :: (a -> b -> (a, c)) -> a -> [b] -> [c]
+trace _ _  []      = []
+trace f a0 (x0:xs) = let (a1, y1) = f a0 x0
+                     in y1 : trace f a1 xs
