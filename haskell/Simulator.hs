@@ -1,6 +1,7 @@
 module Simulator where
 
 import Control.Applicative
+import Control.Monad
 import Data.List
 import qualified Data.Map as Map
 import Data.Bool
@@ -86,4 +87,24 @@ simulationStep st eq =
 simulateCycle :: Program -> SysState -> SysState   
 simulateCycle prog input =
   foldl' simulationStep input $ p_eqs prog 
+
+-- testing function
+-- TODO: factor out the scaffolding to reuse it more generally
+simulateOneCycle :: Program -- Sorted netlist
+                 -> Maybe (Environment Value) -- Map of inputs
+                 -> Maybe [(Ident, Value)] -- outputs with possibility of error
+                                           -- TODO: refine error signaling
+simulateOneCycle prog maybeInputs =
+  gatherOutputs . simulateCycle prog . SysState <$> initialState
+  where formalParams = p_inputs prog
+        initialState | formalParams == [] = Just Map.empty
+                     | otherwise = gatherInputs =<< maybeInputs
+        gatherInputs actualParams = foldM f Map.empty formalParams
+          where f acc ident = do
+                  val <- Map.lookup ident actualParams
+                  guard $ True -- test right kind of argument later
+                  return $ Map.insert ident val acc
+        gatherOutputs (SysState finalState) =
+          map (\i -> (i, finalState Map.! i)) $ p_outputs prog
+
 
