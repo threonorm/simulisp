@@ -8,7 +8,7 @@ type Environment t = Map.Map Ident t
 data Ty = TBit | TBitArray Int
         deriving (Show)
 data Value = VBit Bool | VBitArray [Bool]
-           deriving (Show)
+           deriving (Eq, Show)
 
 data Binop = Or | Xor | And | Nand
            deriving (Show)
