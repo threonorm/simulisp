@@ -2,6 +2,7 @@ module Main (main) where
 
 import Control.Applicative
 import Control.Arrow
+import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
 import System.Environment
@@ -32,9 +33,17 @@ main = do
       Left err -> failwith $ "Parse error:\n" ++ show err
       Right netlist -> case schedule netlist of
         Nothing -> failwith "The netlist contains a combinational cycle"
-        Just orderedNetlist -> print $ p_input p
+        Just orderedNetlist ->
+          case simulateOneCycle orderedNetlist (p_input p) of
+            Nothing -> failwith "Invalid inputs"
+            Just x -> putStrLn $ formatOutputs x
 
-
+formatOutputs :: [(Ident, Value)] -> String
+formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
+  where p (VBit b) = [c b]
+        p (VBitArray bs) = map c bs
+        c True = '1'
+        c False = '0'
 
 -- custom failwith to make sure exit code is 1
 failwith :: String -> IO a
