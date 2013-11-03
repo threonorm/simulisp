@@ -3,6 +3,7 @@ module Main (main) where
 import Control.Applicative
 import Control.Arrow
 import Data.Maybe
+import qualified Data.Map as Map
 import System.Environment
 import System.Console.GetOpt
 import System.Exit
@@ -48,10 +49,10 @@ unintersperse x xs = let (y, rest) = break (== x) xs
              
 data Option = Version
             | Help
-            | Input [Value]
+            | Input (Maybe (Environment Value))
             deriving (Eq)
 data Params = P { p_filename :: FilePath
-                , p_input :: [Value]
+                , p_input :: Maybe (Environment Value)
                 }
               deriving (Eq)
 
@@ -71,15 +72,18 @@ getParams = do
                     "Print simulator version number."
                   , Option ['h'] ["help"] (NoArg Help)
                     "Print this help message."
-                  , Option ['i'] ["input"] (OptArg (Input . parseInput) "INPUT")
+                  , Option [] ["input"] (OptArg (Input . fmap parseInput) "INPUT")
                     "List of inputs to provide to the circuit."
                   ]
-        usage = "Usage: simulateur [-iINPUT] FILE"
+        usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
-        parseInput Nothing = []
-        parseInput (Just l) = map p . unintersperse ',' $ l
-          where p [c] = VBit $ c /= '0' -- TODO: signal badly formatted input
+        parseInput = Map.fromList . map q . unintersperse ','
+          -- TODO: signal badly formatted input instead of failing miserably
+          --       at some random time
+          where q s = let (ident, _:s') = break (== ':') s
+                      in (ident, p s')
+                p [c] = VBit $ c /= '0'
                 p cs = VBitArray $ map (/= '0') cs
         findInput = head . catMaybes . map f
           where f (Input x) = Just x
