@@ -1,0 +1,9 @@
+fulladder(a,b,c) = (s, r) where
+  s = (a xor b) xor c;
+  r = (a and b) or ((a xor b) and c);
+end where
+
+main(a,b) = s where
+  c = reg(r)
+  (s, r) = fulladder(a,b,c)
+end where
