@@ -40,12 +40,12 @@ u :: Value -> [Bool]
 u (VBitArray x) = x   -- u for under : through the constructor
 
 
-simulate :: SysState -> Exp -> Value
-simulate st (Earg a) =
+compute :: SysState -> Exp -> Value
+compute st (Earg a) =
   extractArg st a
-simulate st (Enot a) =
+compute st (Enot a) =
   vNot . extractArg st $ a
-simulate st (Ebinop op a1 a2) =
+compute st (Ebinop op a1 a2) =
   vLogic opTransf vA1 vA2
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
@@ -55,7 +55,7 @@ simulate st (Ebinop op a1 a2) =
            Nand -> (\p q-> not $ p && q)
            Xor  ->(\p q->(p || q) && not (p && q)) 
            Or   -> (||)
-simulate st (Emux a1 a2 a3) =
+compute st (Emux a1 a2 a3) =
   case vA1 of
     VBitArray _ ->
            VBitArray (zipWith3 (\x y z ->if x then y else z) 
@@ -67,22 +67,23 @@ simulate st (Emux a1 a2 a3) =
   where vA1 = extractArg st a1
         vA2 = extractArg st a2
         vA3 = extractArg st a3
-simulate st (Eselect i a)=
+compute st (Eselect i a)=
   VBit ((u $ extractArg st a  ) !! i)
-simulate st (Eslice i1 i2 a)=
+compute st (Eslice i1 i2 a)=
   VBitArray ( take (i2 - i1) . drop i1 . u $ extractArg st a )
-simulate st (Econcat a1 a2) =
+compute st (Econcat a1 a2) =
   VBitArray ( (u vA1) ++ (u vA2) )   
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
-stepSimulation :: SysState -> Equation -> SysState
-stepSimulation st eq =
+simulationStep :: SysState -> Equation -> SysState
+simulationStep st eq =
   SysState{val_vars = 
-        Map.insert (fst eq) (simulate st (snd eq)) $ val_vars st}        
+        Map.insert (fst eq) (compute st (snd eq)) $ val_vars st}        
 
 --We could delete the overhead SysState, juste for a Map.Map
 
-simulation :: Program -> SysState -> SysState   
-simulation prog input =
- foldl' stepSimulation input $ p_eqs prog 
+simulateCycle :: Program -> SysState -> SysState   
+simulateCycle prog input =
+  foldl' simulationStep input $ p_eqs prog 
+
