@@ -85,4 +85,4 @@ stepSimulation st eq =
 
 simulation :: Program -> SysState -> SysState   
 simulation prog input =
- foldl stepSimulation input $ p_eqs prog 
+ foldl' stepSimulation input $ p_eqs prog 
