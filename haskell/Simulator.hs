@@ -8,9 +8,9 @@ import Data.List
 import qualified Data.Map as LazyMap
 -- use strict maps for better performance
 -- since we know (thanks to topological sorting) the right order of evaluation
-import qualified Data.Map.Strict as Map
-import qualified Data.IntMap.Strict as IntMap
-import Data.IntMap.Strict (IntMap)
+import qualified Data.Map as Map
+import qualified Data.IntMap as IntMap
+import Data.IntMap (IntMap)
 import Data.Bool
 
 import NetlistAST
