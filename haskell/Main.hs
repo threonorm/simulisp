@@ -59,9 +59,10 @@ unintersperse x xs = let (y, rest) = break (== x) xs
 data Option = Version
             | Help
             | Input (Maybe (Environment Value))
+            | FileInput (Maybe ([Environment Value]))
             deriving (Eq)
 data Params = P { p_filename :: FilePath
-                , p_input :: Maybe (Environment Value)
+                , p_input :: Maybe ([Environment Value])
                 }
               deriving (Eq)
 
@@ -72,8 +73,16 @@ getParams = do
     (opts, [filename], [])
       | Help `elem` opts -> putStrLn helpMsg >> exitSuccess
       | Version `elem` opts -> putStrLn versionMsg >> exitSuccess
-      | otherwise -> return $ P { p_filename = filename
-                                , p_input = findInput opts }
+      | FileInput a `elem` opts -> 
+             case a of 
+                Nothing -> failwith "pas de fichiers"
+                Maybe b->
+                    ioInput<-parseFileInput b 
+                    case ioInput of
+                       Left _ -> failwith "inputParser error"
+                       Right inpu -> return $ P{p_filename = filename, p_input = Just inpu }  
+      | otherwise ->return $ P { p_filename = filename
+                                , p_input =  (:[]) <$> findInput opts }  
                      -- TODO: handle unrecognized arguments
     (_, _, []) -> failwith helpMsg
     (_, _, errors) -> failwith $ concat errors ++ helpMsg
@@ -83,11 +92,12 @@ getParams = do
                     "Print this help message."
                   , Option [] ["input"] (OptArg (Input . fmap parseInput) "INPUT")
                     "List of inputs to provide to the circuit."
-                  , Option [] ["finput"] (OptArg (Input . fmap parseFileInput ) "FILEINPUT") 
+                  , Option [] ["finput"] (OptArg (FileInput)  "FILEINPUT") 
                     "File containing list of inputs, every line is a new step of simulation."]
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
+        parseFileInput :: IO(Either Parse error [Map.Map blabla] )
         parseFileInput =  
             (fmap.fmap.fmap) Map.fromList $ parseFromFile inputParser  
             
