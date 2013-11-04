@@ -1,0 +1,13 @@
+INPUT a, b
+OUTPUT s
+VAR
+  _l_11_22, _l_13_21, _l_14_20, _l_15_19, a, b, c, r, s
+IN
+r = OR _l_13_21 _l_15_19
+s = XOR _l_11_22 c
+_l_11_22 = XOR a b
+_l_13_21 = AND a b
+_l_14_20 = XOR a b
+_l_15_19 = AND _l_14_20 c
+c = REG r
+
