@@ -3,7 +3,8 @@ module Simulator where
 import Control.Arrow
 import Control.Applicative
 import Control.Monad
-import Data.Array
+import Data.Array (Array)
+import qualified Data.Array as Array
 import Data.List
 import qualified Data.Map as LazyMap
 -- use strict maps for better performance
@@ -14,8 +15,7 @@ import Data.IntMap (IntMap)
 import Data.Bool
 
 import NetlistAST
-import Scheduler
-import qualified Digraph as G
+
 
 -- Lazy maps are the ones generally used in the rest of the code
 type LazyMapI a = LazyMap.Map Ident a
@@ -96,12 +96,24 @@ compute st (Econcat a1 a2) =
         vA2 = extractArg st a2 
 
 
+valueToInt :: Value -> Int
+valueToInt (VBit b) = if b then 1 else 0
+valueToInt (VBitArray bs) =
+  foldl' 0 (\acc digit -> acc*10+digit) map (valueToInt . VBit) . reverse $ bs
+
 simulationStep :: SysState -> Equation -> SysState
+
 simulationStep st (ident, Ereg source) =
   -- nested record access is pretty ugly (if only we had lenses...)
   st { memory = (memory st) { registers = newRegs } }
   where newRegs = Map.insert ident (wireState st Map.! source)
                   . registers . memory $ st
+
+simulationStep st (Erom addrSize wordSize readAddr) =
+  let addr = valueToInt $ extractArg (wireState st) readAddr in
+  -- TODO: check if the addrSize is right?
+  VBitArray $ map (rom (memory st) Array.!) [addr..(addr+wordSize-1)]
+
 simulationStep st (ident, expr) =
   st { wireState = Map.insert ident (compute wires expr) wires }
   where wires = wireState st
