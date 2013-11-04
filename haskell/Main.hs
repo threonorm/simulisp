@@ -2,6 +2,7 @@ module Main (main) where
 
 import Control.Applicative
 import Control.Arrow
+import Control.Monad
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
@@ -32,11 +33,14 @@ main = do
     Right netlist' -> case netlist' of
       Left err -> failwith $ "Parse error:\n" ++ show err
       Right netlist -> case schedule netlist of
-        Nothing -> failwith "The netlist contains a combinational cycle"
+        Nothing -> failwith "The netlist contains a combinational cycle."
         Just orderedNetlist ->
-          case simulateCycle orderedNetlist (p_input p) of
-            Nothing -> failwith "Invalid inputs"
-            Just x -> putStrLn $ formatOutputs x
+          let lauchSim = iteratedSimulation orderedNetlist in
+          case p_input p of
+            Nothing -> launchSim Nothing
+            Just inputs -> case mapM (initialWireState orderedNetlist) inputs of
+              Nothing -> failwith "Invalid inputs."
+              Just initWS -> launchSim $ Just initWS
 
 formatOutputs :: [(Ident, Value)] -> String
 formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
