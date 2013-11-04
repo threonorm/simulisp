@@ -19,8 +19,6 @@ data Memory = Mem { registers :: Environment Value
                   , ram :: IntMap Bool
                   , rom :: Array Int Bool -- immutable array
                   }
-data SysState = SysState { wireState :: WireState
-                         , memory :: Memory }
 type Outputs = [(Ident, Value)]
 
 
@@ -94,48 +92,41 @@ valueToInt (VBit b) = if b then 1 else 0
 valueToInt (VBitArray bs) =
   foldl' (\acc digit -> acc*10+digit) 0 . map (valueToInt . VBit) . reverse $ bs
 
-simulationStep :: SysState -> Equation -> SysState
+simulationStep :: Memory -> WireState -> Equation -> WireState
+simulationStep memory oldWireState (ident, expr) =
+  let val = f expr in
+  -- evaluate strictly before inserting in the map
+  val `seq` Map.insert ident val oldWireState
+  
+  where f (Ereg _) = registers memory Map.! ident
 
-simulationStep st (_, Ereg _) = st -- do nothing
+        -- TODO: do something with addrSize?
+        f (Erom addrSize wordSize readAddr)
+           | wordSize == 1 = VBit . getROMBit $ wordAddr
+           | otherwise = VBitArray . map getROMBit
+                         $ [wordAddr..(wordAddr + wordSize - 1)]
+          where
+            wordAddr = valueToInt $ extractArg oldWireState readAddr
+            getROMBit bitAddr
+              | bitAddr < addrMin || bitAddr > addrMax = False
+              | otherwise = rom memory Array.! bitAddr
+            (addrMin, addrMax) = Array.bounds $ rom memory
 
--- TODO: do something with addrSize?
-simulationStep st (ident, Erom addrSize wordSize readAddr) =
-  setWire st ident result
-  where result | wordSize == 1 = VBit . getROMBit $ wordAddr
-               | otherwise = VBitArray . map getROMBit
-                             $ [wordAddr..(wordAddr + wordSize - 1)]
-        wordAddr = valueToInt $ extractArg (wireState st) readAddr
-        getROMBit bitAddr
-          | bitAddr < addrMin || bitAddr > addrMax = False
-          | otherwise = romArray Array.! bitAddr
-        (addrMin, addrMax) = Array.bounds romArray
-        romArray = rom (memory st)
+        f (Eram addrSize wordSize readAddr writeEnable writeAddr writeData) =
+          undefined -- Thomas, tu te charges de ça !
+          -- il faudra modifier la RAM *à la fin du cycle* comme pour les registres
 
-
-simulationStep st (ident, Eram addrSize wordSize readAddr
-                               writeEnable writeAddr writeData) =
-  undefined -- thomas, tu te charges de ça !
-            -- il faudra modifier la RAM à la fin du cycle comme pour les registres
-
-simulationStep st (ident, expr) =
-  setWire st ident $ compute (wireState st) expr
-
-setWire :: SysState -> Ident -> Value -> SysState
-setWire st ident val =
-  st { wireState = Map.insert ident val (wireState st) }
-
+        -- purely combinational logic: just compute
+        f e = compute oldWireState e
+        
 -- TODO: use reader monad for memory
-
 simulateCycle :: Program -> Memory -> WireState -- old memory + inputs
               -> (Memory, Outputs)
 simulateCycle prog oldMem inputWires =
   (newMem &&& gatherOutputs)
-  . wireState . foldl' simulationStep initialState
+  . foldl' (simulationStep oldMem) inputWires
   $ p_eqs prog
-  where initialState = SysState { wireState = initialWires,
-                                  memory = oldMem }
-        initialWires = inputWires `Map.union` registers oldMem
-        gatherOutputs finalWires =
+  where gatherOutputs finalWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
         newMem finalWires = oldMem { registers = Map.fromList . map getNewVal
                                                  $ programRegisters prog }
