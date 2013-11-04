@@ -35,12 +35,17 @@ main = do
       Right netlist -> case schedule netlist of
         Nothing -> failwith "The netlist contains a combinational cycle."
         Just orderedNetlist ->
-          let launchSim = iteratedSimulation orderedNetlist in
+          let launchSim = launchSimulation orderedNetlist in
           case p_input p of
             Nothing -> launchSim Nothing
             Just inputs -> case mapM (initialWireState orderedNetlist) inputs of
               Nothing -> failwith "Invalid inputs."
               Just initWS -> launchSim $ Just initWS
+
+launchSimulation :: Program -> Maybe [WireState] -> IO ()
+launchSimulation netlist maybeInputs =
+  let results = iteratedSimulation netlist maybeInputs in
+  mapM_ (putStrLn . formatOutputs) results
 
 formatOutputs :: [(Ident, Value)] -> String
 formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)

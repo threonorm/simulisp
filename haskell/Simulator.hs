@@ -136,24 +136,22 @@ simulateCycle prog oldMem inputWires =
 -- testing function
 -- TODO: factor out the scaffolding to reuse it more generally
 initialWireState :: Program -- Sorted netlist
-                 -> Maybe (MapI Value) -- Map of inputs
+                 -> MapI Value -- Map of inputs
                  -> Maybe WireState -- outputs with possibility of error
                                     -- TODO: refine error signaling
-initialWireState prog maybeInputs
-  | formalParams == [] = Just Map.empty     
-  | otherwise = gatherInputs =<< maybeInputs 
+initialWireState prog actualParams = foldM f Map.empty formalParams
   where formalParams = p_inputs prog
-        gatherInputs actualParams = foldM f Map.empty formalParams
-          where f acc ident = do
-                  val <- Map.lookup ident actualParams
-                  guard $ True -- TODO: test right kind of argument
-                  return $ Map.insert ident val acc
+        f acc ident = do
+          val <- Map.lookup ident actualParams
+          guard $ True -- TODO: test right kind of argument
+          return $ Map.insert ident val acc
 
 iteratedSimulation :: Program -> Maybe [WireState] -> [[(Ident, Value)]]
 iteratedSimulation prog maybeInputs =
   -- Two cases:
   -- * if we have no input: simulate infinitely (with laziness)
   -- * if we're given a list of inputs: we simulate until the inputs run out
+  -- TODO: ensure in the first case we have no inputs
   let inputWires = maybe (repeat Map.empty) id maybeInputs
       initialMemory = Mem { registers = initRegs,
                             ram = undefined,
