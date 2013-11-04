@@ -134,8 +134,6 @@ simulateCycle prog oldMem inputWires =
           where getNewVal = second (finalWires Map.!)
 
 
--- testing function
--- TODO: factor out the scaffolding to reuse it more generally
 initialWireState :: Program -- Sorted netlist
                  -> MapI Value -- Map of inputs
                  -> Maybe WireState -- outputs with possibility of error
