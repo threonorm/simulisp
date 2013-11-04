@@ -6,9 +6,6 @@ import Control.Monad
 import Data.Array (Array)
 import qualified Data.Array as Array
 import Data.List
-import qualified Data.Map as LazyMap
--- use strict maps for better performance
--- since we know (thanks to topological sorting) the right order of evaluation
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 import Data.IntMap (IntMap)
@@ -18,7 +15,6 @@ import NetlistAST
 
 
 -- Lazy maps are the ones generally used in the rest of the code
-type LazyMapI a = LazyMap.Map Ident a
 type MapI a = Map.Map Ident a
 
 type WireState = MapI Value
@@ -99,7 +95,7 @@ compute st (Econcat a1 a2) =
 valueToInt :: Value -> Int
 valueToInt (VBit b) = if b then 1 else 0
 valueToInt (VBitArray bs) =
-  foldl' 0 (\acc digit -> acc*10+digit) map (valueToInt . VBit) . reverse $ bs
+  foldl' (\acc digit -> acc*10+digit) 0 . map (valueToInt . VBit) . reverse $ bs
 
 simulationStep :: SysState -> Equation -> SysState
 
@@ -109,16 +105,21 @@ simulationStep st (ident, Ereg source) =
   where newRegs = Map.insert ident (wireState st Map.! source)
                   . registers . memory $ st
 
-simulationStep st (Erom addrSize wordSize readAddr) =
-  let addr = valueToInt $ extractArg (wireState st) readAddr in
+simulationStep st (ident, Erom addrSize wordSize readAddr) =
+  let addr = valueToInt $ extractArg (wireState st) readAddr
   -- TODO: check if the addrSize is right?
-  VBitArray $ map (rom (memory st) Array.!) [addr..(addr+wordSize-1)]
+      result = VBitArray . map (rom (memory st) Array.!)
+               $ [addr..(addr+wordSize-1)]
+  in setWire st ident result
 
 simulationStep st (ident, expr) =
-  st { wireState = Map.insert ident (compute wires expr) wires }
-  where wires = wireState st
+  setWire st ident $ compute (wireState st) expr
+                                                                               
 
-  
+
+
+setWire st ident val =
+  st { wireState = Map.insert ident val (wireState st) }
 
 simulateCycle :: Program -> Memory -> WireState -- old memory + inputs
               -> (Memory, Outputs)
@@ -135,7 +136,7 @@ simulateCycle prog oldMem inputWires =
 -- testing function
 -- TODO: factor out the scaffolding to reuse it more generally
 initialWireState :: Program -- Sorted netlist
-                 -> Maybe (LazyMapI Value) -- Map of inputs
+                 -> Maybe (MapI Value) -- Map of inputs
                  -> Maybe WireState -- outputs with possibility of error
                                     -- TODO: refine error signaling
 initialWireState prog maybeInputs
