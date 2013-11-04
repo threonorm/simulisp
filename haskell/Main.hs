@@ -59,7 +59,7 @@ unintersperse x xs = let (y, rest) = break (== x) xs
 data Option = Version
             | Help
             | Input (Maybe (Environment Value))
-            | FileInput (Maybe ([Environment Value]))
+            | FileInput (Maybe (String))
             deriving (Eq)
 data Params = P { p_filename :: FilePath
                 , p_input :: Maybe ([Environment Value])
@@ -73,20 +73,27 @@ getParams = do
     (opts, [filename], [])
       | Help `elem` opts -> putStrLn helpMsg >> exitSuccess
       | Version `elem` opts -> putStrLn versionMsg >> exitSuccess
-      | FileInput a `elem` opts -> 
-             case a of 
+      | isFileInput opts -> 
+             case (extractFileInput opts) of 
                 Nothing -> failwith "pas de fichiers"
-                Maybe b->
+                Just b -> do
                     ioInput<-parseFileInput b 
                     case ioInput of
                        Left _ -> failwith "inputParser error"
-                       Right inpu -> return $ P{p_filename = filename, p_input = Just inpu }  
+                       Right inpu -> return $ P{p_filename = filename, p_input = Just $map Map.fromList inpu }  
       | otherwise ->return $ P { p_filename = filename
                                 , p_input =  (:[]) <$> findInput opts }  
                      -- TODO: handle unrecognized arguments
     (_, _, []) -> failwith helpMsg
     (_, _, errors) -> failwith $ concat errors ++ helpMsg
-  where options = [ Option ['v'] ["version"] (NoArg Version)
+  where extractFileInput (t:q) = case t of
+                                FileInput a -> a
+                                _ -> extractFileInput q
+        isFileInput [] = False
+        isFileInput (t:q) = case t of
+                           FileInput _ -> True
+                           _ -> isFileInput q
+        options = [ Option ['v'] ["version"] (NoArg Version)
                     "Print simulator version number."
                   , Option ['h'] ["help"] (NoArg Help)
                     "Print this help message."
@@ -97,11 +104,7 @@ getParams = do
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
-        parseFileInput :: IO(Either Parse error [Map.Map blabla] )
-        parseFileInput =  
-            (fmap.fmap.fmap) Map.fromList $ parseFromFile inputParser  
-            
-
+        parseFileInput =  parseFromFile inputParser  
         parseInput = Map.fromList . map q . unintersperse ','
           -- TODO: signal badly formatted input instead of failing miserably
           --       at some random time
