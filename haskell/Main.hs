@@ -88,12 +88,10 @@ getParams = do
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
-        parseFileInput = 
-          do 
-            parsed<-Map.fromList . parseFromFile inputParser  
-            case parsed of
-              Left _ -> failwith "Could not open file.\n"
-              Right parsed' -> return parsed' 
+        parseFileInput =  
+            (fmap.fmap.fmap) Map.fromList $ parseFromFile inputParser  
+            
+
         parseInput = Map.fromList . map q . unintersperse ','
           -- TODO: signal badly formatted input instead of failing miserably
           --       at some random time
