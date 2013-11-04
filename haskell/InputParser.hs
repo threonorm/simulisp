@@ -1,5 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-
 module InputParser (inputParser) where
 
 import Control.Monad
@@ -17,13 +15,13 @@ import NetlistAST
  
 oneInput :: Parser (Ident,Value)
 oneInput = do
-  spaces 
+  many $ char ' ' 
   first <- letter <|> char '_'
   after <- many $ letter <|> digit <|> char '_'
-  spaces
+  many $ char ' ' 
   char ':'
-  spaces
-  value <- many $ spaces *> oneOf ['0','1'] <* spaces
+  many $ char ' ' 
+  value <- many $ (many $ char ' ') *> oneOf ['0','1'] <*(many $ char ' ')
   return (first:after,convert value)
   where convert [t] = VBit $ t/= '0'
         convert cs = VBitArray $ map (/= '0') cs
