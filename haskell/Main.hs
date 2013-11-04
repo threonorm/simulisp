@@ -16,7 +16,7 @@ import NetlistAST
 import NetlistParser
 import Scheduler
 import Simulator
-
+import InputParser
 
 versionNumber :: String -- more flexible than int/float/whatever
 versionNumber = "0.1"
@@ -83,10 +83,19 @@ getParams = do
                     "Print this help message."
                   , Option [] ["input"] (OptArg (Input . fmap parseInput) "INPUT")
                     "List of inputs to provide to the circuit."
-                  ]
+                  , Option [] ["finput"] (OptArg (Input . fmap parseFileInput ) "FILEINPUT") 
+                    "File containing list of inputs, every line is a new step of simulation."]
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
+        parseFileInput = 
+          ioInput=do 
+            parsed<-Map.fromList . parseFromFile inputParser  
+            case parsed' of
+              Left _ -> failwith "Could not open file.\n"
+              Right parsed' -> return parsed' 
+          let Io a = ioInput in 
+          a            
         parseInput = Map.fromList . map q . unintersperse ','
           -- TODO: signal badly formatted input instead of failing miserably
           --       at some random time
