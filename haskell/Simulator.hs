@@ -3,25 +3,28 @@ module Simulator where
 import Control.Arrow
 import Control.Applicative
 import Control.Monad
+import Data.Array
 import Data.List
+import qualified Data.Map as LazyMap
 -- use strict maps for better performance
 -- since we know (thanks to topological sorting) the right order of evaluation
 import qualified Data.Map.Strict as Map
+import qualified Data.IntMap.Strict as IntMap
+import Data.IntMap.Strict (IntMap)
 import Data.Bool
 
 import NetlistAST
 import Scheduler
 import qualified Digraph as G
 
-
+-- Lazy maps are the ones generally used in the rest of the code
+type LazyMapI a = LazyMap.Map Ident a
 type MapI a = Map.Map Ident a
 
--- is stronger typing desirable here ?
--- maybe enforce immutability of the ROM by separating it ?
 type WireState = MapI Value
 data Memory = Mem { registers :: MapI Value
-                  , ram :: () -- think hard later
-                  , rom :: ()
+                  , ram :: IntMap Bool
+                  , rom :: Array Int Bool -- immutable array
                   }
 data SysState = SysState { wireState :: WireState
                          , memory :: Memory }
@@ -120,7 +123,7 @@ simulateCycle prog oldMem inputWires =
 -- testing function
 -- TODO: factor out the scaffolding to reuse it more generally
 initialWireState :: Program -- Sorted netlist
-                 -> Maybe (MapI Value) -- Map of inputs
+                 -> Maybe (LazyMapI Value) -- Map of inputs
                  -> Maybe WireState -- outputs with possibility of error
                                     -- TODO: refine error signaling
 initialWireState prog maybeInputs
@@ -139,7 +142,9 @@ iteratedSimulation prog maybeInputs =
   -- * if we have no input: simulate infinitely (with laziness)
   -- * if we're given a list of inputs: we simulate until the inputs run out
   let inputWires = maybe (repeat Map.empty) id maybeInputs
-      initialMemory = Mem { registers = initRegs, ram = (), rom = () } in
+      initialMemory = Mem { registers = initRegs,
+                            ram = undefined,
+                            rom = undefined } in
   trace (simulateCycle prog) initialMemory inputWires
   where initRegs = Map.fromList . flip zip (repeat (VBit False)) $ regs
         regs = map fst . filter isReg $ p_eqs prog
