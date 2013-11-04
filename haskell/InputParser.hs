@@ -18,7 +18,7 @@ inputParser :: Parser [[(Ident,Value)]]
 inputParser = do
   -- commentaire pour Thomas : on aurait du utiliser lineInput `sepBy1` newline
   -- (en fouillant dans Text.Parsec.Combinator on trouve des trucs très pratiques)
-  allSteps <- (:) <$> lineInput <*> many (newline *> lineInput) 
+  allSteps <- (:) <$> lineInput <*> many (try $ (many newline *> lineInput)) 
   eof
   return allSteps     
 
