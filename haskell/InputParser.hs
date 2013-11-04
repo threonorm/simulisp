@@ -34,6 +34,7 @@ lineInput = do
 
 inputParser :: Parser [[(Ident,Value)]]
 inputParser = do
-  allSteps <- (:) <$> lineInput <*> many (newline *> lineInput) 
+  allSteps <- (:) <$> lineInput <*> many (try $ (many newline *> lineInput)) 
+  spaces
   eof
   return allSteps     
