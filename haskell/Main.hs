@@ -11,6 +11,7 @@ import System.Console.GetOpt
 import System.Exit
 import System.IO
 import System.IO.Error
+import Text.Parsec (parse)
 import Text.Parsec.String (parseFromFile)
 
 import NetlistAST
@@ -64,12 +65,13 @@ unintersperse x xs = let (y, rest) = break (== x) xs
                      in y : case rest of
                        []    -> []
                        (_:q) -> unintersperse x q
-             
+
 data Option = Version
             | Help
-            | Input (Maybe (Environment Value))
-            | FileInput (Maybe (String))
+            | InlineInput String
+            | FileInput String
             deriving (Eq)
+
 data Params = P { p_filename :: FilePath
                 , p_input :: Maybe ([Environment Value])
                 }
@@ -82,46 +84,50 @@ getParams = do
     (opts, [filename], [])
       | Help `elem` opts -> putStrLn helpMsg >> exitSuccess
       | Version `elem` opts -> putStrLn versionMsg >> exitSuccess
-      | isFileInput opts -> 
-             case (extractFileInput opts) of 
-                Nothing -> failwith "pas de fichiers"
-                Just b -> do
-                    ioInput<-parseFileInput b 
-                    case ioInput of
-                       Left _ -> failwith "inputParser error"
-                       Right inpu -> return $ P{p_filename = filename, p_input = Just $map Map.fromList inpu }  
-      | otherwise ->return $ P { p_filename = filename
-                                , p_input =  (:[]) <$> findInput opts }  
-                     -- TODO: handle unrecognized arguments
+      | otherwise -> do input <- getInput
+                        return $ P { p_filename = filename
+                                   , p_input = (fmap.fmap) Map.fromList input }
+      where getInput
+              -- pattern guards to the rescue!
+              | Just inputFileName <- findFileInput opts = do
+                  eitherInput <- tryIOError $ parseFromFile inputParser inputFileName
+                  case eitherInput of
+                    Left _ -> failwith "Error opening file."
+                    Right (Left err) ->
+                      failwith $ "Parse error on input file:\n" ++ show err
+                    Right (Right input) -> return $ Just input
+              | Just inputString <- findInlineInput opts =
+                  case parse inlineInputParser "" inputString of
+                    Left _ -> failwith "Input badly formatted."
+                    Right input -> return $ Just [input]
+              | otherwise = return Nothing
+
+    -- TODO: handle unrecognized arguments
     (_, _, []) -> failwith helpMsg
     (_, _, errors) -> failwith $ concat errors ++ helpMsg
-  where extractFileInput (t:q) = case t of
-                                FileInput a -> a
-                                _ -> extractFileInput q
-        isFileInput [] = False
-        isFileInput (t:q) = case t of
-                           FileInput _ -> True
-                           _ -> isFileInput q
-        options = [ Option ['v'] ["version"] (NoArg Version)
+    
+  where options = [ Option ['v'] ["version"] (NoArg Version)
                     "Print simulator version number."
                   , Option ['h'] ["help"] (NoArg Help)
                     "Print this help message."
-                  , Option [] ["input"] (OptArg (Input . fmap parseInput) "INPUT")
+                  , Option [] ["input"] (ReqArg InlineInput "INPUT")
                     "List of inputs to provide to the circuit."
-                  , Option [] ["finput"] (OptArg (FileInput)  "FILEINPUT") 
+                  , Option [] ["finput"] (ReqArg FileInput "FILENAME") 
                     "File containing list of inputs, every line is a new step of simulation."]
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
-        parseFileInput =  parseFromFile inputParser  
-        parseInput = Map.fromList . map q . unintersperse ','
-          -- TODO: signal badly formatted input instead of failing miserably
-          --       at some random time
-          where q s = let (ident, _:s') = break (== ':') s
-                      in (ident, p s')
-                p [c] = VBit $ c /= '0'
-                p cs = VBitArray $ map (/= '0') cs
-        findInput = head . catMaybes . map f
-          where f (Input x) = Just x
-                f _ = Nothing
+
+        findInlineInput = findExtract $ \x -> case x of
+          InlineInput y -> Just y
+          _             -> Nothing
+        findFileInput = findExtract $ \x -> case x of
+          FileInput y -> Just y
+          _           -> Nothing
         
+        
+findExtract :: (a -> Maybe b) -> [a] -> Maybe b
+findExtract f xs = case f `mapMaybe` xs of
+  []    -> Nothing
+  (y:_) -> Just y
+  

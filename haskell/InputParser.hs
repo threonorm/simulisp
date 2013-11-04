@@ -1,4 +1,4 @@
-module InputParser (inputParser) where
+module InputParser (inputParser, inlineInputParser) where
 
 import Control.Monad
 import Control.Exception (assert)
@@ -12,28 +12,44 @@ import Text.Parsec.String
 
 import NetlistAST
 
- 
-oneInput :: Parser (Ident,Value)
-oneInput = do
-  many $ char ' ' 
-  first <- letter <|> char '_'
-  after <- many $ letter <|> digit <|> char '_'
-  many $ char ' ' 
-  char ':'
-  many $ char ' ' 
-  value <- many $ (many $ char ' ') *> oneOf ['0','1'] <*(many $ char ' ')
-  return (first:after,convert value)
-  where convert [t] = VBit $ t/= '0'
-        convert cs = VBitArray $ map (/= '0') cs
-          
+
+-- Parser for input files
+inputParser :: Parser [[(Ident,Value)]]
+inputParser = do
+  -- commentaire pour Thomas : on aurait du utiliser lineInput `sepBy1` newline
+  -- (en fouillant dans Text.Parsec.Combinator on trouve des trucs très pratiques)
+  allSteps <- (:) <$> lineInput <*> many (newline *> lineInput) 
+  eof
+  return allSteps     
 
 lineInput :: Parser [(Ident,Value)]
 lineInput = do
   list<-(:) <$> oneInput <*> many (char ',' *> oneInput)
   return list 
 
-inputParser :: Parser [[(Ident,Value)]]
-inputParser = do
-  allSteps <- (:) <$> lineInput <*> many (newline *> lineInput) 
-  eof
-  return allSteps     
+-- similar to the "spaces" parser, but doesn't recognize newlines
+espaces = many $ char ' '
+
+oneInput :: Parser (Ident,Value)
+oneInput = do
+  espaces 
+  first <- letter <|> char '_'
+  after <- many $ letter <|> digit <|> char '_'
+  espaces 
+  char ':'
+  espaces 
+  value <- many $ espaces *> oneOf ['0','1'] <* espaces
+  return (first:after,convert value)
+
+convert :: String -> Value
+convert [t] = VBit $ t /= '0'
+convert cs = VBitArray $ map (/= '0') cs
+
+-- Parser for input delivered via the command line
+-- This is a variant of lineInput
+inlineInputParser :: Parser [(Ident,Value)]
+inlineInputParser = ( (,) <$> identifier <*> (char ':' *> value) )
+                    `sepBy` (char ',')
+  where identifier = (:) <$> (letter <|> char '_')
+                         <*> (many $ letter <|> digit <|> char '_')
+        value = convert <$> many1 (oneOf ['0', '1'])
