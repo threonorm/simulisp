@@ -45,7 +45,7 @@ main = do
 
 launchSimulation :: Program -> Maybe [WireState] -> IO ()
 launchSimulation netlist maybeInputs =
-  let results = iteratedSimulation netlist maybeInputs in
+  let results = iteratedSimulation netlist maybeInputs Nothing in
   mapM_ (putStrLn . formatOutputs) results
 
 formatOutputs :: [(Ident, Value)] -> String

@@ -14,12 +14,8 @@ import Data.Bool
 
 import NetlistAST
 
-
--- Lazy maps are the ones generally used in the rest of the code
-type MapI a = Map.Map Ident a
-
-type WireState = MapI Value
-data Memory = Mem { registers :: MapI Value
+type WireState = Environment Value
+data Memory = Mem { registers :: Environment Value
                   , ram :: IntMap Bool
                   , rom :: Array Int Bool -- immutable array
                   }
@@ -102,12 +98,24 @@ simulationStep :: SysState -> Equation -> SysState
 
 simulationStep st (_, Ereg _) = st -- do nothing
 
+-- TODO: do something with addrSize?
 simulationStep st (ident, Erom addrSize wordSize readAddr) =
-  let addr = valueToInt $ extractArg (wireState st) readAddr
-  -- TODO: check if the addrSize is right?
-      result = VBitArray . map (rom (memory st) Array.!)
-               $ [addr..(addr+wordSize-1)]
-  in setWire st ident result
+  setWire st ident result
+  where result | wordSize == 1 = VBit . getROMBit $ wordAddr
+               | otherwise = VBitArray . map getROMBit
+                             $ [wordAddr..(wordAddr + wordSize - 1)]
+        wordAddr = valueToInt $ extractArg (wireState st) readAddr
+        getROMBit bitAddr
+          | bitAddr < addrMin || bitAddr > addrMax = False
+          | otherwise = romArray Array.! bitAddr
+        (addrMin, addrMax) = Array.bounds romArray
+        romArray = rom (memory st)
+
+
+simulationStep st (ident, Eram addrSize wordSize readAddr
+                               writeEnable writeAddr writeData) =
+  undefined -- thomas, tu te charges de ça !
+            -- il faudra modifier la RAM à la fin du cycle comme pour les registres
 
 simulationStep st (ident, expr) =
   setWire st ident $ compute (wireState st) expr
@@ -135,7 +143,7 @@ simulateCycle prog oldMem inputWires =
 
 
 initialWireState :: Program -- Sorted netlist
-                 -> MapI Value -- Map of inputs
+                 -> Environment Value -- Map of inputs
                  -> Maybe WireState -- outputs with possibility of error
                                     -- TODO: refine error signaling
 initialWireState prog actualParams = foldM f Map.empty formalParams
@@ -145,21 +153,26 @@ initialWireState prog actualParams = foldM f Map.empty formalParams
           guard $ True -- TODO: test right kind of argument
           return $ Map.insert ident val acc
 
-iteratedSimulation :: Program -> Maybe [WireState] -> [[(Ident, Value)]]
-iteratedSimulation prog maybeInputs =
+iteratedSimulation :: Program
+                   -> Maybe [WireState]
+                   -> Maybe (Array Int Bool)
+                   -> [[(Ident, Value)]]
+iteratedSimulation prog maybeInputs maybeROM =
   -- Two cases:
   -- * if we have no input: simulate infinitely (with laziness)
   -- * if we're given a list of inputs: we simulate until the inputs run out
   -- TODO: ensure in the first case we have no inputs
   let inputWires = maybe (repeat Map.empty) id maybeInputs
       initialMemory = Mem { registers = initRegs,
-                            ram = undefined,
-                            rom = undefined } in
-  trace (simulateCycle prog) initialMemory inputWires
+                            ram = IntMap.empty,
+                            rom = maybe (Array.array (0,-1) []) id maybeROM }
+  in trace (simulateCycle prog) initialMemory inputWires
+  
   where initRegs = Map.fromList . flip zip (repeat (VBit False)) $ regs
         regs = map fst . filter isReg $ p_eqs prog
         isReg (_, (Ereg _)) = True
         isReg _             = False
+        
 
 programRegisters :: Program -> [(Ident,Ident)]
 programRegisters = catMaybes . map p . p_eqs
