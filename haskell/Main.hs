@@ -34,7 +34,7 @@ main = do
       Right netlist -> case schedule netlist of
         Nothing -> failwith "The netlist contains a combinational cycle"
         Just orderedNetlist ->
-          case simulateOneCycle orderedNetlist (p_input p) of
+          case simulateCycle orderedNetlist (p_input p) of
             Nothing -> failwith "Invalid inputs"
             Just x -> putStrLn $ formatOutputs x
 
@@ -89,13 +89,11 @@ getParams = do
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
         parseFileInput = 
-          ioInput=do 
+          do 
             parsed<-Map.fromList . parseFromFile inputParser  
-            case parsed' of
+            case parsed of
               Left _ -> failwith "Could not open file.\n"
               Right parsed' -> return parsed' 
-          let Io a = ioInput in 
-          a            
         parseInput = Map.fromList . map q . unintersperse ','
           -- TODO: signal badly formatted input instead of failing miserably
           --       at some random time
