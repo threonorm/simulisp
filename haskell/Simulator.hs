@@ -6,6 +6,7 @@ import Control.Monad
 import Data.Array (Array)
 import qualified Data.Array as Array
 import Data.List
+import Data.Maybe
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 import Data.IntMap (IntMap)
@@ -99,11 +100,7 @@ valueToInt (VBitArray bs) =
 
 simulationStep :: SysState -> Equation -> SysState
 
-simulationStep st (ident, Ereg source) =
-  -- nested record access is pretty ugly (if only we had lenses...)
-  st { memory = (memory st) { registers = newRegs } }
-  where newRegs = Map.insert ident (wireState st Map.! source)
-                  . registers . memory $ st
+simulationStep st (_, Ereg _) = st -- do nothing
 
 simulationStep st (ident, Erom addrSize wordSize readAddr) =
   let addr = valueToInt $ extractArg (wireState st) readAddr
@@ -114,24 +111,28 @@ simulationStep st (ident, Erom addrSize wordSize readAddr) =
 
 simulationStep st (ident, expr) =
   setWire st ident $ compute (wireState st) expr
-                                                                               
 
-
-
+setWire :: SysState -> Ident -> Value -> SysState
 setWire st ident val =
   st { wireState = Map.insert ident val (wireState st) }
+
+-- TODO: use reader monad for memory
 
 simulateCycle :: Program -> Memory -> WireState -- old memory + inputs
               -> (Memory, Outputs)
 simulateCycle prog oldMem inputWires =
-  (memory &&& gatherOutputs . wireState)
-  . foldl' simulationStep initialState
+  (newMem &&& gatherOutputs)
+  . wireState . foldl' simulationStep initialState
   $ p_eqs prog
   where initialState = SysState { wireState = initialWires,
                                   memory = oldMem }
         initialWires = inputWires `Map.union` registers oldMem
         gatherOutputs finalWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
+        newMem finalWires = oldMem { registers = Map.fromList . map getNewVal
+                                                 $ programRegisters prog }
+          where getNewVal = second (finalWires Map.!)
+
 
 -- testing function
 -- TODO: factor out the scaffolding to reuse it more generally
@@ -162,6 +163,11 @@ iteratedSimulation prog maybeInputs =
         isReg (_, (Ereg _)) = True
         isReg _             = False
 
+programRegisters :: Program -> [(Ident,Ident)]
+programRegisters = catMaybes . map p . p_eqs
+  where p (x, (Ereg y)) = Just (x,y)
+        p _             = Nothing
+        
 
 -- Custom list builder function, not quite zipWith or scanl
 -- trace f a0 [x0, ...] = [y1, ...]
