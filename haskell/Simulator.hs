@@ -112,13 +112,13 @@ simulationStep memory oldWireState (ident, expr) =
               | otherwise = rom memory Array.! bitAddr
             (addrMin, addrMax) = Array.bounds $ rom memory
 
-        f (Eram addrSize wordSize readAddr writeEnable writeAddr writeData) =
+        f (Eram addrSize wordSize readAddr writeEnable writeAddr writeData) 
            | wordSize == 1 = VBit . getRAMBit $ wordAddr
            | otherwise = VBitArray . map getRAMBit
                          $ [wordAddr..(wordAddr + wordSize - 1)]
           where
             wordAddr = valueToInt $ extractArg oldWireState readAddr
-            getRAMBit bitAddr = ram memory Map.! bitAddr
+            getRAMBit bitAddr = ram memory IntMap.! bitAddr
 
 
         -- purely combinational logic: just compute
@@ -134,12 +134,13 @@ simulateCycle prog oldMem inputWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
         newMem finalWires = oldMem { registers = Map.fromList . map getNewVal
                                                  $ programRegisters prog ,
-                                     ram = map . IntMap.insert oldMem  $ 
-                                          ( expand $ programRam prog finalWires )
+                                     ram = foldl (\currentMap (x,y) -> IntMap.insert x y currentMap) (ram oldMem) 
+                                           $ ramToUpdate  
                                    }
-          where getNewVal = second (finalWires Map.!)
+          where getNewVal = second (finalWires Map.!)              
+                ramToUpdate = expand $ programRam prog finalWires 
                 expand ((a,b,c):q) = case c of  
-                        VBitArray listval ->zip [a..a+b] listval ++ expand q  
+                        VBitArray listval ->zip [a..a+b-1] listval ++ expand q  
                         VBit val      ->   (a,val) :(expand q)
                 expand [] = []
                   
@@ -183,11 +184,12 @@ programRegisters = catMaybes . map p . p_eqs
         p _             = Nothing
        
 programRam :: Program -> WireState-> [(Int,Int, Value)] --Position,size , data  
-programRam st = catMaybes . map extraction .p_eqs
-  where extraction (Eram(addrSize,wordSize,_,enable,addrWrite,datas) )=
-            case extractArg st enable of 
-                VBit true -> Just(valueToInt addrWrite ,
-                                  valueToInt wordSize ,
+programRam prog st = catMaybes . map extraction $ 
+                      (map (\(x,y)->y)$ p_eqs prog )
+  where extraction (Eram addrSize wordSize _ enable addrWrite datas )=
+            case (extractArg st enable) of 
+                VBit true -> Just(valueToInt $ extractArg st addrWrite ,
+                                  wordSize ,
                                   extractArg st datas) 
                 _ -> Nothing
         extraction _ = Nothing 
