@@ -16,9 +16,8 @@ import NetlistAST
 -- Parser for input files
 inputParser :: Parser [[(Ident,Value)]]
 inputParser = do
-  -- commentaire pour Thomas : on aurait du utiliser lineInput `sepBy1` newline
-  -- (en fouillant dans Text.Parsec.Combinator on trouve des trucs très pratiques)
   allSteps <- (:) <$> lineInput <*> many (try $ (many newline *> lineInput)) 
+  spaces
   eof
   return allSteps     
 
