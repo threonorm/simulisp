@@ -32,7 +32,7 @@ vLogic op v1 v2 =
   case (v1,v2) of
     (VBit a1,VBit a2)->VBit (op a1 a2)
     (VBitArray l1, VBitArray l2)-> VBitArray (map (\(a,b)->op a b) $ zip l1 l2)
-    (VBitArray l1,VBit a1) ->  --Intuition : maybe it is not necessary
+    (VBitArray l1,VBit a1) ->  --It is not necessary, just imagination
          VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
     (VBit a1,VBitArray l1) ->  --Idem : I'm lazy and don't want read the specs
          VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
@@ -113,13 +113,17 @@ simulationStep memory oldWireState (ident, expr) =
             (addrMin, addrMax) = Array.bounds $ rom memory
 
         f (Eram addrSize wordSize readAddr writeEnable writeAddr writeData) =
-          undefined -- Thomas, tu te charges de ça !
-          -- il faudra modifier la RAM *à la fin du cycle* comme pour les registres
+           | wordSize == 1 = VBit . getRAMBit $ wordAddr
+           | otherwise = VBitArray . map getRAMBit
+                         $ [wordAddr..(wordAddr + wordSize - 1)]
+          where
+            wordAddr = valueToInt $ extractArg oldWireState readAddr
+            getRAMBit bitAddr = ram memory Map.! bitAddr
+
 
         -- purely combinational logic: just compute
         f e = compute oldWireState e
         
--- TODO: use reader monad for memory
 simulateCycle :: Program -> Memory -> WireState -- old memory + inputs
               -> (Memory, Outputs)
 simulateCycle prog oldMem inputWires =
@@ -129,8 +133,16 @@ simulateCycle prog oldMem inputWires =
   where gatherOutputs finalWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
         newMem finalWires = oldMem { registers = Map.fromList . map getNewVal
-                                                 $ programRegisters prog }
+                                                 $ programRegisters prog ,
+                                     ram = map . IntMap.insert oldMem  $ 
+                                          ( expand $ programRam prog finalWires )
+                                   }
           where getNewVal = second (finalWires Map.!)
+                expand ((a,b,c):q) = case c of  
+                        VBitArray listval ->zip [a..a+b] listval ++ expand q  
+                        VBit val      ->   (a,val) :(expand q)
+                expand [] = []
+                  
 
 
 initialWireState :: Program -- Sorted netlist
@@ -169,7 +181,17 @@ programRegisters :: Program -> [(Ident,Ident)]
 programRegisters = catMaybes . map p . p_eqs
   where p (x, (Ereg y)) = Just (x,y)
         p _             = Nothing
-        
+       
+programRam :: Program -> WireState-> [(Int,Int, Value)] --Position,size , data  
+programRam st = catMaybes . map extraction .p_eqs
+  where extraction (Eram(addrSize,wordSize,_,enable,addrWrite,datas) )=
+            case extractArg st enable of 
+                VBit true -> Just(valueToInt addrWrite ,
+                                  valueToInt wordSize ,
+                                  extractArg st datas) 
+                _ -> Nothing
+        extraction _ = Nothing 
+
 
 -- Custom list builder function, not quite zipWith or scanl
 -- trace f a0 [x0, ...] = [y1, ...]
