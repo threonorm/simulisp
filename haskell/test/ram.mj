@@ -5,7 +5,7 @@ or_n<n>(a:[n],b:[n]) = (o:[n]) where
   if n = 0 then
     o = []
   else
-    o = (a[0] and b[0]).(or_n<n-1>(a[1..], b[1..]))
+    o = (a[0] or b[0]).(or_n<n-1>(a[1..], b[1..]))
   end if
 end where
 

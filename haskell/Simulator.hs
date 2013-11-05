@@ -32,10 +32,10 @@ vLogic op v1 v2 =
   case (v1,v2) of
     (VBit a1,VBit a2)->VBit (op a1 a2)
     (VBitArray l1, VBitArray l2)-> VBitArray (map (\(a,b)->op a b) $ zip l1 l2)
-    (VBitArray l1,VBit a1) ->  --It is not necessary, just imagination
-         VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
-    (VBit a1,VBitArray l1) ->  --Idem : I'm lazy and don't want read the specs
-         VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
+   -- (VBitArray l1,VBit a1) ->  --It is not necessary, just imagination
+   --      VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
+   -- (VBit a1,VBitArray l1) ->  --Idem : I'm lazy and don't want read the specs
+   --      VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
 
 
 vNot :: Value -> Value
@@ -156,8 +156,11 @@ initialWireState prog actualParams = foldM f Map.empty formalParams
   where formalParams = p_inputs prog
         f acc ident = do
           val <- Map.lookup ident actualParams
-          guard $ True -- TODO: test right kind of argument
+          guard . rightSize val $ p_vars prog Map.! ident   
           return $ Map.insert ident val acc
+        rightSize (VBit _) TBit  = True
+        rightSize (VBitArray a) (TBitArray n) = length a == n 
+        rightSize _ _ = False
 
 iteratedSimulation :: Program
                    -> Maybe [WireState]
