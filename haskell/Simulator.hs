@@ -46,7 +46,7 @@ vNot v= case v of
 
 u :: Value -> [Bool]
 u (VBitArray x) = x   -- u for under : through the constructor
-
+u (VBit x) = [x]
 
 -- Partial function, doesn't handle memory
 -- TODO (in the distant future): improve this with generic programming / SYB stuff
@@ -80,7 +80,7 @@ compute st (Emux a1 a2 a3) =
 compute st (Eselect i a)=
   VBit ((u $ extractArg st a  ) !! i)
 compute st (Eslice i1 i2 a)=
-  VBitArray ( take (i2 - i1) . drop i1 . u $ extractArg st a )
+  VBitArray ( take (i2 - i1+1) . drop i1 . u $ extractArg st a )
 compute st (Econcat a1 a2) =
   VBitArray ( (u vA1) ++ (u vA2) )   
   where vA1 = extractArg st a1
