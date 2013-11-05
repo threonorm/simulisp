@@ -50,11 +50,11 @@ Structure of input files
     file ::= line                                                        
            | line '\n' file                                              
                                                                           
-Semantics :                                                     
+Semantics:                                                     
 - each line describes the inputs for one step of simulation           
 - a line is a sequence of assignments of the form `variable:value`
 
-WARNING : All the required inputs of your Netlists must be described in
+WARNING: All the required inputs of your Netlists must be described in
 your input file.
 
 ----------------------
