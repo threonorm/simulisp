@@ -118,7 +118,9 @@ simulationStep memory oldWireState (ident, expr) =
                          $ [wordAddr..(wordAddr + wordSize - 1)]
           where
             wordAddr = valueToInt $ extractArg oldWireState readAddr
-            getRAMBit bitAddr = ram memory IntMap.! bitAddr
+            getRAMBit bitAddr = case IntMap.lookup bitAddr (ram memory) of
+                                   Nothing -> False
+                                   Just x  -> x
 
 
         -- purely combinational logic: just compute
