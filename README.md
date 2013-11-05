@@ -13,9 +13,8 @@ TODO:
 - Compilation of Netlist and Hot Code Swapping
 
 
--------------
 INSTALLATION
--------------
+------------
 
 Requirements :
 - Haskell Platform >= 2013.2.0.0
@@ -25,9 +24,8 @@ Building :
     cd ./simulisp/haskell
     ghc --make Main
 
-------------
 USAGE
-------------
+-----
 
 To simulate juste one step:
 `./Main --input=var1:(val1)+,...,vari:(vali)+ <netlist file name>`
@@ -38,9 +36,8 @@ To simulate n steps by feeding n inputs to the program through a file:
 More information:
 `./Main --help`
 
-------------
 Structure of input files
-------------
+------------------------
 
     var ::= string                                                        
     val ::= binary number                                                 
