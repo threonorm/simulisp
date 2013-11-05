@@ -1,25 +1,31 @@
 Simulisp 0.01
 =============
 
-Some tools to simulate digital circuits written in Netlist.
+Some tools to simulate synchronous digital circuits written in the netlist
+language outputted by the MiniJazz compiler. (see the `minijazz` subfolder)
+
+Written completely in Haskell.
 
 V0.01 contains : 
 - A parser for netlists
 - A scheduler (using topological sorting)
 - A basic netlist interpreter
 
+Both the purely combinational logic and the sequential features
+(registers and memory) are supported in this release.
+
 TODO:
-- Memory
+- Code cleanup
 - Compilation of Netlist and Hot Code Swapping
 
 
 INSTALLATION
 ------------
 
-Requirements :
+Requirements:
 - Haskell Platform >= 2013.2.0.0
 
-Building : 
+Building: 
 
     cd ./simulisp/haskell
     ghc --make Main
@@ -51,8 +57,9 @@ Structure of input files
            | line '\n' file                                              
                                                                           
 Semantics:                                                     
-- each line describes the inputs for one step of simulation           
-- a line is a sequence of assignments of the form `variable:value`
+- the nth line describes the inputs for the nth simulation step
+- a line is a comma-separated sequence of assignments of the form
+  `variable:value`
 
 WARNING: All the required inputs of your Netlists must be described in
 your input file.
