@@ -1,0 +1,7 @@
+INPUT ra
+OUTPUT o
+VAR
+  o : 4, ra : 2
+IN
+o = ROM 2 4 ra
+
