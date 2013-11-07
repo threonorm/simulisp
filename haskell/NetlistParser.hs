@@ -41,7 +41,7 @@ inputs = bigList "INPUT" ident
 outputs = bigList "OUTPUT" ident
 vars = Map.fromList <$> bigList "VAR" var
   where var = do x <- ident
-                 n_ <- optionMaybe (punctuation ':' *> many1 digit)
+                 n_ <- optionMaybe (punctuation ':' *> many1 digit <* spaces)
                  return . (x,) $ case n_ of
                    Nothing -> TBit
                    Just s -> TBitArray (read s)
