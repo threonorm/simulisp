@@ -1,0 +1,129 @@
+\documentclass[a4paper, 11pt]{article}
+
+% Math symbols, notation, etc.
+% Apparently, must be loaded earlier than mathspec?
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+
+% Locale/encoding with XeTeX: UTF-8 by default, use fontspec
+\usepackage{unicode-math}
+\usepackage{polyglossia} % Modern replacement for Babel
+\setmainlanguage{english}
+\usepackage{csquotes} % guillemets
+
+% Other
+\usepackage{fullpage}
+%\usepackage{enumerate}
+%\usepackage{graphicx}
+
+\begin{document}
+
+\title{Report on the netlist simulator}
+\author{Nguyễn Lê Thành Dũng \and Thomas Bourgeat}
+
+\maketitle
+
+INCOMPLETE REPORT. See the short version instead.
+
+The code of our simulator is written entirely in Haskell and doesn't rely on any code generation tool (e.g.\ a parser generator). All dependencies are included in the Haskell Platform.
+
+For practical considerations on how to build and run the simulator, see the \texttt{README.md} file. Note that we didn't include a Makefile in the project, since \texttt{ghc --make} works just as well.
+
+\section{Global structure of the simulator}
+
+The execution of the program proceeds according to the following steps:
+\begin{itemize}
+\item The entry point of the program is the \texttt{main} function in \texttt{Main.hs}. It handles command line arguments and tries to read the specified inputs, signaling the errors that may occur.
+\item The netlist is parsed (\texttt{NetlistParser.hs}), then its equations are sorted in dependency order using a standard topological sorting algorithm (\texttt{Digraph.hs} and \texttt{Scheduler.hs}).
+\item The actual simulation function (\texttt{Simulator.hs}) takes the sorted netlist, the parsed inputs for the circuit, and the contents of the ROM, and iterates a cycle-by-cycle simulation.
+\item During each cycle, the values of the circuit variables are evaluated in order, then the new contents of the registers and RAM are computed for use in the next cycle.
+\end{itemize}
+All in all, a very standard approach.
+
+\section{Robustness}
+
+\subsection{Sanity checks on data}
+
+Netlist left unchecked except for syntax and combinatorial cycles: potential failure mode.
+
+Check input for syntax and compatibility with circuit specs.
+
+\subsection{Testing}
+
+Additional tests + quickcheck.
+
+
+%% Trop exhaustif peut-être ? Enlever des trucs ?
+
+\section{Haskell-specific stuff}
+
+Since all the provided code was written in OCaml, we had to port it to Haskell.
+
+\subsection{Parsing}
+
+We used the Parsec parsing combinator library to write a parser for the netlist format, by near direct conversion of the provided Menhir parser (except that the lexing and parsing are no longer 2 separate phases). The same library is also used to parse the input for the circuit.
+
+\subsection{Purely functional algorithms and data structures}
+
+
+
+
+\section{Performance considerations}
+
+This first version of the simulator is clearly not written with performance in mind. Some of the major issues are:
+\begin{itemize}
+\item Haskell's pervasive lazy evaluation comes with a performance hit. We try to mitigate that by forcing strict evaluation when computing the value of a variable in the circuit. (Indeed, the structure of the computation of a cycle is inherently static and sequential.)
+\item Operations on persistent maps are not as fast as those on arrays, especially when it comes to accessing multiple contiguous bits, where arrays have good memory locality.
+\item Some computations which could be done once (e.g.\ pattern matching to determine how to compute some variable) are repeated at each cycle.
+\end{itemize}
+
+But then, why didn't we just use mutable arrays?
+\begin{itemize} 
+\item Our main goal was ensuring the correctness of our simulator, which is clearer using idiomatic data structures and pure functions, and without clever optimizations.
+\item The simulator can easily be extended to print additional information. Such extensions might prove useful to debug circuits since ultimately, our goal is to design a processor.
+\item We have plans for a fast simulation program using a radically different strategy (currently unimplemented due to lack of time). The basic idea is to compile the netlist to C, feed it to an optimizing C compiler, and then load at runtime the resulting object file. Theoretically, this would give us the performance of C while keeping the convenience of Haskell.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%ùù
+
+% \section{Conversion of the provided OCaml code to Haskell code }
+% The first step was to convert the code provided, written in OCaml, in
+% Haskell. While the references and mutable constructions are idiomatics in
+% OCaml, we wanted to avoid it in Haskell because it is pretty much
+% complicated and not idiomatic. Purer the code is, better it
+% is. In this first part we show some example.
+
+% \subsection{Purely functional data structures}
+% \begin{itemize}
+% \item The \texttt{Array} are replaced by \texttt{IntMap} or \texttt{[Int]}
+% \item The mutables are deleted.
+% \end{itemize}
+
+% \subsection{Use of monads}
+% Sometimes, the algorithms are really imperative, and to control de flow of
+% our program and imitate this style of programmation, we use monads. For
+% example:
+
+%  we could notn easily avoid the references for the topological sort, so we
+% used the monad \texttt{State} combined with \texttt{Maybe}, i.e The monad \texttt{StateT
+% (Map (Node a) Mark) Maybe}.
+
+
+% But we tried to have the maximum of pure code. In the other cases, we
+% mainly use monads for plumbing. 
+
+% \section{Global architecture}
+
+% \subsection{RAM}
+% We used a sparse representation of the RAM : \texttt{Data.IntMap}. And we
+% chose to suppose that initially, the RAM is full of $0$. 
+% \subsection{ROM}
+% We used a immutable \texttt{Array} structure of Haskell. Which is initially filled with a
+% ROM input file containing a sequences of binary digits. 
+
+% \section{Input parsing and plumbing}
+
+
+
+\end{document}
