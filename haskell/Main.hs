@@ -37,7 +37,7 @@ main = do
       Right netlist -> case schedule netlist of
         Nothing -> failwith "The netlist contains a combinational cycle."
         Just orderedNetlist ->
-          let launchSim inp = launchSimulation orderedNetlist inp (p_rom p) in
+          let launchSim inp = launchSimulation orderedNetlist (p_cycles p) inp (p_rom p) in
           case p_input p of
             Nothing -> launchSim Nothing 
             Just inputs -> case mapM (initialWireState orderedNetlist) inputs of
@@ -45,12 +45,14 @@ main = do
               Just initWS -> launchSim $ Just initWS
 
 launchSimulation :: Program
+                 -> Maybe Int
                  -> Maybe [WireState]
                  -> Maybe (Array.Array Int Bool)
                  -> IO ()
-launchSimulation netlist maybeInputs maybeROM =
+launchSimulation netlist maybeCycles maybeInputs maybeROM =
   let results = iteratedSimulation netlist maybeInputs maybeROM in
-  mapM_ (putStrLn . formatOutputs) results
+  mapM_ (putStrLn . formatOutputs)
+  . maybe id take maybeCycles $ results
 
 formatOutputs :: [(Ident, Value)] -> String
 formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
@@ -75,12 +77,14 @@ data Option = Version
             | InlineInput String
             | FileInput FilePath
             | FileROM FilePath
+            | Cycles String
             deriving (Eq)
 
 -- TODO: type alisases for ROM array and RAM map
 data Params = P { p_filename :: FilePath
-                , p_input :: Maybe ([Environment Value])
-                , p_rom :: Maybe (Array.Array Int Bool)
+                , p_input    :: Maybe ([Environment Value])
+                , p_rom      :: Maybe (Array.Array Int Bool)
+                , p_cycles   :: Maybe Int
                 }
               deriving (Eq)
 
@@ -93,9 +97,11 @@ getParams = do
       | Version `elem` opts -> putStrLn versionMsg >> exitSuccess
       | otherwise -> do input <- getInput
                         rom <- getROM
+                        cycles <- getCycles
                         return $ P { p_filename = filename
                                    , p_input    = (fmap.fmap) Map.fromList input
-                                   , p_rom      = rom }
+                                   , p_rom      = rom
+                                   , p_cycles   = cycles }
       where getInput
               -- pattern guards to the rescue!
               | Just inputFileName <- findFileInput opts = do
@@ -129,7 +135,14 @@ getParams = do
               guard $ all (`elem` "01") str'
               return . listToArray . map (/= '0') $ str'
 
+            getCycles
+              | Just str <- findCycles opts = case readMaybe str of
+                  Nothing -> failwith "Badly formatted option (num-cycles)."
+                  Just n -> return (Just n)
+              | otherwise = return Nothing
+
             listToArray l = Array.array (0, length l - 1) (zip [0..] l)
+
 
 
     -- TODO: handle unrecognized arguments
@@ -145,7 +158,9 @@ getParams = do
                   , Option [] ["finput"] (ReqArg FileInput "FILENAME") 
                     "File containing list of inputs, every line is a new step of simulation."
                   , Option [] ["fROM"] (ReqArg FileROM "FILENAME")
-                    "File containing the contents of the ROM"
+                    "File containing the contents of the ROM."
+                  , Option ['n'] ["num-cycles"] (ReqArg Cycles "N")
+                    "Forces the simulation to stop after N cycles."
                   ]
         usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
@@ -162,8 +177,16 @@ getParams = do
         findFileROM = findExtract $ \x -> case x of
           FileROM y -> Just y
           _           -> Nothing
+        findCycles = findExtract $ \x -> case x of
+          Cycles y -> Just y
+          _        -> Nothing
 
-        
+
+-- This functions exists in GHC >= 7.6
+readMaybe :: (Read a) => String -> Maybe a
+readMaybe s = case reads s of
+              [(x, "")] -> Just x
+              _ -> Nothing
         
 findExtract :: (a -> Maybe b) -> [a] -> Maybe b
 findExtract f xs = case f `mapMaybe` xs of
