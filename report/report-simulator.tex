@@ -13,7 +13,7 @@
 \usepackage{csquotes} % guillemets
 
 % TeX Gyre Pagella = URW Palladio (free Palatino) extended
-\setmainfont[Mapping=tex-text]{TeX Gyre Pagella}
+%\setmainfont[Mapping=tex-text]{TeX Gyre Pagella}
 \setmathfont{Asana Math}
 
 % Other
@@ -21,12 +21,74 @@
 %\usepackage{enumerate}
 %\usepackage{graphicx}
 
+\newcommand\co[1]{\texttt{#1}}
 \begin{document}
 
 \title{Report on the netlist simulator}
 \author{Nguyễn Lê Thành Dũng \and Thomas Bourgeat}
+
 \maketitle
 
+\section{Conversion of the provided OCaml code to Haskell code }
+The first step was to convert the code provided, written in OCaml, in
+Haskell. While the references and mutable constructions are idiomatics in
+OCaml, we wanted to avoid it in Haskell because it is pretty much
+complicated and not idiomatic. Purer the code is, better it
+is. In this first part we show some example.
+
+\subsection{Purely functional data structures}
+\begin{itemize}
+\item The \co{Array} are replaced by \co{IntMap} or \co{[Int]}
+\item The mutables are deleted.
+\end{itemize}
+
+\subsection{Use of monads}
+Sometimes, the algorithms are really imperative, and to control de flow of
+our program and imitate this style of programmation, we use monads. For
+example:
+
+ we could not easily avoid the references for the topological sort, so we
+used the monad \co{State} combined with \co{Maybe}, i.e The monad \co{StateT
+(Map (Node a) Mark) Maybe}.
+
+
+But we tried to have the maximum of pure code. In the other cases, we
+mainly use monads for plumbing. 
+
+\section{Global architecture}
+
+\subsection{RAM}
+We used a sparse representation of the RAM : \co{Data.IntMap}. And we
+chose to suppose that initially, the RAM is full of $0$. 
+\subsection{ROM}
+We used a immutable \co{Array} structure of Haskell. Which is initially filled with a
+ROM input file containing a sequences of binary digits. 
+
+\section{Input parsing and plumbing}
+
+\section{Discussion about performances}
+We risk a lack of performance in this version 0.1, mainly due to the
+abundant use of lazyness (but that's so cool to use it). But we 
+justify it with:  
+\begin{itemize} 
+\item Our main goal was the correction of our simulator, which is clearer without
+optimizations and dirty-in-haskell datastructures.
+\item We keep in mind that
+in fine, we have to write a processor and simulate this processor: it
+can be usefull to save all the datas for future debugging. For example, this version
+can very easily be updated to print intermediate configurations, which
+is helped by purity of the majority of the code.   
+\item A think about a version 0.2 based on :
+\begin{itemize}
+\item A written-in-haskell compiler, from Netlist to C.
+\item GCC -O3
+\item A dynamic linking of functions compiled in C, called in Haskell,
+that permit a really fast simulation. It allows us to keep the full
+benefits of 
+Haskell, with the full speed of C.
+
+\end{itemize}
+\end{itemize}
 
 
 \end{document}
