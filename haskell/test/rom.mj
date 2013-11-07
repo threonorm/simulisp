@@ -1,0 +1,12 @@
+(* Testing comment syntax *)
+(* Stupid wrapper around a ROM access primitive
+   Feed it multiple inputs to test reading from memory thoroughly
+*)
+
+const addr = 2
+const word = 4
+
+main(ra:[addr]) = (o:[word]) where
+  o = rom<addr, word>(ra)
+end where
+
