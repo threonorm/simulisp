@@ -90,7 +90,7 @@ compute st (Econcat a1 a2) =
 valueToInt :: Value -> Int
 valueToInt (VBit b) = if b then 1 else 0
 valueToInt (VBitArray bs) =
-  foldl' (\acc digit -> acc*10+digit) 0 . map (valueToInt . VBit) . reverse $ bs
+  foldl' (\acc digit -> acc*2+digit) 0 . map (valueToInt . VBit) . reverse $ bs
 
 simulationStep :: Memory -> WireState -> Equation -> WireState
 simulationStep memory oldWireState (ident, expr) =
