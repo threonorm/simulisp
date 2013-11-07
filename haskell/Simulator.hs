@@ -193,7 +193,7 @@ programRam prog st = catMaybes . map extraction $
                       (map (\(x,y)->y)$ p_eqs prog )
   where extraction (Eram addrSize wordSize _ enable addrWrite datas )=
             case (extractArg st enable) of 
-                VBit true -> Just(valueToInt $ extractArg st addrWrite ,
+                VBit True -> Just(valueToInt $ extractArg st addrWrite ,
                                   wordSize ,
                                   extractArg st datas) 
                 _ -> Nothing
