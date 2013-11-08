@@ -1,0 +1,35 @@
+\documentclass[a4paper, 11pt]{article}
+
+% Locale/encoding with XeTeX: UTF-8 by default, use fontspec
+\usepackage{unicode-math}
+\usepackage{polyglossia} % Modern replacement for Babel
+\setmainlanguage{english}
+\usepackage{csquotes} % guillemets
+
+\usepackage{fullpage}
+
+
+\begin{document}
+
+\title{Report on the netlist simulator}
+\author{Nguyễn Lê Thành Dũng \and Thomas Bourgeat}
+\maketitle
+
+
+% I don't think there need to be any explicitly delineated sections;
+% not only do they take up vertical space, they are little more than noise
+% when all sections contain at most 3 small paragraphs.
+
+The high-level structure of our simulator follows the structure suggested in TP1. The program parses the netlist and sorts its equations in dependency order (using topological sorting). The simulation consists of the iteration of a cycle computation function. During each cycle, the values of the circuit variables are evaluated in order; at the end, the new values for the registers and RAM are computed for use in the next cycle. There is also a fair amount of necessary plumbing: command line argument parsing, error signaling, etc.
+
+The current version of the program manages to simulate correctly all the provided example circuits. We also wrote some tests of our own in MiniJazz: a bit-serial adder, and a ROM access circuit. For the topological sort function, we used randomly generated test cases (cf.\ the QuickCheck library).
+
+Despite working perfectly on the aforementioned examples, our program may fail on invalid netlists: it rejects syntactically incorrect netlist files but semantic errors in a netlist may cause an error during execution. Netlists produced by the mjc compiler should not run into such issues thanks to MiniJazz's static type system. As for the inputs to the circuit, the program checks both their syntax and their compatibility with the circuit's specification.
+
+We wrote the simulator entirely in Haskell, in a purely functional style. Thus, we had to port over the provided OCaml code, which sometimes made heavy use of mutability. Our Haskell code uses immutable data structures; for example, the values of circuit variables and the contents of the RAM are stored in persistent maps (which means, in particular, that our representation of the RAM is sparse but slow). To implement the topological sort, we used a state monad. Monads also show up in the parser, written using the Parsec combinator library.
+
+This first version of the simulator was clearly not written with performance in mind. There are many simple optimizations we could have done, such as converting the identifiers into integers to avoid string comparisons during map lookup/insertion. However, our main goal was ensuring the clarity and correctness of our code; hence the use of pure functions and data structures, and the lack of tricks to speed up the code. 
+
+Last but not least, here's one interesting way Haskell's laziness is used. The simulation function runs the simulation until the input list runs out, or infinitely when the circuit has no input, producing a lazy list. To cut off the simulation after n steps, one can just take the prefix of length n of the list and throw away the rest, which will then never be evaluated.
+
+\end{document}

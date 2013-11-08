@@ -71,7 +71,7 @@ We used the Parsec parsing combinator library to write a parser for the netlist 
 
 \section{Performance considerations}
 
-This first version of the simulator is clearly not written with performance in mind. Some of the major issues are:
+This first version of the simulator was clearly not written with performance in mind. Some of the major issues are:
 \begin{itemize}
 \item Haskell's pervasive lazy evaluation comes with a performance hit. We try to mitigate that by forcing strict evaluation when computing the value of a variable in the circuit. (Indeed, the structure of the computation of a cycle is inherently static and sequential.)
 \item Operations on persistent maps are not as fast as those on arrays, especially when it comes to accessing multiple contiguous bits, where arrays have good memory locality.
