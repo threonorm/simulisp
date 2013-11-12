@@ -49,10 +49,13 @@ launchSimulation :: Program
                  -> Maybe [WireState]
                  -> Maybe (Array.Array Int Bool)
                  -> IO ()
-launchSimulation netlist maybeCycles maybeInputs maybeROM =
-  let results = iteratedSimulation netlist maybeInputs maybeROM in
-  mapM_ (putStrLn . formatOutputs)
-  . maybe id take maybeCycles $ results
+launchSimulation netlist maybeCycles maybeInputs maybeROM = do
+  case (maybeCycles, maybeInputs) of
+    (Just n, Just inp) | length inp < n ->
+      putStrLn $ "Warning: not enough inputs to last for " ++ show n ++ " cycles."
+    _ -> return ()
+  let results = iteratedSimulation netlist maybeInputs maybeROM
+  mapM_ (putStrLn . formatOutputs) . maybe id take maybeCycles $ results
 
 formatOutputs :: [(Ident, Value)] -> String
 formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
