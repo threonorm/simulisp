@@ -1,0 +1,12 @@
+* Remove any residual dependency on verification stuff
+* Replace old cruft by standard Haskell libraries
+  * IOBuffering -> s/noBuffering/hSetBuffering stdout NoBuffering/ (using System.IO)
+  * MyST -> Control.Monad.ST
+  * LavaDir -> useless ?
+  * LavaRandom -> System.Random
+* Investigate Ref, which uses unsafePerformIO
+* Use standard combinators instead of custom ones as much as possible
+  (e.g. s/(->-)/(>=>)/)
+* Use multi-parameter type classes + fundeps in Signal
+* Tweak Netlist so it outputs the format we want
+
