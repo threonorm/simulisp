@@ -1,0 +1,5 @@
+To get verification working (on Linux), set the variables Lava2000_SMV and Lava2000_Satzoo to point to the binaries of the respective provers.
+
+Also make sure that the scripts smv.wrapper and satzoo.wrapper are executable. These scripts are possibly located in
+
+  $HOME/.cabal/share/chalmers-lava2000-1.1.0/Scripts

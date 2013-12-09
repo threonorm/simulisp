@@ -1,0 +1,5 @@
+Install the package by running:
+
+  runghc Setup configure
+  runghc Setup build
+  runghc Setup install
