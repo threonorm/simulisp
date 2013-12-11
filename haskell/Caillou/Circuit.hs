@@ -128,10 +128,25 @@ instance Sequential NetlistGen Arg where
     where ereg (Avar v) = Ereg v
           ereg (Aconst c) = Earg (Aconst c)
 
+
+-- Beware! the final map of variables doesn't contain the inputs
+synthesizeBarebonesNetlist :: (a -> NetlistGen b) -> a
+                           -> (b, [Equation], Environment Ty)
+synthesizeBarebonesNetlist circuit inputs =
+  (out, ngsEqs finalState, ngsVars finalState)
+  where (out, finalState) = runState comp initState
+        (NetlistGen comp) = circuit inputs
+        initState = NGS { ngsCtr = 0, ngsEqs = [], ngsVars = Map.empty }
+
 -- Setting up the inputs and outputs is slightly awkward,
 -- but this is done only once
 -- Of course, we expect that both a and b
 -- are composite types built over the base type Arg
+
+-- example:
+-- synthesizeNetlistAST halfAdder (Avar "a", Avar "b")
+--                      ["a", "b"] (\(s, r) -> [("s", s), ("r", r)]) 
+          
 synthesizeNetlistAST :: (a -> NetlistGen b)   -- Circuit description written in the EDSL
                      -> a                     -- Input variables
                      -> [Ident]               -- List of variables which appear as inputs
@@ -140,14 +155,11 @@ synthesizeNetlistAST :: (a -> NetlistGen b)   -- Circuit description written in 
 synthesizeNetlistAST circuit inputs inputVarList outputVarFn =
   Pr { p_inputs  = inputVarList
      , p_outputs = outputVarList
-     , p_vars    = ngsVars finalState `Map.union`
-                   Map.fromList (zip (inputVarList ++ outputVarList) (repeat TBit))
-     , p_eqs     = ngsEqs finalState ++ outputPluggingEqs
+     , p_vars    = vars `Map.union` externalVars
+     , p_eqs     = eqs ++ outputPluggingEqs
      }
-  where (out, finalState) = runState comp initState
-        (NetlistGen comp) = circuit inputs
-        initState = NGS { ngsCtr = 0, ngsEqs = [], ngsVars = Map.empty }
-
+  where (out, eqs, vars) = synthesizeBarebonesNetlist circuit inputs
+        externalVars = Map.fromList $ zip (inputVarList ++ outputVarList) (repeat TBit)
         outputPlugging = outputVarFn out
         outputVarList = map fst outputPlugging
         outputPluggingEqs = map (second Earg) outputPlugging
