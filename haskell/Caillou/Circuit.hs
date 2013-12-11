@@ -15,9 +15,6 @@ import qualified Data.Map as Map
 -- there are currently 2 copies of NetlistAST
 import NetlistAST
 
-pairA :: (Applicative f) => (f a, f b) -> f (a, b)
-pairA (a, b) = (,) <$> a <*> b
-
 -- Require Applicative for convenience,
 -- since it is not a superclass of Monad by historical accident
 class (Applicative m, Monad m) => Circuit m s where
@@ -33,10 +30,9 @@ class (Applicative m, Monad m) => Circuit m s where
   -- default implementations for xor, etc.
   neg a = nand2 (a, a)
   xor2 (a,b) = (a -||- b) <&&> (neg =<< (a -&&- b))
-    -- and2 =<< pairA (or2 (a,b), neg =<< and2 (a, b))
   nand2 = neg <=< and2
   nor2  = neg <=< or2
-  mux3 (s, a, b) = (neg s <&&- a) <||> (s -&&- b)
+  mux3 (s, a, b) = (s -&&- a) <||> (neg s <&&- b)
 
 (-&&-), (-||-), (-^^-), (-~&-), (-~|-) :: (Circuit m s) => s -> s -> m s
 a -&&- b = and2  (a, b)
@@ -83,6 +79,7 @@ instance Circuit SimulateBoolFn Bool where
   neg   = return . not
   and2  = return . uncurry (&&)
   or2   = return . uncurry (||)
+  mux (s, a, b) = return $ if s then a else b
 
 -- perhaps use the more restrictive
 -- simulateCircuit :: (forall m s . (Circuit m s) => a -> m b) -> a -> b
