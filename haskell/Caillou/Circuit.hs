@@ -80,7 +80,7 @@ class (SequentialCircuit m s) => MemoryCircuit m s where
 -- Simple simulation of combinational circuits
 
 newtype SimulateBoolFn a = SBF (Identity a)
-                         deriving (Functor, Applicative, Monad, MonadFix)
+                         deriving (Functor, Applicative, Monad)
 
 instance Circuit SimulateBoolFn Bool where
   neg   = return . not
