@@ -21,27 +21,53 @@ pairA (a, b) = (,) <$> a <*> b
 -- Require Applicative for convenience,
 -- since it is not a superclass of Monad by historical accident
 class (Applicative m, Monad m) => Circuit m s where
-  neg   :: s     -> m s
+  neg  :: s     -> m s
+  mux3 :: (s, s, s) -> m s
   -- uncurried functions in traditional Lava style
   and2  :: (s,s) -> m s
   or2   :: (s,s) -> m s
   xor2  :: (s,s) -> m s
   nand2 :: (s,s) -> m s
   nor2  :: (s,s) -> m s
+  
   -- default implementations for xor, etc.
-  xor2 (a,b) = and2 =<< pairA (or2 (a,b), neg =<< and2 (a, b))
+  neg a = nand2 (a, a)
+  xor2 (a,b) = (a -||- b) <&&> (neg =<< (a -&&- b))
+    -- and2 =<< pairA (or2 (a,b), neg =<< and2 (a, b))
   nand2 = neg <=< and2
   nor2  = neg <=< or2
+  mux3 (s, a, b) = (neg s <&&- a) <||> (s -&&- b)
 
-(<&&>), (<||>), (<^^>), (<~&>), (<~|>) :: (Circuit m s) => s -> s -> m s
-a <&&> b = and2  (a, b)
-a <||> b = or2   (a, b)
-a <^^> b = xor2  (a, b)
-a <~&> b = nand2 (a, b)
-a <~|> b = nor2  (a, b)
+(-&&-), (-||-), (-^^-), (-~&-), (-~|-) :: (Circuit m s) => s -> s -> m s
+a -&&- b = and2  (a, b)
+a -||- b = or2   (a, b)
+a -^^- b = xor2  (a, b)
+a -~&- b = nand2 (a, b)
+a -~|- b = nor2  (a, b)
 
-  
-  
+-- Angle brackets suggest effects
+
+(<&&-), (<||-), (<^^-), (<~&-), (<~|-) :: (Circuit m s) => m s -> s -> m s
+a <&&- b = join $ (-&&-) <$> a <*> pure b
+a <||- b = join $ (-||-) <$> a <*> pure b
+a <^^- b = join $ (-^^-) <$> a <*> pure b
+a <~&- b = join $ (-~&-) <$> a <*> pure b
+a <~|- b = join $ (-~|-) <$> a <*> pure b
+
+(-&&>), (-||>), (-^^>), (-~&>), (-~|>) :: (Circuit m s) => s -> m s -> m s
+a -&&> b = join $ (-&&-) <$> pure a <*> b
+a -||> b = join $ (-||-) <$> pure a <*> b
+a -^^> b = join $ (-^^-) <$> pure a <*> b
+a -~&> b = join $ (-~&-) <$> pure a <*> b
+a -~|> b = join $ (-~|-) <$> pure a <*> b
+
+(<&&>), (<||>), (<^^>), (<~&>), (<~|>) :: (Circuit m s) => m s -> m s -> m s
+a <&&> b = join $ (-&&-) <$> a <*> b
+a <||> b = join $ (-||-) <$> a <*> b
+a <^^> b = join $ (-^^-) <$> a <*> b
+a <~&> b = join $ (-~&-) <$> a <*> b
+a <~|> b = join $ (-~|-) <$> a <*> b
+
 
 -- monadic fixpoint = loop in circuit
 class (Circuit m s, MonadFix m) => Sequential m s where
@@ -70,6 +96,7 @@ newtype NetlistGen a = NetlistGen (State NetlistGenState a)
                      deriving (Functor, Applicative, Monad, MonadFix,
                                MonadState NetlistGenState)
 
+-- we could use Writer instead of State for the equation list
 data NetlistGenState = NGS { ngsCtr  :: Int
                            , ngsEqs  :: [Equation]
                            , ngsVars :: Environment Ty
@@ -83,19 +110,20 @@ gensym = do n <- gets ngsCtr
 addEquation :: Equation -> NetlistGen ()
 addEquation e = modify (\s -> s { ngsEqs = e : (ngsEqs s) })
 
+makeWireWithExpr :: Exp -> NetlistGen Arg
+makeWireWithExpr expr = do
+  sym <- gensym
+  addEquation (sym, expr)
+  return $ Avar sym
 
 -- TODO : handle vars map !!!
 -- TODO : abstract this pattern with the gensym
 mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
-mkBinopGate binop = \(a, b) -> do
-  sym <- gensym
-  addEquation (sym, Ebinop binop a b)
-  return $ Avar sym
+mkBinopGate binop = \(a, b) -> makeWireWithExpr (Ebinop binop a b)
+
 
 instance Circuit NetlistGen Arg where
-  neg a = do sym <- gensym
-             addEquation (sym, Enot a)
-             return $ Avar sym
+  neg a = makeWireWithExpr (Enot a)
   and2  = mkBinopGate And
   or2   = mkBinopGate Or
   xor2  = mkBinopGate Xor
@@ -113,9 +141,7 @@ synthesizeNetlistAST circuit inputs =
 -- Test
 
 halfAdd :: (Circuit m s) => (s,s) -> m (s,s)
-halfAdd (a, b) = do s <- a <^^> b
-                    r <- a <&&> b
-                    return (s, r)
+halfAdd (a, b) = (,) <$> (a -^^- b) <*> (a -&&- b)
 
 
 
