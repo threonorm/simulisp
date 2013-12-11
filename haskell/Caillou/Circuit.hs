@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses, RecursiveDo #-}
 
 -- TODO : add lots of comments to make the code perfectly clear to the uninitiated
 
@@ -67,8 +67,9 @@ a <~|> b = join $ (-~|-) <$> a <*> b
 
 -- monadic fixpoint = loop in circuit
 class (Circuit m s, MonadFix m) => Sequential m s where
-  delay :: m s -- Register
+  delay :: s -> m s -- Register
 
+-- Add ROM/RAM class
 
 -- Simple simulation of combinational circuits
 
@@ -107,17 +108,15 @@ gensym = do n <- gets ngsCtr
 addEquation :: Equation -> NetlistGen ()
 addEquation e = modify (\s -> s { ngsEqs = e : (ngsEqs s) })
 
+-- TODO : handle vars map !!!
 makeWireWithExpr :: Exp -> NetlistGen Arg
 makeWireWithExpr expr = do
   sym <- gensym
   addEquation (sym, expr)
   return $ Avar sym
 
--- TODO : handle vars map !!!
--- TODO : abstract this pattern with the gensym
 mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
 mkBinopGate binop = \(a, b) -> makeWireWithExpr (Ebinop binop a b)
-
 
 instance Circuit NetlistGen Arg where
   neg a = makeWireWithExpr (Enot a)
@@ -125,6 +124,11 @@ instance Circuit NetlistGen Arg where
   or2   = mkBinopGate Or
   xor2  = mkBinopGate Xor
   nand2 = mkBinopGate Nand
+
+instance Sequential NetlistGen Arg where
+  delay a = makeWireWithExpr (ereg a)
+    where ereg (Avar v) = Ereg v
+          ereg (Aconst c) = Earg (Aconst c)
 
 
 -- TODO : allow setting output names
@@ -140,5 +144,9 @@ synthesizeNetlistAST circuit inputs =
 halfAdd :: (Circuit m s) => (s,s) -> m (s,s)
 halfAdd (a, b) = (,) <$> (a -^^- b) <*> (a -&&- b)
 
-
+andLoop :: (Sequential m s) => s -> m s
+andLoop inp = do rec out <- inp -&&- mem
+                     mem <- delay out
+                 return out
+                 
 
