@@ -105,14 +105,12 @@ gensym = do n <- gets ngsCtr
             modify (\s -> s { ngsCtr = n + 1 })
             return ("_l_" ++ show n)
 
-addEquation :: Equation -> NetlistGen ()
-addEquation e = modify (\s -> s { ngsEqs = e : (ngsEqs s) })
-
--- TODO : handle vars map !!!
 makeWireWithExpr :: Exp -> NetlistGen Arg
 makeWireWithExpr expr = do
   sym <- gensym
-  addEquation (sym, expr)
+  -- would be nicer with the Lens library
+  modify (\s -> s { ngsEqs  = (sym, expr) : (ngsEqs s)
+                  , ngsVars = Map.insert sym TBit $ ngsVars s })
   return $ Avar sym
 
 mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
@@ -130,14 +128,30 @@ instance Sequential NetlistGen Arg where
     where ereg (Avar v) = Ereg v
           ereg (Aconst c) = Earg (Aconst c)
 
+-- Setting up the inputs and outputs is slightly awkward,
+-- but this is done only once
+-- Of course, we expect that both a and b
+-- are composite types built over the base type Arg
+synthesizeNetlistAST :: (a -> NetlistGen b)   -- Circuit description written in the EDSL
+                     -> a                     -- Input variables
+                     -> [Ident]               -- List of variables which appear as inputs
+                     -> (b -> [(Ident, Arg)]) -- Explicit assignment of names to outputs
+                     -> Program
+synthesizeNetlistAST circuit inputs inputVarList outputVarFn =
+  Pr { p_inputs  = inputVarList
+     , p_outputs = outputVarList
+     , p_vars    = ngsVars finalState `Map.union`
+                   Map.fromList (zip (inputVarList ++ outputVarList) (repeat TBit))
+     , p_eqs     = ngsEqs finalState ++ outputPluggingEqs
+     }
+  where (out, finalState) = runState comp initState
+        (NetlistGen comp) = circuit inputs
+        initState = NGS { ngsCtr = 0, ngsEqs = [], ngsVars = Map.empty }
 
--- TODO : allow setting output names
-synthesizeNetlistAST circuit inputs =
-  let (NetlistGen comp) = circuit inputs in
-  (ngsEqs &&& ngsVars) . flip execState initState $ comp
-  where
-    initState = NGS { ngsCtr = 0, ngsEqs = [], ngsVars = Map.empty }
-  
+        outputPlugging = outputVarFn out
+        outputVarList = map fst outputPlugging
+        outputPluggingEqs = map (second Earg) outputPlugging
+      
 
 -- Test
 
