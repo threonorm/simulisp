@@ -65,9 +65,15 @@ a <~&> b = join $ (-~&-) <$> a <*> b
 a <~|> b = join $ (-~|-) <$> a <*> b
 
 
--- monadic fixpoint = loop in circuit
-class (Circuit m s, MonadFix m) => Sequential m s where
+-- Monadic fixpoint = loop in circuit
+class (Circuit m s, MonadFix m) => SequentialCircuit m s where
   delay :: s -> m s -- Register
+
+class (SequentialCircuit m s) => MemoryCircuit m s where
+  -- addr size, word size, read addr
+  accessROM :: Int -> Int -> [s] -> m [s]
+  -- addr size, word size, read addr, write enable, write addr, write data
+  accessRAM :: Int -> Int -> ([s], s, [s], [s]) -> m [s]
 
 -- Add ROM/RAM class
 
@@ -106,28 +112,65 @@ gensym = do n <- gets ngsCtr
             return ("_l_" ++ show n)
 
 makeWireWithExpr :: Exp -> NetlistGen Arg
-makeWireWithExpr expr = do
+makeWireWithExpr = makeWhateverWithExpr TBit
+
+-- Generally, any Arg value which is taken as input or returned as output
+-- by any circuit represents a single wire.
+-- This is enforced by encapsulation, not at the type-system level, since Args
+-- in the netlist language can be sheets of wires.
+-- The function below breaks this invariant: it is only for use in
+-- the definition of accessROM/accessRAM.
+
+makeWhateverWithExpr :: Ty -> Exp -> NetlistGen Arg
+makeWhateverWithExpr ty expr = do
   sym <- gensym
   -- would be nicer with the Lens library
   modify (\s -> s { ngsEqs  = (sym, expr) : (ngsEqs s)
-                  , ngsVars = Map.insert sym TBit $ ngsVars s })
+                  , ngsVars = Map.insert sym ty $ ngsVars s })
   return $ Avar sym
 
 mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
-mkBinopGate binop = \(a, b) -> makeWireWithExpr (Ebinop binop a b)
+mkBinopGate binop = \(a, b) -> makeWireWithExpr $ Ebinop binop a b
 
 instance Circuit NetlistGen Arg where
-  neg a = makeWireWithExpr (Enot a)
+  neg a = makeWireWithExpr $ Enot a
   and2  = mkBinopGate And
   or2   = mkBinopGate Or
   xor2  = mkBinopGate Xor
   nand2 = mkBinopGate Nand
+  mux3 (s, a, b) = makeWireWithExpr $ Emux s a b
 
-instance Sequential NetlistGen Arg where
+instance SequentialCircuit NetlistGen Arg where
   delay a = makeWireWithExpr (ereg a)
     where ereg (Avar v) = Ereg v
           ereg (Aconst c) = Earg (Aconst c)
 
+instance MemoryCircuit NetlistGen Arg where
+  accessROM addrSize wordSize readAddrList = do
+    readAddrArr <- listToArr readAddrList
+    wordArr <- makeWhateverWithExpr (TBitArray wordSize)
+               $ Erom addrSize wordSize readAddrArr
+    arrToList wordSize wordArr
+
+  accessRAM addrSize wordSize (readAddrList, writeEnable, writeAddrList, writeDataList) = do
+    readAddrArr  <- listToArr readAddrList
+    writeAddrArr <- listToArr writeAddrList
+    writeDataArr <- listToArr writeDataList
+    wordArr <- makeWhateverWithExpr (TBitArray wordSize)
+               $ Eram addrSize wordSize readAddrArr
+                      writeEnable writeAddrArr writeDataArr
+    arrToList wordSize wordArr
+  
+    
+listToArr :: [Arg] -> NetlistGen Arg
+listToArr []     = error "listToArr: Empty list"
+listToArr (x:xs) = foldM addWire x $ zip [2..] xs
+  where addWire ar (prefixSize, wire) =
+          makeWhateverWithExpr (TBitArray prefixSize) $ Econcat ar wire
+
+arrToList :: Int -> Arg -> NetlistGen [Arg]
+arrToList size ar = mapM select [0..(size - 1)]
+  where select i = makeWireWithExpr $ Eselect i ar
 
 -- Beware! the final map of variables doesn't contain the inputs
 synthesizeBarebonesNetlist :: (a -> NetlistGen b) -> a
@@ -170,7 +213,7 @@ synthesizeNetlistAST circuit inputs inputVarList outputVarFn =
 halfAdd :: (Circuit m s) => (s,s) -> m (s,s)
 halfAdd (a, b) = (,) <$> (a -^^- b) <*> (a -&&- b)
 
-andLoop :: (Sequential m s) => s -> m s
+andLoop :: (SequentialCircuit m s) => s -> m s
 andLoop inp = do rec out <- inp -&&- mem
                      mem <- delay out
                  return out
