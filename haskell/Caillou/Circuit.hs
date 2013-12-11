@@ -79,7 +79,7 @@ instance Circuit SimulateBoolFn Bool where
   neg   = return . not
   and2  = return . uncurry (&&)
   or2   = return . uncurry (||)
-  mux (s, a, b) = return $ if s then a else b
+  mux3 (s, a, b) = return $ if s then a else b
 
 -- perhaps use the more restrictive
 -- simulateCircuit :: (forall m s . (Circuit m s) => a -> m b) -> a -> b
