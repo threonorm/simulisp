@@ -35,8 +35,8 @@ newtype SimulateSeq a = SS (State SimSeqState a)
                       deriving (Functor, Applicative, Monad, MonadFix,
                                 MonadState SimSeqState)
 
-data SimSeqState = SSS { oldRegQueue :: [Bool]
-                       , newRegStack :: [Bool] }
+data SimSeqState = SSS { oldRegQueue :: Queue Bool
+                       , newRegStack :: Stack Bool }
 
 runSS :: SimulateSeq a -> SimSeqState -> (a, SimSeqState)
 runSS (SS x) = runState x
@@ -52,17 +52,31 @@ instance SequentialCircuit SimulateSeq Bool where
   delay newThis = do
     old <- gets oldRegQueue
     new <- gets newRegStack
-    let (oldThis:next) = old
-    put $ SSS { oldRegQueue = next, newRegStack = newThis:new }
+    let (oldThis, next) = dequeue old
+    put $ SSS { oldRegQueue = next, newRegStack = push newThis new }
     return oldThis
   
 simulateSeq :: (a -> SimulateSeq b) -> [a] -> [b]
-simulateSeq circuit = go (repeat False)
+simulateSeq circuit = go (Queue $ repeat False)
   where go _    []           = []
         go regQueue (input:next) =
           let (output, newSSS) =
                 runSS (circuit input) $ SSS { oldRegQueue = regQueue,
-                                              newRegStack = [] }
-              newRegQueue = reverse . newRegStack $ newSSS in
+                                              newRegStack = Stack [] }
+              newRegQueue = reverseSQ . newRegStack $ newSSS in
           output : go newRegQueue next
+
+-- Appendix: queue/stack as lists
+
+newtype Queue a = Queue [a]
+newtype Stack a = Stack [a]
+
+reverseSQ :: Stack a -> Queue a
+reverseSQ (Stack l) = Queue (reverse l)
+
+push :: a -> Stack a -> Stack a
+push a (Stack l) = Stack (a:l)
+
+dequeue :: Queue a -> (a, Queue a)
+dequeue (Queue (x:xs)) = (x, Queue xs)
 
