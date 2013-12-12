@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, RecursiveDo #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 -- TODO : add lots of comments to make the code perfectly clear to the uninitiated
 
@@ -65,21 +65,11 @@ a <~|> b = join $ (-~|-) <$> a <*> b
 class (Circuit m s, MonadFix m) => SequentialCircuit m s where
   delay :: s -> m s -- Register
 
+-- This class is perfectly modeled after the target netlist language
 class (SequentialCircuit m s) => MemoryCircuit m s where
   -- addr size, word size, read addr
   accessROM :: Int -> Int -> [s] -> m [s]
   -- addr size, word size, read addr, write enable, write addr, write data
   accessRAM :: Int -> Int -> ([s], s, [s], [s]) -> m [s]
 
-
--- Test
-
-halfAdd :: (Circuit m s) => (s,s) -> m (s,s)
-halfAdd (a, b) = (,) <$> (a -^^- b) <*> (a -&&- b)
-
-andLoop :: (SequentialCircuit m s) => s -> m s
-andLoop inp = do rec out <- inp -&&- mem
-                     mem <- delay out
-                 return out
-                 
 
