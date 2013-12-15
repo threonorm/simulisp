@@ -1,0 +1,35 @@
+I removed the tail-local stuff, whose only use is variadic functions.
+
+There are several different variants of SELF-EVALUATING-IMMEDIATE and
+SELF-EVALUATING-POINTER, for some reason... It's probably to allow
+people to assign them to different data types. Also, wtf is frob?
+
+LOCAL<lexical-address>                   Read local variable
+GLOBAL<symbol>                           Read global variable
+SET-LOCAL<lexical-address>               Write to local
+SELF-EVALUATING-IMMEDIATE<frob>          Immediate data
+SELF-EVALUATING-POINTER<frob>            Pointer data
+SYMBOL<frob>                             Symbol
+PROCEDURE<(script . documentation)>      (lambda (...) ...)
+CONDITIONAL<(consequent . alternative)>  (if *val* ... ...)
+SEQUENCE<(expression . rest)>            *val* := eval(expr); rest;
+GET-CONTROL-POINT<(variable-setter . rest)>  Non-local control??
+FIRST-ARGUMENT<(arg1 . rest)>            Start a procedure call
+NEXT-ARGUMENT<(arg . rest)>              Continue the list of args
+LAST-ARGUMENT<(arg . fun)>               Call the CDR on the list
+APPLY-1-ARG<(arg . fn)>                  Unary special case
+APPLY-NO-ARGS<(fn . ?)>                  No arguments special case
+SPREAD-ARGUMENT<(arg . fun)>             (apply f ...)
+CLOSURE<(script . display)>              A closure (duh!)
+CONTROL-POINT<state>                     A continuation??
+INTERRUPT-POINT<state>                   State to restore??
+{ lots of primitives... }
+
+Primitives:
+car, cdr, type, not-atom, zerop, sub1, add1,
+displacement-add1, apply-2, cons, eq, rplaca, rplacd, type!
+
+
+(Comment: "thus const = list*" ???)
+
+
