@@ -60,12 +60,44 @@ module Gc :
     let fetch_proc_cell (Data car, Proc cdr) = (car,cdr)          
   end
 
-module Eval =
-  struct
-      let expr = ref (Obj.magic () : word)
-      let value = ref (Obj.magic () : word)
-      let env = ref (Obj.magic () : word) 
-      let args = ref (Obj.magic () : word)
-      let stack = ref (Obj.magic () : word)        
-      
+module Eval : 
+  sig
+      val eval : unit -> unit 
+      val expr : ref word
+      val value : ref word 
+      val env : ref word
+      val args : ref word
+      val stack : ref word
   end
+   =
+  struct
+      let expr  = ref Obj.magic () 
+      let value = ref Obj.magic ()
+      let env   = ref Obj.magic () 
+      let args  = ref Obj.magic () 
+      let stack = ref Obj.magic () 
+      let rec walk_on_list a b flag  = function
+        | List(ptr) -> let (car,cdr) = Gc.fetch_cell ptr in
+                           if flag then 
+                              if b=0 then car
+                              else walk_on_list a (b-1) flag cdr
+                           else 
+                              if a=0 then walk_on_list a b true car
+                              else walk_on_list (a-1) b flag cdr
+                              
+        | _ -> assert(false)  
+
+      let eval () = match (!expr) with
+        | Nil          -> value := !expr
+        | Local(a,b)   -> value := walk_on_list a b (!env)   
+        | Symb(s)      -> value := !expr
+        | Closure(ptr) ->
+        | Cond(ptr)    ->
+        | List(ptr)    -> value := !expr
+        | Num(vint)    -> value := !expr
+        | Proc(ptr)    ->
+        | Call(ptr)    ->
+        | Quote(ptr)   -> 
+             
+  end
+
