@@ -62,5 +62,10 @@ module Gc :
 
 module Eval =
   struct
-     
+      let expr = ref (Obj.magic () : word)
+      let value = ref (Obj.magic () : word)
+      let env = ref (Obj.magic () : word) 
+      let args = ref (Obj.magic () : word)
+      let stack = ref (Obj.magic () : word)        
+      
   end
