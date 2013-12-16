@@ -132,7 +132,7 @@
 (defpc lookup-exp
   (if (&frame=0?)
       (progn (assign *display* (&car (fetch *display*)))
-             (go-to-count-displacement))
+             (go-to count-displacement))
       (progn (&decrement-frame)
              (assign *display* (&cdr (fetch *display*)))
              (go-to lookup-exp)))
