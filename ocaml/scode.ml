@@ -28,7 +28,11 @@ module Gc :
      val fetch_word : ptr -> dataword
      val fetch_cell : ptr -> dataword * dataword
      val fetch_proc_cell : ptr-> dataword*procword
+     val fetch_car : ptr -> dataword
+     val fetch_cdr : ptr -> dataword
+     val alloc_cons : dataword -> dataword -> ptr
   end
+
     =   
   struct 
     type ptr = word * word 
@@ -58,16 +62,19 @@ module Gc :
     let fetch_word (Data car,_) = car
     let fetch_cell (Data car, Data cdr) = (car, cdr) 
     let fetch_proc_cell (Data car, Proc cdr) = (car,cdr)          
+    let alloc_cons car cdr = (Data(car),Data(cdr))
+    let fetch_car = fetch_word
+    let fetch_cdr (_, Data cdr) = cdr    
   end
 
 module Eval : 
   sig
       val eval : unit -> unit 
-      val expr : ref word
-      val value : ref word 
-      val env : ref word
-      val args : ref word
-      val stack : ref word
+      val expr : ref dataword
+      val value : ref dataword 
+      val env : ref dataword
+      val args : ref dataword
+      val stack : ref dataword
   end
    =
   struct
@@ -86,18 +93,34 @@ module Eval :
                               else walk_on_list (a-1) b flag cdr
                               
         | _ -> assert(false)  
-
-      let eval () = match (!expr) with
-        | Nil          -> value := !expr
+      
+      let rec evaldata () = match (!expr) with
+        | Nil          -> value := !expr;
+        (*TODO: Dispatch on stack?*) 
         | Local(a,b)   -> value := walk_on_list a b (!env)   
-        | Symb(s)      -> value := !expr
-        | Closure(ptr) ->
-        | Cond(ptr)    ->
+        (*TODO: Dispatch on stack?*) 
+        | Symb(s)      -> value := !expr;
+        (*TODO: Dispatch on stack?*) 
+        | Closure(ptr) -> env   := List(
+                                  alloc_cons !args (snd (Gc.fetch_cell !expr))
+                                       );
+                          expr  := Gc.fetch_car (Gc.fetch_car ptr);
+                          eval()   
+        | Cond(ptr)    -> (
+                          if !value = Nill 
+                          then 
+                             expr := Gc.fetch_cdr ptr 
+                          else 
+                             expr := Gc.fetch_car ptr
+                          );
+                          eval ()
         | List(ptr)    -> value := !expr
+        (*TODO: Dispatch on stack?*) 
         | Num(vint)    -> value := !expr
-        | Proc(ptr)    ->
+        (*TODO: Dispatch on stack?*) 
+        | Proc(ptr)    -> value := Closure(alloc_cons (!exp) (!env)) ;
+        (*TODO: Dispatch on stack?*) 
         | Call(ptr)    ->
-        | Quote(ptr)   -> 
-             
+        | Quote(ptr)   -> failwith("No implementation"); 
   end
 
