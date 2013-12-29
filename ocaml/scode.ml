@@ -33,6 +33,7 @@ module Gc :
      type word = 
         | Nil
         | Local of int*int
+        | Global of string
         | Symb of string
         | Closure of ptr
         | Cond of ptr
@@ -56,11 +57,11 @@ module Gc :
 
     =   
   struct 
-    type ptr = Immediate of (word * word)
-             | GlobalRef of string
+    type ptr = word * word
     and word = 
         | Nil
         | Local of int*int
+        | Global of string
         | Symb of string
         | Closure of ptr
         | Cond of ptr
@@ -73,30 +74,21 @@ module Gc :
         | Sequence of ptr
         | Primitive of prim
 
-
     let global_mem = Hashtbl.create 42
 
-    let fetch_word = function
-      | Immediate (car,_) -> car
-      | GlobalRef _ -> failwith "not implemented"
-    let fetch_cell = function
-      | Immediate cell -> cell
-      | GlobalRef _ -> failwith "not implemented"
-    let alloc_cons car cdr = Immediate (car,cdr)
-    let alloc_word word = Immediate (word,Nil)
-    let fetch_car = function
-      | Immediate (car,_) -> car
-      | GlobalRef _ -> failwith "not implemented"
-    let fetch_cdr = function
-      | Immediate (cdr,_) -> cdr
-      | GlobalRef _ -> failwith "not implemented"
+    let fetch_word (car,_) = car
+    let fetch_cell (car, cdr) = (car, cdr)
+    let alloc_cons car cdr = ((car),(cdr))
+    let fetch_car = fetch_word
+    let fetch_cdr (_, cdr) = cdr 
+    let alloc_word word = (word,Nil)
 
     let assemble_and_load =
       (* mostly repetitive boilerplate code *)
       let rec assemble = function
         | Asm.Nil -> Nil
         | Asm.Local (n,m) -> Local (n,m)
-        | Asm.Global s -> failwith "réfléchir après"
+        | Asm.Global s -> Global s
         | Asm.Symb s -> Symb s
         | Asm.Cond (consequent, alternative) ->
             Cond (alloc_cons (assemble consequent) (assemble alternative))
