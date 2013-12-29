@@ -1,3 +1,4 @@
+
 (* We rely on OCaml's runtime to garbage collect for us*)
 module Gc : 
   sig
@@ -34,7 +35,8 @@ module Gc :
 
     =   
   struct 
-    type ptr = word * word 
+    type ptr = Immediate of (word * word)
+             | GlobalRef of string
     and word = 
         | Nil
         | Local of int*int
@@ -58,11 +60,19 @@ module Gc :
         | Zero 
         | Atom
         (*| Progn*)
-    let fetch_word (car,_) = car
-    let fetch_cell (car, cdr) = (car, cdr) 
-    let alloc_cons car cdr = ((car),(cdr))
-    let fetch_car = fetch_word
-    let fetch_cdr (_, cdr) = cdr    
+    let fetch_word = function
+      | Immediate (car,_) -> car
+      | GlobalRef _ -> failwith "not implemented"
+    let fetch_cell = function
+      | Immediate cell -> cell
+      | GlobalRef _ -> failwith "not implemented"
+    let alloc_cons car cdr = Immediate (car,cdr)
+    let fetch_car = function
+      | Immediate (car,_) -> car
+      | GlobalRef _ -> failwith "not implemented"
+    let fetch_cdr = function
+      | Immediate (cdr,_) -> cdr
+      | GlobalRef _ -> failwith "not implemented"
   end
 
 module Eval : 
@@ -158,7 +168,6 @@ module Eval :
                          if a=0 then value := Gc.Symb("T")
                          else value := Gc.Nil
               | Gc.Atom  -> assert(false)
-      
           end         
         | Gc.Sequence(ptr) -> value := Gc.Nil ;
                            let cdr = Gc.fetch_cdr ptr in
@@ -170,4 +179,12 @@ module Eval :
                            eval ();
         | Gc.Quote(ptr)   -> failwith("No implementation"); 
   end
+
+
+
+
+
+
+
+
 
