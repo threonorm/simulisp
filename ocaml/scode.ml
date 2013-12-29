@@ -1,3 +1,30 @@
+(* structured assembly in which to write s-code *)
+
+type prim = Car 
+          | Cdr 
+          | Cons
+          | Incr
+          | Decr
+          | Zero 
+          | Atom
+
+module Asm = struct
+
+  type asm = Nil
+           | Local of int * int
+           | Global of string
+           | Symb of string
+           | Cond of asm * asm
+           | List of asm * asm
+           | Num of int
+           | Proc of asm
+           | First of asm * asmargs
+           | Sequence of asm * asm
+  and asmargs = Next of asm * asmargs
+              | CallPrim of prim
+              | CallFun of asm
+          
+end
 
 (* We rely on OCaml's runtime to garbage collect for us*)
 module Gc : 
@@ -17,20 +44,14 @@ module Gc :
         | Next of ptr 
         | Sequence of ptr
         | Primitive of prim
-     and prim =
-        | Car 
-        | Cdr 
-        | Cons
-        | Incr
-        | Decr
-        | Zero 
-        | Atom
-       (* | Progn*)
+
      val fetch_word : ptr -> word
      val fetch_cell : ptr -> word * word
      val fetch_car : ptr -> word
      val fetch_cdr : ptr -> word
      val alloc_cons : word -> word -> ptr
+
+     val assemble_and_load : (string * Asm.asm) list -> unit
   end
 
     =   
@@ -51,15 +72,10 @@ module Gc :
         | Next of ptr 
         | Sequence of ptr
         | Primitive of prim
-    and prim = 
-        | Car 
-        | Cdr 
-        | Cons
-        | Incr
-        | Decr
-        | Zero 
-        | Atom
-        (*| Progn*)
+
+
+    let global_mem = Hashtbl.create 42
+
     let fetch_word = function
       | Immediate (car,_) -> car
       | GlobalRef _ -> failwith "not implemented"
@@ -67,12 +83,34 @@ module Gc :
       | Immediate cell -> cell
       | GlobalRef _ -> failwith "not implemented"
     let alloc_cons car cdr = Immediate (car,cdr)
+    let alloc_word word = Immediate (word,Nil)
     let fetch_car = function
       | Immediate (car,_) -> car
       | GlobalRef _ -> failwith "not implemented"
     let fetch_cdr = function
       | Immediate (cdr,_) -> cdr
       | GlobalRef _ -> failwith "not implemented"
+
+    let assemble_and_load =
+      (* mostly repetitive boilerplate code *)
+      let rec assemble = function
+        | Asm.Nil -> Nil
+        | Asm.Local (n,m) -> Local (n,m)
+        | Asm.Global s -> failwith "réfléchir après"
+        | Asm.Symb s -> Symb s
+        | Asm.Cond (consequent, alternative) ->
+            Cond (alloc_cons (assemble consequent) (assemble alternative))
+        | Asm.List (car, cdr) -> List (alloc_cons (assemble car) (assemble cdr))
+        | Asm.Num n -> Num n
+        | Asm.Proc asm -> Proc (alloc_word (assemble asm))
+        | Asm.First (arg1, rest) -> First (alloc_cons (assemble arg1) (assemble_args rest))
+        | Asm.Sequence (car, cdr) -> Sequence (alloc_cons (assemble car) (assemble cdr))
+      and assemble_args = function
+        | Asm.Next (arg, rest) -> Next (alloc_cons (assemble arg) (assemble_args rest))
+        | Asm.CallPrim prim -> Primitive prim
+        | Asm.CallFun asm -> assemble asm
+      in
+      List.iter (fun (str, asm) -> Hashtbl.add global_mem str (assemble asm))
   end
 
 module Eval : 
@@ -155,19 +193,19 @@ module Eval :
         | Gc.Primitive(prim) ->
           begin
             match prim with
-              | Gc.Car   -> value := Gc.fetch_car (get_ptr (!value))
-              | Gc.Cdr   -> value := Gc.fetch_cdr (get_ptr (!value))
-              | Gc.Cons  -> let (car,Gc.List cdr) = Gc.fetch_cell (get_ptr (!value)) in
+              | Car   -> value := Gc.fetch_car (get_ptr (!value))
+              | Cdr   -> value := Gc.fetch_cdr (get_ptr (!value))
+              | Cons  -> let (car,Gc.List cdr) = Gc.fetch_cell (get_ptr (!value)) in
                          let cadr= Gc.fetch_car cdr in
                          value := Gc.List(Gc.alloc_cons cadr car);
-              | Gc.Incr  -> let (Gc.Num a) = !value in
+              | Incr  -> let (Gc.Num a) = !value in
                          value := Gc.Num (a+1)
-              | Gc.Decr  -> let (Gc.Num a) = !value in
+              | Decr  -> let (Gc.Num a) = !value in
                          value := Gc.Num (a-1)
-              | Gc.Zero  -> let (Gc.Num a) = !value in
+              | Zero  -> let (Gc.Num a) = !value in
                          if a=0 then value := Gc.Symb("T")
                          else value := Gc.Nil
-              | Gc.Atom  -> assert(false)
+              | Atom  -> assert(false)
           end         
         | Gc.Sequence(ptr) -> value := Gc.Nil ;
                            let cdr = Gc.fetch_cdr ptr in
