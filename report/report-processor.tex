@@ -1,0 +1,110 @@
+\documentclass[a4paper, 11pt]{article}
+
+% Math symbols, notation, etc.
+% Apparently, must be loaded earlier than mathspec?
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+
+% Locale/encoding with XeTeX: UTF-8 by default, use fontspec
+\usepackage{unicode-math}
+\usepackage{polyglossia} % Modern replacement for Babel
+\setmainlanguage{english}
+\usepackage{csquotes} % guillemets
+\usepackage{listings}
+% Other
+\usepackage{fullpage}
+%\usepackage{enumerate}
+%\usepackage{graphicx}
+
+\begin{document}
+
+\title{Report on the processor design}
+\author{Nguyễn Lê Thành Dũng \and Thomas Bourgeat}
+
+\maketitle
+
+\section{A non-linear Lisp-like assembly language: S-code}
+
+We wanted to examine an assembly language suited for the compilation of
+functional languages. The instruction set had to provide first class support for
+ functions calls and closure constructions. This was a research topic in the
+80's in the MIT AI Lab which developed Lisp machines.   
+
+Among the different Lisp machines architectures, we were inspired by a family of particularly
+unusal ones, described in \cite{Steele} and \cite{truc}.
+
+In these architecture, the machine code is not a conventional list of
+instructions but instead a structured tree, called S-code. 
+
+
+The words are composed of :
+\begin{itemize}
+\item A four bits field which encodes a tag used to describe the type of the
+data/code. The is the equivalent of opcodes in classical processors.
+\item A data field on n bits which contains either immediate data or a pointer.
+\end{itemize}
+
+For example :
+
+\begin{lstlisting}\["clock", Sequence(First(Local(0,0),CallPrim(Isgt60)),
+   Cond(
+    First(Num(0),Next(First(Local(0,1),CallPrim(Incr)),CallFun(Global("clock")
+)   )   )   
+    ,   
+First(First(Local(0,0),CallPrim(Incr)),Next(Local(0,1),CallFun(Global("clock"))))
+ ))\]
+\end{lstlisting}
+
+
+You can see the complete grammar in the appendix.
+
+HOMOICONICITY
+
+
+\section{Global architecture}
+
+Basically, the goal of the architecture is to implement in hardware an S-Code
+interpreter. To do so, we first write an interpeter in OCaml in a state-machine
+style which we mechanically convert to a hardware state machine using a state
+counter and a combinational transition function.
+Actually, we will cheat by using lookup tables to compute the transitions and
+the control signals.
+
+The interpreter issues commands to a memory system which handles allocation of
+new words and cons cells. Morally the kind of memory needed for the interpreter
+is not a fixed array, but a heap on which we can allocate new words without
+worrying. Since the ram primitive we can use are actually fixed arrays, we need
+to create a hardware-level abstraction layer. First, we will neglect the need
+for a garbage collector even though it would be necessary for an indefinitely
+running clock.   
+
+
+\section{The issue of time synchronization}
+
+A big problem not particularly tied to our choice of architecture is the
+necessity to handle multiples clocks : the synchronous time of the circuit and
+the real time. That is, we need an instruction to align the execution of the
+clock program on the Unix time. Basically we quickly compute the time it will be
+at the next second, and we wait for this next second before printing the time.
+
+We added to our assembly languages: 
+\begin{itemize}
+\item Syn (Synchronize)
+\item Prm (Print minutes)
+\item Prs (Print seconds)
+\item Prh (Print hours)
+\end{itemize}
+
+\section{Netlist generation with a Haskell eDSL : Caillou }
+We develop a little language named Caillou (a reference to Lava, Magma was
+already taken by a CAS). It is a Domain Specific Language for writting netlist
+embedded in Haskell which compiles to the netlist language specified in the
+project. By doing so, we can use the power of full-fledged programming language
+with abstraction facilities and good tooling. 
+
+\section{Appendix}
+\bibliographystyle{alpha}
+\bibliography{biblio}
+
+\end{document}

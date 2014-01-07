@@ -5,8 +5,12 @@ type prim = Car
           | Cons
           | Incr
           | Decr
+          | Isgt60
           | Zero 
           | Atom
+          | Div60
+          | Mod60
+          | Mod24
 
 module Asm = struct
 
@@ -25,6 +29,14 @@ module Asm = struct
               | CallFun of asm
           
 end
+
+let clock =  ["clock", Sequence(First(Local(0,0),CallPrim(Isgt60)),
+   Cond(
+    First(Num(0),Next(First(Local(0,1),CallPrim(Incr)),CallFun(Global("clock")  )   )   )
+    ,
+First(First(Local(0,0),CallPrim(Incr)),Next(Local(0,1),CallFun(Global("clock"))))
+       ))]
+
 
 (* We rely on OCaml's runtime to garbage collect for us*)
 module Gc : 
@@ -70,12 +82,13 @@ module Gc :
         | Proc of ptr
         | Quote of ptr 
         | First of ptr
-        | Next of ptr 
+        | Next of ptr
         | Sequence of ptr
         | Primitive of prim
 
     let global_mem = Hashtbl.create 42
-
+    
+    let get_global = Hashtbl.find global_mem
     let fetch_word (car,_) = car
     let fetch_cell (car, cdr) = (car, cdr)
     let alloc_cons car cdr = ((car),(cdr))
@@ -147,6 +160,7 @@ module Eval :
       let rec eval () = match (!expr) with
         | Gc.Nil          -> value := !expr;
         | Gc.Local(a,b)   -> value := walk_on_list a b false (!env)   
+        | Gc.Global s     -> value := get_global s
         | Gc.Symb(s)      -> value := !expr;
         | Gc.Closure(ptr) -> env   := Gc.List(
                                   Gc.alloc_cons !args (snd (Gc.fetch_cell ptr))
@@ -163,7 +177,8 @@ module Eval :
                           eval ()
         | Gc.List(ptr)    -> value := !expr
         | Gc.Num(vint)    -> value := !expr
-        | Gc.Proc(ptr)    -> value := Gc.Closure(Gc.alloc_cons (!expr) (!env)) 
+        | Gc.Proc(ptr)    -> value := Gc.Closure(Gc.alloc_cons (!expr) (!env));
+          
         
         | Gc.First(ptr)   -> let blah = !env 
                           and blup = Gc.fetch_cdr (ptr) in
@@ -181,7 +196,7 @@ module Eval :
                           env  := blah ;
                           args := Gc.List(Gc.alloc_cons (!value) (!args)); 
                           eval ()
-        
+         
         | Gc.Primitive(prim) ->
           begin
             match prim with
