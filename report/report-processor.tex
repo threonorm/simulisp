@@ -1,11 +1,5 @@
 \documentclass[a4paper, 11pt]{article}
 
-% Math symbols, notation, etc.
-% Apparently, must be loaded earlier than mathspec?
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{stmaryrd}
-
 % Locale/encoding with XeTeX: UTF-8 by default, use fontspec
 \usepackage{unicode-math}
 \usepackage{polyglossia} % Modern replacement for Babel
@@ -26,85 +20,59 @@
 
 \section{A non-linear Lisp-like assembly language: S-code}
 
-We wanted to examine an assembly language suited for the compilation of
-functional languages. The instruction set had to provide first class support for
- functions calls and closure constructions. This was a research topic in the
-80's in the MIT AI Lab which developed Lisp machines.   
+We wanted our machine language to be suited for the compilation of functional programming languages; that is, its instruction set would provide first class support for functions calls and closures. To design such a language, we looked up the research done at the MIT AI Lab in the 70's on Lisp Machines. Among the different architectures they had developed, we were directly inspired by a family of particularly unusal ones, described in \cite{SIMPLE} and \cite{SCHEME-79}.
 
-Among the different Lisp machines architectures, we were inspired by a family of particularly
-unusal ones, described in \cite{Steele} and \cite{truc}.
+In these architectures, the machine code is not a conventional ordered array of instructions but instead a structured tree, called S-code for its close resemblance to the S-expressions which constitute Lisp programs. Indeed, the main idea is that since Lisp, like assembly, is \emph{homoiconic} (that is, code in this language is made of the primitive data structures of the language), it could serve as a kind of \enquote{high-level assembly} for a stored-program computer.
 
-In these architecture, the machine code is not a conventional list of
-instructions but instead a structured tree, called S-code. 
-
-
-The words are composed of :
+More precisely, in our architecture, the raw material from which both code and data is built is:
 \begin{itemize}
-\item A four bits field which encodes a tag used to describe the type of the
-data/code. The is the equivalent of opcodes in classical processors.
-\item A data field on n bits which contains either immediate data or a pointer.
+\item \emph{machine words}, which consist of
+  \begin{itemize}
+  \item A field which encodes a tag used to describe the type of the data. When interpreted as code, this is analogous to an opcode in classical processors.
+  \item A data field which contains either immediate data or a pointer.
+  \end{itemize}
+\item \emph{cons cells}, which are pairs of words
 \end{itemize}
+Linking cons cells together with pointers gives rise to syntax trees.
 
-For example :
-
-\begin{lstlisting}\["clock", Sequence(First(Local(0,0),CallPrim(Isgt60)),
-   Cond(
-    First(Num(0),Next(First(Local(0,1),CallPrim(Incr)),CallFun(Global("clock")
-)   )   )   
-    ,   
-First(First(Local(0,0),CallPrim(Incr)),Next(Local(0,1),CallFun(Global("clock"))))
- ))\]
+For example, the following is a representation as an OCaml data structure of a S-code program which computes 21 + 21 = the answer to the universe:
+\lstset{basicstyle=\small\ttfamily,language=Caml}
+\begin{lstlisting}
+["main",
+  First(Num(21),Next(Num(21),CallFun(Global("add")))) ;
+ "add",
+ Sequence(First(Local(0,0),CallPrim(Zero)),
+          Cond(Local(0,1),
+               First(First(Local(0,1),CallPrim(Incr)),
+                     Next(First(Local(0,0),CallPrim(Decr)),
+                          CallFun(Global("add"))))))
+]
 \end{lstlisting}
+(this example actually works on our interpreter).
+
+The grammar of the S-code is not finalized yet.
 
 
-You can see the complete grammar in the appendix.
+\section{Global architecture of the microprocessor}
 
-HOMOICONICITY
+Basically, the goal of the architecture is to implement in hardware an S-code interpreter. To do so, we first wrote an interpeter in OCaml in an imperative, state-machine style using global variables. Our next goal will be to mechanically convert this interpreter to a hardware state machine using a state counter and a combinational transition function, and global registers. (Actually, we intend to \enquote{cheat} by using lookup tables to compute the transitions and the control signals. In addition to making the implementation easier, it should lead to better performance.)
 
-
-\section{Global architecture}
-
-Basically, the goal of the architecture is to implement in hardware an S-Code
-interpreter. To do so, we first write an interpeter in OCaml in a state-machine
-style which we mechanically convert to a hardware state machine using a state
-counter and a combinational transition function.
-Actually, we will cheat by using lookup tables to compute the transitions and
-the control signals.
-
-The interpreter issues commands to a memory system which handles allocation of
-new words and cons cells. Morally the kind of memory needed for the interpreter
-is not a fixed array, but a heap on which we can allocate new words without
-worrying. Since the ram primitive we can use are actually fixed arrays, we need
-to create a hardware-level abstraction layer. First, we will neglect the need
-for a garbage collector even though it would be necessary for an indefinitely
-running clock.   
+The interpreter issues commands to a memory system which handles the allocation of new words and cons cells, and the dereferencing of pointers. Morally, the kind of memory needed for the interpreter is an unordered heap on which we can allocate new words without worrying. Since the primitive we can use in our netlist is actually a fixed-size RAM array, we need to create a hardware-level abstraction layer. For our purposes, a RAM chip with a counter pointing towards the next free cell is enough. Even though we won't implement a mark-and-sweep algorithm in hardware (as is done in \cite{SCHEME-79}), we do intend to make sure our clock will be theoretically able to run indefinitely.
 
 
 \section{The issue of time synchronization}
 
-A big problem not particularly tied to our choice of architecture is the
-necessity to handle multiples clocks : the synchronous time of the circuit and
-the real time. That is, we need an instruction to align the execution of the
-clock program on the Unix time. Basically we quickly compute the time it will be
-at the next second, and we wait for this next second before printing the time.
+A big problem not particularly tied to our choice of architecture is the necessity to handle multiple clocks : the synchronous clock of the circuit, and the real time on which we need to align the execution of the digital watch program.
 
-We added to our assembly languages: 
-\begin{itemize}
-\item Syn (Synchronize)
-\item Prm (Print minutes)
-\item Prs (Print seconds)
-\item Prh (Print hours)
-\end{itemize}
+In our assembly language, this function is fullfilled by a \enquote{sync} instruction which tells the simulator to pause, and resume executing at the next second. Basically, after computing the time it will be at the next second, the program will wait for it before printing the time and then looping.
 
-\section{Netlist generation with a Haskell eDSL : Caillou }
-We develop a little language named Caillou (a reference to Lava, Magma was
-already taken by a CAS). It is a Domain Specific Language for writting netlist
-embedded in Haskell which compiles to the netlist language specified in the
-project. By doing so, we can use the power of full-fledged programming language
-with abstraction facilities and good tooling. 
 
-\section{Appendix}
-\bibliographystyle{alpha}
+\section{Netlist generation with a Haskell eDSL: Caillou }
+
+We developed a little language named Caillou (a reference to Lava, Magma was already taken by a computer algebra system). It is a domain specific language for writing circuits, embedded in Haskell, which compiles to the netlist language specified in the project. Using this language gives us the power of a full-fledged programming language with abstraction facilities and good tooling (whereas MiniJazz doesn't even have an Emacs mode!).
+
+
+\bibliographystyle{plain}
 \bibliography{biblio}
 
 \end{document}
