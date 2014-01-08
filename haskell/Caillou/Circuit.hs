@@ -14,6 +14,8 @@ import Control.Monad.Fix
 -- Require Applicative for convenience,
 -- since it is not a superclass of Monad by historical accident
 class (Applicative m, Monad m) => Circuit m s where
+  zero :: m s
+  one :: m s
   neg  :: s     -> m s
   mux3 :: (s, s, s) -> m s
   -- uncurried functions in traditional Lava style
@@ -22,7 +24,7 @@ class (Applicative m, Monad m) => Circuit m s where
   xor2  :: (s,s) -> m s
   nand2 :: (s,s) -> m s
   nor2  :: (s,s) -> m s
-  
+    
   -- default implementations for xor, etc.
   neg a = nand2 (a, a)
   xor2 (a,b) = (a -||- b) <&&> (neg =<< (a -&&- b))
