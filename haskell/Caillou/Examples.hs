@@ -19,7 +19,7 @@ orLoop inp = do rec out <- inp -||- mem
                     mem <- delay out
                 return out
 
-bigMux a b c = zipWithM (mux3 a) b c
+bigMux a b c = zipWithM (\y z -> mux3 (a,y,z)) b c
 
 andAll :: (SequentialCircuit m s) => [s] -> m s
 --TODO : Check the code generated
