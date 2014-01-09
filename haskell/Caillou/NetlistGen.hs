@@ -50,6 +50,8 @@ mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
 mkBinopGate binop = \(a, b) -> makeWireWithExpr $ Ebinop binop a b
 
 instance Circuit NetlistGen Arg where
+  one = makeWireWithExpr $ Earg (Aconst (VBit True)) 
+  zero = makeWireWithExpr $ Earg (Aconst (VBit False)) 
   neg a = makeWireWithExpr $ Enot a
   and2  = mkBinopGate And
   or2   = mkBinopGate Or

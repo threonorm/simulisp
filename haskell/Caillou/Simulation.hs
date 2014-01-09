@@ -15,6 +15,8 @@ newtype SimulateBoolFn a = SBF (Identity a)
                          deriving (Functor, Applicative, Monad)
 
 instance Circuit SimulateBoolFn Bool where
+  one = return True
+  zero = return False
   neg   = return . not
   and2  = return . uncurry (&&)
   or2   = return . uncurry (||)
@@ -43,6 +45,8 @@ runSS (SS x) = runState x
 
 
 instance Circuit SimulateSeq Bool where
+  one = return True
+  zero = return False
   neg   = return . not
   and2  = return . uncurry (&&)
   or2   = return . uncurry (||)

@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, RecursiveDo #-}
+{-# LANGUAGE MultiParamTypeClasses, DoRec #-}
 
 module Arithmetic where
 
