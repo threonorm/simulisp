@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, DoRec #-}
 
-module Examples where
+module Processor where
 
 import Control.Applicative
 import Control.Monad
@@ -19,22 +19,36 @@ processor =
   do rec wireZero <- zero
          wireOne <- one
          controlSignals  <- control regBus
-         regBus <- register (take 3 controlSignals) 
-                            (head . drop 3 $ controlSignals)   
-                            (take 3 . drop 4 $ controlSignals)
-                            (regIn)
-         regIn <-bigMux (head.drop 7 $ controlSignals) regBus gcOut  
+         regIn <- bigMux (head.drop 7 $ controlSignals) regBus gcOut  
          gcOut <- memorySystem (take 2 .drop 8 $ controlSignals)
                                regBus
+                               temporaries
          temporaries <- accessRAM 0 wordS ([],
                                            head.drop 10 $ controlSignals,
                                            [],
                                            regIn) 
+         miniAlu <- incrOrDecr (head.drop 11 $ controlSignals) (drop (wordS - addrS) gcOut)
+         regBus <- bigMux (controlSignals !! 12) miniAlu =<< 
+                            register (take 3 controlSignals) 
+                                     (head . drop 3 $ controlSignals)   
+                                     (take 3 . drop 4 $ controlSignals)
+                                     regIn     
      return controlSignals 
 
 
-memorySystem :: (MemoryCircuit m s) => [s] -> [s] -> m [s]  
-memorySystem = undefined 
+memorySystem :: (MemoryCircuit m s) => [s] -> [s] -> [s] -> m [s]  
+memorySystem opCode regBus temporary=
+  do rec wireZero <- zero
+         let alloc = opCode !! 1
+         newcounter <- mapM delay =<< fst <$> adder (alloc, zip (repeat wireZero)  newcounter)   
+         programMem <- accessROM (addrS-1) (2*wordS) $ drop (wordS-addrS +1) regBus
+         dataMem <- ram (drop (wordS-addrS+1) regBus) alloc newcounter (regBus++temporary)
+         cons <- bigMux (regBus!!(wordS-addrS)) programMem dataMem 
+     let car = take wordS cons
+         cdr = drop wordS cons
+     bigMux (head opCode) car cdr  
+
+
  
 bigMux :: (Circuit m s) => s -> [s] -> [s] -> m [s]
 bigMux a b c = zipWithM (\y z -> mux3 (a,y,z)) b c
@@ -67,17 +81,13 @@ incrOrDecr bitChoice (t:q) =
 
 ram :: (MemoryCircuit m s) => [s] -> s -> [s] -> [s] -> m [s]
 ram addR flagW addW dataW = 
-    accessRAM addrS wordS (addR,flagW,addW,dataW)
+    accessRAM addrS (2*wordS) (addR,flagW,addW,dataW)
 
 
 register :: (MemoryCircuit m s) => [s] -> s -> [s] -> [s] -> m [s]
 register addR flagW addW dataW = 
     accessRAM 3 wordS (addR,flagW,addW,dataW) 
 
-goTo :: (MemoryCircuit m s) => [s] -> m [s]
-goTo ptr = 
-    do z <- zero
-       ram ptr z [] []    
 
 control :: (MemoryCircuit m s) =>  [s] ->  m [s]
 control regBus = 
