@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
 
 -- TODO : add lots of comments to make the code perfectly clear to the uninitiated
 
@@ -13,7 +13,7 @@ import Control.Monad.Fix
 
 -- Require Applicative for convenience,
 -- since it is not a superclass of Monad by historical accident
-class (Applicative m, Monad m) => Circuit m s where
+class (Applicative m, Monad m) => Circuit m s |m -> s where
   zero :: m s
   one :: m s
   neg  :: s     -> m s

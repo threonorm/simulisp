@@ -19,31 +19,6 @@ orLoop inp = do rec out <- inp -||- mem
                     mem <- delay out
                 return out
 
-bigMux a b c = zipWithM (\y z -> mux3 (a,y,z)) b c
-
-andAll :: (SequentialCircuit m s) => [s] -> m s
---TODO : Check the code generated
--- /!\ we can improve with a dichotomy
-andAll  [a] = do return a           
-andAll (t:q) = do rec out <- t -&&> andAll q
-                  return out 
- 
---decr :: (SequentialCircuit m s) => [s] -> m [s]
---incr :: (SequentialCircuit m s) => [s] -> m [s]
---TODO
-
-
-
-
-ram :: (MemoryCircuit m s) => [s]-> s-> [s] -> [s] ->m [s]
-ram addR flagW addW dataW =
-    accessRAM addrS wordS (addR,flagW,addW,dataW)
-
-
-goTo :: (MemoryCircuit m s) => [s] -> m [s]
-goTo ptr = 
-    do z <- zero
-       ram ptr z [] []    
 
  
                  
