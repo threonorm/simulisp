@@ -6,11 +6,10 @@ type prim = Car
           | Incr
           | Decr
           | Isgt60
-          | Zero 
-          | Atom
-          | Div60
-          | Mod60
-          | Mod24
+          | IsZero 
+          | PrintSec
+          | PrintMin
+          | PrintHour
 
 module Asm = struct
 
@@ -23,7 +22,9 @@ module Asm = struct
            | Num of int
            | Proc of asm
            | First of asm * asmargs
+           | Let of asm * asm
            | Sequence of asm * asm
+           | Sync of asm
   and asmargs = Next of asm * asmargs
               | CallPrim of prim
               | CallFun of asm
@@ -33,7 +34,7 @@ end
 (* We rely on OCaml's runtime to garbage collect for us*)
 module Gc : 
   sig
-     type ptr = word * word
+     type ptr
      and word = 
         | Nil
         | Local of int*int
@@ -48,7 +49,9 @@ module Gc :
         | Next of ptr
         | Last of ptr
         | ApplyOneArg of ptr 
+        | Let of ptr
         | Sequence of ptr
+        | Sync of ptr
         | Primitive of prim
         | ReturnTag of (unit -> unit) * ptr
 
@@ -79,7 +82,9 @@ module Gc :
         | Next of ptr
         | Last of ptr
         | ApplyOneArg of ptr
+        | Let of ptr
         | Sequence of ptr
+        | Sync of ptr
         | Primitive of prim
         | ReturnTag of (unit -> unit) * ptr
 
@@ -113,7 +118,9 @@ module Gc :
                 | _->  (*Case apply one arg*)
                  ApplyOneArg(alloc_cons (assemble arg1) (assemble_args rest))
             end
+        | Asm.Let (car, cdr) -> Let (alloc_cons (assemble car) (assemble cdr))
         | Asm.Sequence (car, cdr) -> Sequence (alloc_cons (assemble car) (assemble cdr))
+        | Asm.Sync asm -> Sync (alloc_word (assemble asm))
       and assemble_args = function
         | Asm.Next (arg, rest) -> 
           begin
@@ -172,6 +179,8 @@ module Eval :
       | Gc.Last( ptr) 
       | Gc.ApplyOneArg(ptr)
       | Gc.Sequence( ptr) 
+      | Gc.Sync( ptr) 
+      | Gc.Let(ptr) -> ptr
       | Gc.ReturnTag(_, ptr) -> ptr
       | _ -> assert(false)
     
@@ -218,10 +227,14 @@ module Eval :
       | Gc.Last(ptr)        -> push !args;
                                save_cdr_and_eval_car return_last
       | Gc.ApplyOneArg(ptr) -> save_cdr_and_eval_car return_apply1
+      | Gc.Let(ptr)         -> save_cdr_and_eval_car return_let
 
       | Gc.Primitive(prim) -> self_evaluating ()
       | Gc.Sequence(ptr) -> value := Gc.Nil;
                             save_cdr_and_eval_car return_sequence
+      | Gc.Sync(ptr) -> expr := Gc.fetch_word ptr;
+                        print_endline "new second";
+                        eval ()
 
     and apply () = match !value with
       | Gc.Closure(ptr) ->  env   := Gc.List(
@@ -232,19 +245,34 @@ module Eval :
       | Gc.Primitive(prim) -> let lastarg= Gc.fetch_car (get_ptr !args) in
         begin
           match prim with
-            | Car   -> return_value (Gc.fetch_car (get_ptr lastarg))
-            | Cdr   -> return_value (Gc.fetch_cdr (get_ptr lastarg))
-            | Cons  -> let (car,Gc.List cdr) = Gc.fetch_cell (get_ptr !args) in
-                       let cadr= Gc.fetch_car cdr in
-                       return_value (Gc.List(Gc.alloc_cons cadr car))
-            | Incr  -> let (Gc.Num a) = lastarg in 
-                       return_value (Gc.Num (a+1))
-            | Decr  -> let (Gc.Num a) = lastarg in
-                       return_value (Gc.Num (a-1))
-            | Zero  -> let (Gc.Num a) = lastarg in
-                       if a=0 then return_value( Gc.Symb("T") )
-                       else return_value Gc.Nil
-            | Atom  -> assert(false)
+            | Car  -> return_value (Gc.fetch_car (get_ptr lastarg))
+            | Cdr  -> return_value (Gc.fetch_cdr (get_ptr lastarg))
+            | Cons -> let (car,Gc.List cdr) = Gc.fetch_cell (get_ptr !args) in
+                      let cadr= Gc.fetch_car cdr in
+                      return_value (Gc.List(Gc.alloc_cons cadr car))
+            | Incr -> let (Gc.Num a) = lastarg in 
+                      return_value (Gc.Num (a+1))
+            | Decr -> let (Gc.Num a) = lastarg in
+                      return_value (Gc.Num (a-1))
+            | IsZero -> let (Gc.Num a) = lastarg in
+                        if a=0 then return_value( Gc.Symb("T") )
+                        else return_value Gc.Nil
+            | Isgt60 -> let (Gc.Num a) = lastarg in
+                        if a>=60 then return_value( Gc.Symb("T") )
+                        else return_value Gc.Nil
+            (* | PseudoMod60 -> let (Gc.Num a) = lastarg in *)
+            (*                  if a >= 60 then a - 60 else a *)
+            (* | PseudoMod24 -> let (Gc.Num a) = lastarg in *)
+            (*                  if a >= 24 then a - 24 else a *)
+            | PrintSec -> let (Gc.Num a) = lastarg in
+                          Printf.printf "seconds: %d\n" a;
+                          dispatch_on_stack ()
+            | PrintMin -> let (Gc.Num a) = lastarg in
+                          Printf.printf "minutes: %d\n" a;
+                          dispatch_on_stack ()
+            | PrintHour -> let (Gc.Num a) = lastarg in
+                           Printf.printf "hours: %d\n" a;
+                           dispatch_on_stack ()
         end           
       | _-> env := Gc.List( 
                 Gc.alloc_cons !args Gc.Nil);
@@ -279,6 +307,11 @@ module Eval :
       args := Gc.List(Gc.alloc_cons !value Gc.Nil);
       push_with_return !args return_apply;
       eval ()
+    and return_let () =
+      standard_restore ();
+      env := Gc.List(Gc.alloc_cons (Gc.List (Gc.alloc_cons !value Gc.Nil))
+                                   !env);
+      eval ()
     and return_sequence () =
       standard_restore ();
       eval ()
@@ -297,7 +330,7 @@ let add = [
   "main",
   First(Num(21),Next(Num(21),CallFun(Global("add")))) ;
   "add",
-  Sequence(First(Local(0,0),CallPrim(Zero)),
+  Sequence(First(Local(0,0),CallPrim(IsZero)),
            Cond(Local(0,1),
                 First(First(Local(0,1),CallPrim(Incr)),
                       Next(First(Local(0,0),CallPrim(Decr)),
@@ -314,21 +347,30 @@ match Eval.get_val_num () with
     | Some a -> print_int(a);;
 *)
 
-
 let clock = [
   "clock",
-  Sequence(First(Local(0,0),CallPrim(Isgt60)),
-           Cond(
-             First(Num(0),
-                   Next(First(Local(0,1),CallPrim(Incr)),
-                        CallFun(Global("clock")))),
-             First(First(Local(0,0),CallPrim(Incr)),
-                   Next(Local(0,1),
-                        CallFun(Global("clock"))))))
-]
+  Sequence(First(Local(0,1),CallPrim(PrintMin)),
+  Sequence(First(Local(0,0),CallPrim(PrintSec)),
+           Let(First(Local(0,0),CallPrim(Incr)),
+               (* (0,0) n'est plus le même ! *)
+               Sequence(First(Local(0,0),CallPrim(Isgt60)),
+                        Cond(
+                          Sync(
+                            First(First(Local(1,1),CallPrim(Incr)),
+                                  Next(Num(0),
+                                       CallFun(Global("clock"))))),
+                          Sync(
+                            First(Local(1,1),
+                                  Next(Local(0,0),
+                                       CallFun(Global("clock"))))))))));
+  "main",
+  First(Num(0),Next(Num(0),CallFun(Global("clock"))))
+];;
 
-
-
-
+Gc.assemble_and_load clock;;
+Eval.execute_main ();;
+match Eval.get_val_num () with
+    | None -> print_endline("Error")  
+    | Some a -> print_int(a);;
 
 
