@@ -135,7 +135,7 @@ registerArray controlSignals regIn =
 -- The microprogram is stored in a ROM, the function of the hardware
 -- plumbing here is to handle state transitions
 
-control :: (MemoryCircuit m s) => TagField s ->  m (ControlSignals s)
+control :: (MemoryCircuit m s) => TagField s -> m (ControlSignals s)
 control (TagField tag) =
   do wireZero <- zero
      let initialStateForTag = [wireZero] ++ tag

@@ -1,0 +1,25 @@
+Despite having made a lot of progress, there's still tons of work to do!
+
+* Update README
+
+* In the simulator:
+  * handle (and allow loading) multiple ROMs
+  * handle RAMs correctly (it should map addresses to words and not bits,
+    i.e. should be of type Environment (IntMap [Bool])
+  * cleanup code, and prettify (using stylish-haskell?).
+    the code should always be clean before committing!
+  * synchronize with real-time clock
+  * display time
+
+* In the processor (hardware-level)
+  * add special-purpose operations (mod60, etc.) in ALU (use LUT ROM)
+    + corresponding control signals
+  * handle output signals for synchronization + display
+  * tweak parameters to fit requirements from the microprogram
+
+* Microcode-level:
+  * Code a microassembler (Haskell EDSL?)
+  * Write microprogram
+  * ???
+  * Profit!
+
