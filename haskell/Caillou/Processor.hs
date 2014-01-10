@@ -12,14 +12,14 @@ import Patterns
 
 -- Size constants
 
-wordS, dataS, tagS, microInstrS, microAddrS :: Int
+cellS, wordS, dataS, tagS, microInstrS, microAddrS :: Int
 
 tagS  = 4
 dataS = 20
 wordS = tagS + dataS
 cellS = 2 * wordS
 microInstrS = 16
-microAddrS = 8
+microAddrS = 12
 -- also: number of registers = 2^3
 
 -- Word handling (with some strong typing)
@@ -107,16 +107,21 @@ registerArray controlSignals regIn =
                        regIn) 
 
 control :: (MemoryCircuit m s) => TagField s ->  m (ControlSignals s)
-control (TagField regOutTag) = 
-  do rec microInstruction <- accessROM microAddrS microInstrS mpc
-         let (jump:dispatchOnTag:_) = microInstruction
-         internIncr <- incrementer mpc
+control (TagField tag) =
+  do wireZero <- zero
+     let initialStateForTag = [wireZero] ++ tag
+                              ++ replicate (microAddrS - tagS - 1) wireZero
+     rec microInstruction <- accessROM microAddrS microInstrS mpc
+         let (jump:dispatchOnTag:suffix) = microInstruction
+         nextAddr <- incrementer mpc
          -- maybe replace by a mux between 3 alternatives ?
-         newMpc <- bigDoubleMux (take 2 microInstruction)
-                                internIncr
-                                (take microAddrS . drop 2 $ microInstruction)
-                                regOutTag
-                                regOutTag
          mpc <- mapM delay newMpc
-     return $ decodeMicroInstruction microInstruction
+         newMpc <- bigDoubleMux [jump, dispatchOnTag]
+                                nextAddr
+                                (take microAddrS suffix)
+                                initialStateForTag
+                                initialStateForTag
+     notJump <- neg jump
+     neutralized <- mapM (notJump -&&-) microInstruction
+     return $ decodeMicroInstruction neutralized
 
