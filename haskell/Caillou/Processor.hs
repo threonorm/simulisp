@@ -17,9 +17,20 @@ wordS, dataS, tagS, microInstrS, microAddrS :: Int
 tagS  = 4
 dataS = 20
 wordS = tagS + dataS
-microInstrS = 13
+cellS = 2 * wordS
+microInstrS = 16
 microAddrS = 8
--- also : number of registers = 2^3
+-- also: number of registers = 2^3
+
+-- Word handling (with some strong typing)
+-- idea: use strong typing to distinguish between words and cons cells as well
+
+newtype TagField  s = TagField  [s]
+newtype DataField s = DataField [s]
+
+decomposeWord :: [s] -> (TagField s, DataField s)
+decomposeWord word = (TagField prefix, DataField suffix)
+  where (prefix, suffix) = splitAt tagS word
 
 -- Control signals / microcode specification
 
@@ -44,34 +55,33 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac
 
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
-  do rec -- wireZero <- zero
-         -- wireOne <- one
-         controlSignals  <- control regOut
+  do rec controlSignals <- control regOutTag
          regIn <- bigMux (muxData controlSignals) regOut gcOut  
          gcOut <- memorySystem (gcOpcode controlSignals)
+                               regOutData
                                regOut
-                               temporaries
-         temporaries <- accessRAM 0 wordS ([],
-                                           writeTemp controlSignals,
-                                           [],
-                                           regIn)
+                               tempOut
+         tempOut <- accessRAM 0 wordS ([],
+                                       writeTemp controlSignals,
+                                       [],
+                                       regIn)
          miniAlu <- incrOrDecr (aluCtrl controlSignals !! 0) (drop tagS gcOut)
          regOut <- bigMux (aluCtrl controlSignals !! 1) miniAlu
                    =<< registerArray controlSignals regIn
+         let (regOutTag, regOutData) = decomposeWord regOut
      return []
 
 
-memorySystem :: (MemoryCircuit m s) => [s] -> [s] -> [s] -> m [s]  
-memorySystem opCode regOut temporary=
-  do rec wireZero <- zero
-         let alloc = opCode !! 1
-         newcounter <- mapM delay =<< fst <$> adder (alloc, zip (repeat wireZero)  newcounter)   
-         programMem <- accessROM (dataS-1) (2*wordS) $ drop (tagS+1) regOut
-         dataMem <- ram (drop (tagS+1) regOut) alloc newcounter (regOut++temporary)
-         cons <- bigMux (regOut!!tagS) programMem dataMem 
-     let car = take wordS cons
-         cdr = drop wordS cons
-     bigMux (head opCode) car cdr  
+memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> [s] -> [s] -> m [s]  
+memorySystem opCode (DataField ptr) regOut tempOut =
+  do rec codeMem <- accessROM (dataS-1) cellS addrR
+         dataMem <- accessRAM (dataS-1) cellS -- write to next free cell iff allocating
+                              (addrR, allocCons, freeCounter, regOut ++ tempOut)
+         freeCounter <- mapM delay =<< addBitToWord (allocCons, freeCounter)
+     (car, cdr) <- splitAt wordS <$> bigMux codeOrData codeMem dataMem 
+     bigMux carOrCdr car cdr
+  where [carOrCdr, allocCons] = opCode
+        (codeOrData:addrR) = ptr
 
 
 
@@ -89,11 +99,6 @@ incrOrDecr bitChoice (t:q) =
      fst <$> adder (wireZero, (wireOne,t):zip (repeat bitChoice) q)
 
 
-ram :: (MemoryCircuit m s) => [s] -> s -> [s] -> [s] -> m [s]
-ram addR flagW addW dataW = 
-    accessRAM dataS (2*wordS) (addR,flagW,addW,dataW)
-
-
 registerArray :: (MemoryCircuit m s) => ControlSignals s -> [s] -> m [s]
 registerArray controlSignals regIn = 
     accessRAM 3 wordS (regRead   controlSignals,
@@ -101,16 +106,17 @@ registerArray controlSignals regIn =
                        regWrite  controlSignals,
                        regIn) 
 
-control :: (MemoryCircuit m s) =>  [s] ->  m (ControlSignals s)
-control regOut = 
-  do rec internIncr <- incrementer mpc
+control :: (MemoryCircuit m s) => TagField s ->  m (ControlSignals s)
+control (TagField regOutTag) = 
+  do rec microInstruction <- accessROM microAddrS microInstrS mpc
+         let (jump:dispatchOnTag:_) = microInstruction
+         internIncr <- incrementer mpc
          -- maybe replace by a mux between 3 alternatives ?
          newMpc <- bigDoubleMux (take 2 microInstruction)
                                 internIncr
                                 (take microAddrS . drop 2 $ microInstruction)
-                                regOut
-                                regOut
+                                regOutTag
+                                regOutTag
          mpc <- mapM delay newMpc
-         microInstruction <- accessROM microAddrS microInstrS mpc 
      return $ decodeMicroInstruction microInstruction
 
