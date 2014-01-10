@@ -26,16 +26,6 @@ microInstrS = 16
 microAddrS = 12
 -- also: number of registers = 2^3
 
--- Word handling (with some strong typing)
--- idea: use strong typing to distinguish between words and cons cells as well
-
-newtype TagField  s = TagField  [s]
-newtype DataField s = DataField [s]
-
-decomposeWord :: [s] -> (TagField s, DataField s)
-decomposeWord word = (TagField prefix, DataField suffix)
-  where (prefix, suffix) = splitAt tagS word
-
 -- Control signals / microcode specification
 
 data ControlSignals s = CS { regRead   :: [s] -- 3 bits
@@ -60,6 +50,39 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
         [ac,ua] = q5
 
 
+-- Strong typing for the win!
+
+newtype TagField  s = TagField  [s]
+newtype DataField s = DataField [s]
+newtype Word      s = Word      [s]
+newtype Cons      s = Cons      [s]
+
+-- Is there a way to make all this repetition nicer?
+
+muxDataField :: (Circuit m s) => s -> DataField s -> DataField s -> m (DataField s)
+muxDataField c (DataField xs) (DataField ys) = DataField <$> bigMux c xs ys
+
+muxWord :: (Circuit m s) => s -> Word s -> Word s -> m (Word s)
+muxWord c (Word xs) (Word ys) = Word <$> bigMux c xs ys
+
+muxCons :: (Circuit m s) => s -> Cons s -> Cons s -> m (Cons s)
+muxCons c (Cons xs) (Cons ys) = Cons <$> bigMux c xs ys
+
+decomposeWord :: Word s -> (TagField s, DataField s)
+decomposeWord (Word w) = (TagField prefix, DataField suffix)
+  where (prefix, suffix) = splitAt tagS w
+
+recomposeWord :: TagField s -> DataField s -> Word s
+recomposeWord (TagField t) (DataField d) = Word $ t ++ d
+
+decomposeCons :: Cons s -> (Word s, Word s)
+decomposeCons (Cons w) = (Word prefix, Word suffix)
+  where (prefix, suffix) = splitAt wordS w
+
+recomposeCons :: Word s -> Word s -> Cons s
+recomposeCons (Word t) (Word d) = Cons $ t ++ d
+
+
 -- Global view of the processor --
 ----------------------------------
 
@@ -68,18 +91,20 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control regOutTag
-         regIn <- bigMux (muxData controlSignals) regOut gcOut  
+         regIn <- muxWord (muxData controlSignals) regOut gcOut  
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOutData
                                regOut
                                tempOut
-         tempOut <- accessRAM 0 wordS ([],
-                                       writeTemp controlSignals,
-                                       [],
-                                       regIn)
-         alu <- miniAlu (aluCtrl controlSignals) (drop tagS gcOut)
-         regOut <- bigMux (useAlu controlSignals) alu
-                   =<< registerArray controlSignals regIn
+         let (Word regIn') = regIn
+         tempOut <- Word <$> accessRAM 0 wordS ([],
+                                                writeTemp controlSignals,
+                                                [],
+                                                regIn')
+--         alu <- miniAlu (aluCtrl controlSignals) (drop tagS gcOut)
+--         regOut <- bigMux (useAlu controlSignals) alu
+--                   =<< registerArray controlSignals regIn
+         regOut <- registerArray controlSignals regIn
          let (regOutTag, regOutData) = decomposeWord regOut
      return []
 
@@ -90,16 +115,19 @@ processor =
 -- Memory system (in charge of implementing alloc_cons, fetch_car, fetch_cdr)
 -- Implementation 
 
-memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> [s] -> [s] -> m [s]  
-memorySystem opCode (DataField ptr) regOut tempOut =
-  do rec codeMem <- accessROM (dataS-1) cellS addrR
-         dataMem <- accessRAM (dataS-1) cellS -- write to next free cell iff allocating
-                              (addrR, allocCons, freeCounter, regOut ++ tempOut)
+memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> Word s -> Word s -> m (Word s)
+memorySystem opCode (DataField ptr) regBus tempBus =
+  do rec codeMem <- Cons <$> accessROM (dataS-1) cellS addrR
+         dataMem <- Cons <$> accessRAM (dataS-1) cellS
+                                       (addrR, allocCons, freeCounter,
+                                       consRegTemp)
+                             -- write to next free cell iff allocating
          freeCounter <- bigDelay =<< addBitToWord (allocCons, freeCounter)
-     (car, cdr) <- splitAt wordS <$> bigMux codeOrData codeMem dataMem 
-     bigMux carOrCdr car cdr
+     (car, cdr) <- decomposeCons <$> muxCons codeOrData codeMem dataMem
+     muxWord carOrCdr car cdr
   where [carOrCdr, allocCons] = opCode
         (codeOrData:addrR) = ptr
+        (Cons consRegTemp) = recomposeCons regBus tempBus
 
 
 -- Testing equality to zero
@@ -124,12 +152,12 @@ miniAlu incrOrDecr (t:q) =
 
 -- The array of registers
 
-registerArray :: (MemoryCircuit m s) => ControlSignals s -> [s] -> m [s]
-registerArray controlSignals regIn = 
-    accessRAM 3 wordS (regRead   controlSignals,
-                       writeFlag controlSignals,
-                       regWrite  controlSignals,
-                       regIn) 
+registerArray :: (MemoryCircuit m s) => ControlSignals s -> Word s -> m (Word s)
+registerArray controlSignals (Word regIn) = 
+  Word <$> accessRAM 3 wordS (regRead   controlSignals,
+                              writeFlag controlSignals,
+                              regWrite  controlSignals,
+                              regIn) 
 
 -- The control logic
 -- The microprogram is stored in a ROM, the function of the hardware
