@@ -91,7 +91,10 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control regOutTag
-         regIn <- muxWord (muxData controlSignals) regOut gcOut  
+         regIn <- muxWord (muxData controlSignals) regOut
+                  =<< muxWord (useAlu controlSignals)
+                              (recomposeWord regOutTag alu)
+                              gcOut
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOutData
                                regOut
@@ -101,9 +104,7 @@ processor =
                                                 writeTemp controlSignals,
                                                 [],
                                                 regIn')
---         alu <- miniAlu (aluCtrl controlSignals) (drop tagS gcOut)
---         regOut <- bigMux (useAlu controlSignals) alu
---                   =<< registerArray controlSignals regIn
+         alu <- miniAlu (aluCtrl controlSignals) (snd . decomposeWord $ gcOut)
          regOut <- registerArray controlSignals regIn
          let (regOutTag, regOutData) = decomposeWord regOut
      return []
@@ -143,11 +144,11 @@ isZero = neg <=< orAll
 
 -- A small ALU which can either increment or decrement its argument
         
-miniAlu :: (SequentialCircuit m s) => s -> [s] -> m [s]
-miniAlu incrOrDecr (t:q) =
+miniAlu :: (SequentialCircuit m s) => s -> (DataField s) -> m (DataField s)
+miniAlu incrOrDecr (DataField (t:q)) =
   do wireOne <- one
      wireZero <- zero
-     fst <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
+     DataField . fst <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
 
 
 -- The array of registers
