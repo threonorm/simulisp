@@ -10,6 +10,10 @@ import Data.List
 import Arithmetic
 import Patterns
 
+
+-- Prolegomena and specifications --
+------------------------------------
+
 -- Size constants
 
 cellS, wordS, dataS, tagS, microInstrS, microAddrS :: Int
@@ -40,18 +44,26 @@ data ControlSignals s = CS { regRead   :: [s] -- 3 bits
                            , writeTemp :: s   -- 1 bit
                            , muxData   :: s   -- 1 bit
                            , gcOpcode  :: [s] -- 2 bits
-                           , aluCtrl   :: [s] -- 2 bits
+                           , aluCtrl   :: s   -- 1 bit
+                           , useAlu    :: s   -- 1 bit
                            } --           Total: 13 bits (=microInstrS)
                         
 decodeMicroInstruction :: [s] -> ControlSignals s
-decodeMicroInstruction microinstr = CS rr rw wf wt md go ac
+decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
   where external = drop 2 microinstr -- first 2 bits are internal to control
         (rr,q0) = splitAt 3 external
         (rw,q1) = splitAt 3 q0
         (wf:q2) = q1
         (wt:q3) = q2
         (md:q4) = q3
-        (go,ac) = splitAt 2 q4
+        (go,q5) = splitAt 2 q4
+        [ac,ua] = q5
+
+
+-- Global view of the processor --
+----------------------------------
+
+-- Plugging together the different functional blocks and control signals
 
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
@@ -65,39 +77,52 @@ processor =
                                        writeTemp controlSignals,
                                        [],
                                        regIn)
-         miniAlu <- incrOrDecr (aluCtrl controlSignals !! 0) (drop tagS gcOut)
-         regOut <- bigMux (aluCtrl controlSignals !! 1) miniAlu
+         alu <- miniAlu (aluCtrl controlSignals) (drop tagS gcOut)
+         regOut <- bigMux (useAlu controlSignals) alu
                    =<< registerArray controlSignals regIn
          let (regOutTag, regOutData) = decomposeWord regOut
      return []
 
+
+-- Definitions for the functional blocks --
+-------------------------------------------
+
+-- Memory system (in charge of implementing alloc_cons, fetch_car, fetch_cdr)
+-- Implementation 
 
 memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> [s] -> [s] -> m [s]  
 memorySystem opCode (DataField ptr) regOut tempOut =
   do rec codeMem <- accessROM (dataS-1) cellS addrR
          dataMem <- accessRAM (dataS-1) cellS -- write to next free cell iff allocating
                               (addrR, allocCons, freeCounter, regOut ++ tempOut)
-         freeCounter <- mapM delay =<< addBitToWord (allocCons, freeCounter)
+         freeCounter <- bigDelay =<< addBitToWord (allocCons, freeCounter)
      (car, cdr) <- splitAt wordS <$> bigMux codeOrData codeMem dataMem 
      bigMux carOrCdr car cdr
   where [carOrCdr, allocCons] = opCode
         (codeOrData:addrR) = ptr
 
 
+-- Testing equality to zero
 
-orAll :: (SequentialCircuit m s) => [s] -> m s
---TODO : Check the code generated
--- /!\ we can improve with a dichotomy
-orAll  [a] = do return a           
-orAll (t:q) = do out <- t -||> orAll q
-                 return out 
- 
-incrOrDecr :: (SequentialCircuit m s) => s -> [s] -> m [s]
-incrOrDecr bitChoice (t:q) =
+isZero :: (Circuit m s) => [s] -> m s
+isZero = neg <=< orAll
+  --TODO : Check the code generated
+  -- /!\ we can improve with a dichotomy
+  where orAll  [a] = return a           
+        orAll (t:q) = do out <- t -||> orAll q
+                         return out 
+
+
+-- A small ALU which can either increment or decrement its argument
+        
+miniAlu :: (SequentialCircuit m s) => s -> [s] -> m [s]
+miniAlu incrOrDecr (t:q) =
   do wireOne <- one
      wireZero <- zero
-     fst <$> adder (wireZero, (wireOne,t):zip (repeat bitChoice) q)
+     fst <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
 
+
+-- The array of registers
 
 registerArray :: (MemoryCircuit m s) => ControlSignals s -> [s] -> m [s]
 registerArray controlSignals regIn = 
@@ -105,6 +130,10 @@ registerArray controlSignals regIn =
                        writeFlag controlSignals,
                        regWrite  controlSignals,
                        regIn) 
+
+-- The control logic
+-- The microprogram is stored in a ROM, the function of the hardware
+-- plumbing here is to handle state transitions
 
 control :: (MemoryCircuit m s) => TagField s ->  m (ControlSignals s)
 control (TagField tag) =
@@ -115,7 +144,7 @@ control (TagField tag) =
          let (jump:dispatchOnTag:suffix) = microInstruction
          nextAddr <- incrementer mpc
          -- maybe replace by a mux between 3 alternatives ?
-         mpc <- mapM delay newMpc
+         mpc <- bigDelay newMpc
          newMpc <- bigDoubleMux [jump, dispatchOnTag]
                                 nextAddr
                                 (take microAddrS suffix)

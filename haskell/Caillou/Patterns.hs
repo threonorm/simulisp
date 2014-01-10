@@ -15,13 +15,16 @@ row cir (x, y:ys) = do (z, x') <- cir (x, y)
 bigMux :: (Circuit m s) => s -> [s] -> [s] -> m [s]
 bigMux a b c = zipWithM (\y z -> mux3 (a,y,z)) b c
 
-doubleMux :: (SequentialCircuit m s) => [s] -> s -> s -> s -> s -> m  s
+doubleMux :: (Circuit m s) => [s] -> s -> s -> s -> s -> m  s
 doubleMux [a,b] x0 x1 x2 x3 =
-    do  m1 <- mux3 (a,x0,x1)  
-        m2 <- mux3 (a,x2,x3)
-        mux3(b,m1,m2)
+    do m1 <- mux3 (a,x0,x1)  
+       m2 <- mux3 (a,x2,x3)
+       mux3 (b,m1,m2)
 
-bigDoubleMux :: (SequentialCircuit m s) => [s] -> [s] -> [s] -> [s] -> [s] -> m [s]
+bigDoubleMux :: (Circuit m s) => [s] -> [s] -> [s] -> [s] -> [s] -> m [s]
 bigDoubleMux [a,b] x0 x1 x2 x3 = 
    sequence $ zipWith4 (doubleMux [a,b]) x0 x1 x2 x3
+
+bigDelay :: (SequentialCircuit m s) => [s] -> m [s]
+bigDelay = mapM delay
 
