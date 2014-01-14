@@ -1,4 +1,4 @@
-module Simulator where
+module Simulator (iteratedSimulation, WireState, initialWireState) where
 
 import Control.Arrow
 import Control.Applicative
@@ -13,11 +13,13 @@ import Data.IntMap (IntMap)
 import Data.Bool
 
 import NetlistAST
+import ListUtil
 
 type WireState = Environment Value
+type ROMs = Environment (Array Int [Bool]) -- immutable arrays
 data Memory = Mem { registers :: Environment Value
-                  , ram :: Environment (IntMap Bool)
-                  , rom :: Array Int Bool -- immutable array
+                  , ram :: Environment (IntMap [Bool])
+                  , rom :: ROMs
                   }
 type Outputs = [(Ident, Value)]
 
@@ -44,10 +46,6 @@ vNot v= case v of
  (VBitArray l) -> VBitArray (map not $ l) 
 
 
-u :: Value -> [Bool]
-u (VBitArray x) = x   -- u for under : through the constructor
-u (VBit x) = [x]
-
 -- Partial function, doesn't handle memory
 -- TODO (in the distant future): improve this with generic programming / SYB stuff
 compute :: WireState -> Exp -> Value
@@ -69,20 +67,20 @@ compute st (Emux a1 a2 a3) =
   case vA1 of
     VBitArray _ ->
            VBitArray (zipWith3 (\x y z ->if x then y else z) 
-                      (u vA1) 
-                      (u vA2) 
-                      (u vA3))
+                      (valueToList vA1) 
+                      (valueToList vA2) 
+                      (valueToList vA3))
     VBit v1 ->
            if v1 then vA2 else vA3
   where vA1 = extractArg st a1
         vA2 = extractArg st a2
         vA3 = extractArg st a3
 compute st (Eselect i a)=
-  VBit ((u $ extractArg st a  ) !! i)
+  VBit ((valueToList $ extractArg st a  ) !! i)
 compute st (Eslice i1 i2 a)=
-  VBitArray ( take (i2 - i1+1) . drop i1 . u $ extractArg st a )
+  VBitArray ( take (i2 - i1+1) . drop i1 . valueToList $ extractArg st a )
 compute st (Econcat a1 a2) =
-  VBitArray ( (u vA1) ++ (u vA2) )   
+  VBitArray ( (valueToList vA1) ++ (valueToList vA2) )   
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
@@ -91,6 +89,10 @@ valueToInt :: Value -> Int
 valueToInt (VBit b) = if b then 1 else 0
 valueToInt (VBitArray bs) =
   foldl' (\acc digit -> acc*2+digit) 0 . map (valueToInt . VBit) . reverse $ bs
+
+valueToList :: Value -> [Bool]
+valueToList (VBit b)       = [b]
+valueToList (VBitArray bs) = bs
 
 simulationStep :: Memory -> WireState -> Equation -> WireState
 simulationStep memory oldWireState (ident, expr) =
@@ -102,25 +104,24 @@ simulationStep memory oldWireState (ident, expr) =
 
         -- TODO: do something with addrSize?
         f (Erom addrSize wordSize readAddr)
-           | wordSize == 1 = VBit . getROMBit $ wordAddr
-           | otherwise = VBitArray . map getROMBit
-                         $ [wordAddr..(wordAddr + wordSize - 1)]
+           | wordSize == 1 = VBit . head $ word
+           | otherwise = VBitArray word
           where
             wordAddr = valueToInt $ extractArg oldWireState readAddr
-            getROMBit bitAddr
-              | bitAddr < addrMin || bitAddr > addrMax = False
-              | otherwise = rom memory Array.! bitAddr
-            (addrMin, addrMax) = Array.bounds $ rom memory
+            word | wordAddr < addrMin ||
+                   wordAddr > addrMax = replicate wordSize False
+                 | otherwise = thisRom Array.! wordAddr
+            (addrMin, addrMax) = Array.bounds thisRom
+            thisRom = rom memory Map.! ident
 
         f (Eram addrSize wordSize readAddr writeEnable writeAddr writeData) 
-           | wordSize == 1 = VBit . getRAMBit $ wordAddr
-           | otherwise = VBitArray . map getRAMBit
-                         $ [wordAddr..(wordAddr + wordSize - 1)]
+           | wordSize == 1 = VBit . head $ word
+           | otherwise = VBitArray word
           where
             wordAddr = valueToInt $ extractArg oldWireState readAddr
-            getRAMBit bitAddr = case IntMap.lookup bitAddr (ram memory Map.! ident) of
-                                   Nothing -> False
-                                   Just x  -> x
+            word = case IntMap.lookup wordAddr (ram memory Map.! ident) of
+                     Nothing -> replicate wordSize False
+                     Just x  -> x
 
 
         -- purely combinational logic: just compute
@@ -134,18 +135,15 @@ simulateCycle prog oldMem inputWires =
   $ p_eqs prog
   where gatherOutputs finalWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
-        newMem finalWires = oldMem { registers = Map.fromList . map getNewVal
-                                                 $ programRegisters prog ,
-                                     ram = foldl' (\currentMap (i,x,y) -> Map.adjust (IntMap.insert x y) i currentMap) (ram oldMem) 
-                                           $ ramToUpdate  
-                                   }
+        newMem finalWires = oldMem {
+          registers = Map.fromList . map getNewVal $ programRegisters prog,
+          ram = foldl' (\currentMap (ident,addr,datum) ->
+                         Map.adjust (IntMap.insert addr (valueToList datum))
+                                    ident currentMap)
+                       (ram oldMem)
+                       (ramToUpdate prog finalWires)
+          }
           where getNewVal = second (finalWires Map.!)              
-                ramToUpdate = expand $ programRam prog finalWires 
-                expand ((i,a,b,c):q) = case c of  
-                        VBitArray listval ->zip3 (repeat i) [a..a+b-1] listval ++ expand q  
-                        VBit val      ->   (i,a,val) :(expand q)
-                expand [] = []
-                  
 
 
 initialWireState :: Program -- Sorted netlist
@@ -164,9 +162,9 @@ initialWireState prog actualParams = foldM f Map.empty formalParams
 
 iteratedSimulation :: Program
                    -> Maybe [WireState]
-                   -> Maybe (Array Int Bool)
+                   -> Maybe (Environment [Bool])
                    -> [[(Ident, Value)]]
-iteratedSimulation prog maybeInputs maybeROM =
+iteratedSimulation prog maybeInputs maybeROMs =
   -- Two cases:
   -- * if we have no input: simulate infinitely (with laziness)
   -- * if we're given a list of inputs: we simulate until the inputs run out
@@ -174,40 +172,36 @@ iteratedSimulation prog maybeInputs maybeROM =
   let inputWires = maybe (repeat Map.empty) id maybeInputs
       initialMemory = Mem { registers = initRegs,
                             ram = Map.fromList $ zip rams (repeat IntMap.empty), 
-                            rom = maybe (Array.array (0,-1) []) id maybeROM }
+                            rom = maybe Map.empty initROMs maybeROMs }
   in trace (simulateCycle prog) initialMemory inputWires
   
   where initRegs = Map.fromList . flip zip (repeat (VBit False)) $ regs
         regs = map fst . filter isReg $ p_eqs prog
         rams = map fst . filter isRam $ p_eqs prog
+        romSizes = Map.fromList [ (ident, wordSize)
+                                | (ident, (Erom _ wordSize _)) <- p_eqs prog ]
         isRam (_, (Eram _ _ _ _ _ _)) = True
         isRam _ = False
         isReg (_, (Ereg _)) = True
         isReg _             = False
-        
+        initROMs = Map.mapWithKey initROM
+        initROM ident bits = Array.listArray (0, size - 1) $ splits size bits
+          where size = romSizes Map.! ident
 
-programRegisters :: Program -> [(Ident,Ident)]
+
+programRegisters :: Program -> [(Ident, Ident)]
 programRegisters = catMaybes . map p . p_eqs
   where p (x, (Ereg y)) = Just (x,y)
         p _             = Nothing
        
-programRam :: Program -> WireState-> [(Ident,Int,Int, Value)] --Ident,Position,size , data  
-programRam prog st = catMaybes . map extraction $ p_eqs prog 
+ramToUpdate :: Program -> WireState
+            -> [(Ident, Int, Value)] -- Identifier, Position, Data to write  
+ramToUpdate prog st = catMaybes . map extraction $ p_eqs prog 
   where extraction (ident,(Eram addrSize wordSize _ enable addrWrite datas ))=
-            case (extractArg st enable) of 
-                VBit True -> Just(ident,valueToInt $ extractArg st addrWrite ,
-                                  wordSize ,
-                                  extractArg st datas) 
-                _ -> Nothing
+          case (extractArg st enable) of 
+            VBit True -> Just(ident,
+                              valueToInt $ extractArg st addrWrite,
+                              extractArg st datas) 
+            _         -> Nothing
         extraction (_,_) = Nothing 
 
-
--- Custom list builder function, not quite zipWith or scanl
--- trace f a0 [x0, ...] = [y1, ...]
--- where (a1, y1) = f a0 x0
---       (a2, y2) = f a1 x1
---       etc. 
-trace :: (a -> b -> (a, c)) -> a -> [b] -> [c]
-trace _ _  []      = []
-trace f a0 (x0:xs) = let (a1, y1) = f a0 x0
-                     in y1 : trace f a1 xs
