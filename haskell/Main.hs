@@ -21,7 +21,7 @@ import Simulator
 import InputParser
 
 versionNumber :: String -- more flexible than int/float/whatever
-versionNumber = "0.1"
+versionNumber = "0.2"
 
 
 main :: IO ()
