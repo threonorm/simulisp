@@ -16,6 +16,7 @@ Despite having made a lot of progress, there's still tons of work to do!
     + corresponding control signals
   * handle output signals for synchronization + display
   * tweak parameters to fit requirements from the microprogram
+  * Fix the problem about readtemp
 
 * Microcode-level:
   * Code a microassembler (Haskell EDSL?)
