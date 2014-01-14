@@ -1,11 +1,6 @@
-module InputParser (inputParser, inlineInputParser) where
+module InputParser (inputParser, inlineInputParser, romParser) where
 
-import Control.Monad
-import Control.Exception (assert)
 import Control.Applicative hiding ((<|>), many)
-import Data.Char
-import Data.List
-import qualified Data.Map as Map
 
 import Text.Parsec hiding (token)
 import Text.Parsec.String
@@ -27,6 +22,7 @@ lineInput = do
   return list 
 
 -- similar to the "spaces" parser, but doesn't recognize newlines
+espaces :: Parser String
 espaces = many $ char ' '
 
 oneInput :: Parser (Ident,Value)
@@ -52,3 +48,14 @@ inlineInputParser = ( (,) <$> identifier <*> (char ':' *> value) )
   where identifier = (:) <$> (letter <|> char '_')
                          <*> (many $ letter <|> digit <|> char '_')
         value = convert <$> many1 (oneOf ['0', '1'])
+
+-- Parser for ROM files
+
+romParser :: Parser [(Ident, [Bool])]
+romParser = (romLine `sepBy` char 'n') <* (spaces >> eof)
+
+romLine :: Parser (Ident, [Bool])
+romLine = (,) <$> ((:) <$> (letter <|> char '_')
+                       <*> (many $ letter <|> digit <|> char '_'))
+              <*> (char ':' *> (map (/='0') <$> many (oneOf ['0','1'])))
+

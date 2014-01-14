@@ -6,7 +6,6 @@ import Control.Monad
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
-import qualified Data.Array as Array
 import System.Environment
 import System.Console.GetOpt
 import System.Exit
@@ -22,7 +21,7 @@ import Simulator
 import InputParser
 
 versionNumber :: String -- more flexible than int/float/whatever
-versionNumber = "0.1"
+versionNumber = "0.2"
 
 
 main :: IO ()
@@ -47,14 +46,14 @@ main = do
 launchSimulation :: Program
                  -> Maybe Int
                  -> Maybe [WireState]
-                 -> Maybe (Array.Array Int Bool)
+                 -> Maybe (Environment [Bool])
                  -> IO ()
-launchSimulation netlist maybeCycles maybeInputs maybeROM = do
+launchSimulation netlist maybeCycles maybeInputs maybeROMs = do
   case (maybeCycles, maybeInputs) of
     (Just n, Just inp) | length inp < n ->
       putStrLn $ "Warning: not enough inputs to last for " ++ show n ++ " cycles."
     _ -> return ()
-  let results = iteratedSimulation netlist maybeInputs maybeROM
+  let results = iteratedSimulation netlist maybeInputs maybeROMs
   mapM_ (putStrLn . formatOutputs) . maybe id take maybeCycles $ results
 
 formatOutputs :: [(Ident, Value)] -> String
@@ -68,13 +67,6 @@ formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
 failwith :: String -> IO a
 failwith e = hPutStrLn stderr e >> exitWith (ExitFailure 1)
 
--- for some reason this is not in the standard libraries
-unintersperse :: (Eq a) => a -> [a] -> [[a]]
-unintersperse x xs = let (y, rest) = break (== x) xs
-                     in y : case rest of
-                       []    -> []
-                       (_:q) -> unintersperse x q
-
 data Option = Version
             | Help
             | InlineInput String
@@ -86,7 +78,7 @@ data Option = Version
 -- TODO: type alisases for ROM array and RAM map
 data Params = P { p_filename :: FilePath
                 , p_input    :: Maybe ([Environment Value])
-                , p_rom      :: Maybe (Array.Array Int Bool)
+                , p_rom      :: Maybe (Environment [Bool])
                 , p_cycles   :: Maybe Int
                 }
               deriving (Eq)
@@ -122,30 +114,19 @@ getParams = do
                             
             getROM
               | Just romFileName <- findFileROM opts = do
-                  eitherROM <- tryIOError $ readFile romFileName
+                  eitherROM <- tryIOError $ parseFromFile romParser romFileName
                   case eitherROM of
                     Left _ -> failwith "Error opening ROM file."
-                    Right romStr -> case parseROM romStr of
-                      Nothing -> failwith "ROM file badly formatted."
-                      r -> return r
+                    Right (Left err) ->
+                      failwith $ "Parse error on ROM file:\n" ++ show err
+                    Right (Right input) -> return . Just . Map.fromList $ input
               | otherwise = return Nothing
-
-            parseROM str = do
-              -- quick and dirty trick to support optional newline at the end
-              str' <- case lines str of
-                [] -> Nothing
-                (x:_) -> Just x
-              guard $ all (`elem` "01") str'
-              return . listToArray . map (/= '0') $ str'
 
             getCycles
               | Just str <- findCycles opts = case readMaybe str of
                   Nothing -> failwith "Badly formatted option (num-cycles)."
                   Just n -> return (Just n)
               | otherwise = return Nothing
-
-            listToArray l = Array.array (0, length l - 1) (zip [0..] l)
-
 
 
     -- TODO: handle unrecognized arguments
