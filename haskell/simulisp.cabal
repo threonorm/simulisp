@@ -11,6 +11,7 @@ source-repository head
   type:     git
   location: git://github.com/threonorm/simulisp.git
 
-executable xmonad
-    main-is:            Simulator/Main.hs
-    build-depends:  base, containers
+executable simulator
+    main-is:        Simulator/Main.hs
+    ghc-options:    -O2 -main-is Simulator.Main
+    build-depends:  array, base, containers, mtl, parsec >= 3.0

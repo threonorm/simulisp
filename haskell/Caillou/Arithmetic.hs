@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, DoRec #-}
 
-module Arithmetic where
+module Caillou.Arithmetic where
 
 import Control.Applicative
 

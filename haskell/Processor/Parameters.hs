@@ -1,4 +1,4 @@
-module Parameters where
+module Processor.Parameters where
 
 cellS, wordS, dataS, tagS, microInstrS, microAddrS :: Int
 

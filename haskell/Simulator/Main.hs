@@ -1,4 +1,6 @@
-module Main (main) where
+{-# LANGUAGE PatternGuards #-}
+
+module Simulator.Main (main) where
 
 import Control.Applicative
 import Control.Arrow
@@ -14,11 +16,11 @@ import System.IO.Error
 import Text.Parsec (parse)
 import Text.Parsec.String (parseFromFile)
 
-import NetlistAST
-import NetlistParser
-import Scheduler
-import Simulator
-import InputParser
+import Netlist.AST
+import Netlist.Parser
+import Simulator.Scheduler
+import Simulator.Simulator
+import Simulator.InputParser
 
 versionNumber :: String -- more flexible than int/float/whatever
 versionNumber = "0.2"
@@ -146,7 +148,7 @@ getParams = do
                   , Option ['n'] ["num-cycles"] (ReqArg Cycles "N")
                     "Forces the simulation to stop after N cycles."
                   ]
-        usage = "Usage: simulateur --input=var1:(0|1)*,var2:(0|1)* FILE"
+        usage = "Usage: simulator --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options
         versionMsg = "Simulisp version " ++ versionNumber ++ "."
 

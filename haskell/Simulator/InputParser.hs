@@ -1,11 +1,11 @@
-module InputParser (inputParser, inlineInputParser, romParser) where
+module Simulator.InputParser (inputParser, inlineInputParser, romParser) where
 
 import Control.Applicative hiding ((<|>), many)
 
 import Text.Parsec hiding (token)
 import Text.Parsec.String
 
-import NetlistAST
+import Netlist.AST
 
 
 -- Parser for input files

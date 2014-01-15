@@ -1,4 +1,4 @@
-module Digraph where
+module Util.Digraph where
 
 import Prelude hiding (notElem, mapM_) -- hide monomorphic definitions
                                        -- conflicting with Data.Foldable

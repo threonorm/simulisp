@@ -1,11 +1,11 @@
-module NetlistPrint where
+module Netlist.Print where
 
 import Prelude hiding (mapM_)  
 import Data.List
 import Data.Char
 import qualified Data.Map as Map
 
-import NetlistAST
+import Netlist.AST
     
 printProg :: Program -> String
 printProg prog =

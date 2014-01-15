@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module NetlistParser (netlistParser) where
+module Netlist.Parser (netlistParser) where
 
 import Control.Monad
 import Control.Exception (assert)
@@ -12,7 +12,7 @@ import qualified Data.Map as Map
 import Text.Parsec hiding (token)
 import Text.Parsec.String
 
-import NetlistAST
+import Netlist.AST
 
 netlistParser :: Parser Program
 netlistParser = spaces *> netlist <* eof

@@ -1,6 +1,6 @@
 -- List combinators
 
-module ListUtil where
+module Util.ListUtil where
 
 -- for some reason this is not in the standard libraries
 unintersperse :: (Eq a) => a -> [a] -> [[a]]

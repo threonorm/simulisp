@@ -1,14 +1,14 @@
 {-# LANGUAGE MultiParamTypeClasses, DoRec #-}
 
-module Processor where
+module Processor.Hardware where
 
 import Control.Applicative
 import Control.Monad
 import Circuit
 import Data.List
 
-import Arithmetic
-import Patterns
+import Caillou.Arithmetic
+import Caillou.Patterns
 
 
 -- Prolegomena and specifications --

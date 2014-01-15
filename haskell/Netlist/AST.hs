@@ -1,4 +1,4 @@
-module NetlistAST where
+module Netlist.AST where
 
 import qualified Data.Map as Map
 

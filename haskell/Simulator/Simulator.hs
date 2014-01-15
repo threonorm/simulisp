@@ -1,10 +1,10 @@
-module Simulator (iteratedSimulation, WireState, initialWireState) where
+module Simulator.Simulator (iteratedSimulation, WireState, initialWireState) where
 
 import Control.Arrow
 import Control.Applicative
 import Control.Monad
-import Data.Array (Array)
-import qualified Data.Array as Array
+import Data.Array.IArray (Array)
+import qualified Data.Array.IArray as Array
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
@@ -12,8 +12,8 @@ import qualified Data.IntMap as IntMap
 import Data.IntMap (IntMap)
 import Data.Bool
 
-import NetlistAST
-import ListUtil
+import Netlist.AST
+import Util.ListUtil
 
 type WireState = Environment Value
 type ROMs = Environment (Array Int [Bool]) -- immutable arrays

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module TopSortTest where
+module Util.TopSortTest where
 
 import Control.Monad
 import Data.List
@@ -8,7 +8,7 @@ import qualified Data.Map as Map
 
 import Test.QuickCheck
 
-import Digraph
+import Util.Digraph
 
 
 -- Simple examples to test the topological sort

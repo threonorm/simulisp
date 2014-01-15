@@ -1,4 +1,4 @@
-module Scheduler where
+module Simulator.Scheduler where
 
 import Prelude hiding (notElem, mapM_)
 import Control.Monad.State hiding (mapM_)
@@ -9,9 +9,9 @@ import Data.List (nub)
 import qualified Data.Map as Map
 import Data.Map (Map, (!))
 
-import NetlistAST
-import NetlistParser
-import qualified Digraph as G
+import Netlist.AST
+import Netlist.Parser
+import qualified Util.Digraph as G
 
 readExp :: Exp -> [Ident]
 readExp expr = args2deps $ case expr of
