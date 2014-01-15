@@ -55,7 +55,6 @@ eventLoop secondsPreviouslyElapsed = do
   continueLoop <- lift . readIORef =<< asks _continueLoop
   when continueLoop $ do
     syncLock <- asks _syncLock
-    lift $ tryTakeMVar syncLock
     
     handleEvents
     
@@ -68,7 +67,7 @@ eventLoop secondsPreviouslyElapsed = do
       
     displayTime
     
-    lift $ SDL.delay 50
+    lift $ SDL.delay 10
     eventLoop secondsElapsed
 
 displayTime :: EventLoopMonad ()
@@ -78,7 +77,7 @@ displayTime = do
   let screen = _screen graphicsData
   lift $ do
     SDL.fillRect screen Nothing (_white graphicsData)
-    draw7segs graphicsData (12, 42, 07)
+    draw7segs graphicsData time
     SDL.flip screen
 
 handleEvents :: EventLoopMonad ()
@@ -193,6 +192,19 @@ draw7segs (GD { _screen = screen
 -- Clock advancement controlled by another thread
 
 commandThread :: TimeVar -> MVar () -> IO ()
-commandThread timeVar syncLock = undefined
-
+commandThread timeVar syncLock = do
+  ctr <- newIORef 0
+  forever $ do
+    takeMVar syncLock
+    setHour =<< readIORef ctr
+    nextCtr ctr
+    setMinute =<< readIORef ctr
+    nextCtr ctr
+    setSecond =<< readIORef ctr
+    nextCtr ctr
+    
+  where setHour   h = modifyMVar_ timeVar (\(_,m,s) -> return (h,m,s))
+        setMinute m = modifyMVar_ timeVar (\(h,_,s) -> return (h,m,s))
+        setSecond s = modifyMVar_ timeVar (\(h,m,_) -> return (h,m,s))
+        nextCtr ctr = modifyIORef ctr (\x -> (x*x + 1) `mod` 100)
 
