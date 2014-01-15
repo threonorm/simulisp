@@ -1,4 +1,0 @@
-<global/dep.ml>: pkg_ocamlgraph
-<**/*.{byte,native}>: use_unix, use_str, pkg_menhirLib, pkg_ocamlgraph
-<global> or <parser> or <main> or <analysis> or <simulator> or <assembler> or <netlist> or <netlist_simulator>: include
-true: use_menhir
