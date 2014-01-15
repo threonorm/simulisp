@@ -24,7 +24,7 @@ regToString Temp  = "101"
 data Instruction =
      ExtI ExternalInstruction
     | IntI InternalInstruction
-    | Label String 
+    | Label (String,Int) 
 
 data ExternalInstruction = 
     C { regRead :: Reg,
@@ -71,29 +71,29 @@ condJump label = IntI $  D {isCond = False,
                            } 
 
 fetchCar :: Reg -> Reg -> Instruction
-fetchCar regread regwrite = ExtI $ C {regRead = regread,
+fetchCar regread regwrite = ExtI $ ground{regRead = regread,
                                       regWrite = regwrite
                                      } 
  
 fetchCdr :: Reg -> Reg -> Instruction
-fetchCdr regread regwrite = ExtI $ C {regRead = regread,
+fetchCdr regread regwrite = ExtI $ ground{regRead = regread,
                                       regWrite = regwrite,
                                       gcOpcode = (False,True)
                                      } 
 
 fetchCarTemp :: Reg -> Instruction  
-fetchCarTemp reg1 = ExtI $ C { regRead = reg1 ,
+fetchCarTemp reg1 = ExtI $ ground{ regRead = reg1 ,
                                writeTemp = True}
 
 
 fetchCdrTemp :: Reg -> Instruction
-fetchCdrTemp regread = ExtI $ C {regRead = regread,
+fetchCdrTemp regread = ExtI $ ground{regRead = regread,
                                  writeTemp = True,
                                  gcOpcode = (False,True)
                                 }
 
 allocCons :: Reg -> Reg -> Instruction
-allocCons input output = ExtI $ C {regRead = input, 
+allocCons input output = ExtI $ ground{regRead = input, 
                                    writeFlag = True,
                                    writeTemp = True,
                                    regWrite = output,
@@ -142,8 +142,9 @@ assembleSecond ((Right(Label string)): q) =
  
 
 position :: [Intermediate] -> Label -> Int
-position ((Right (Label s)):q) lab =
- if lab==s then 1 else 1 + position q lab
+position ((Right (Label (s,t))):q) lab =
+ if s==lab then t else position q lab
+position (_:q) lab =  position q lab
 
   
 printAddr :: Int -> Int -> String
