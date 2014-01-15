@@ -6,6 +6,7 @@ module Assembler  where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Fix
+import Data.List
 
 data Reg = Value
     | Expr
@@ -146,15 +147,36 @@ position ((Right (Label (s,t))):q) lab =
 position (_:q) lab =  position q lab
 
 checkPosition :: [Intermediate] -> Int -> Bool
+checkPosition [] prec = True  
 checkPosition (Right(Label (s,t)):q) prec = if prec <= t then checkPosition q t 
              else False
 checkPosition (_:q) prec = checkPosition q $ prec + 1  --In number of words
-  
+
+
 printAddr :: Int -> Int -> String
 printAddr microAddr pos = 
   take microAddr $ aux pos ++ repeat '0' -- Lazyness rocks!!! 
  where aux pos = 
         if pos == 0 then [] else 
           (show $ pos `mod` 2) ++ aux (pos `div` 2)
+
+assemble :: [Instruction] -> Maybe String 
+assemble code =
+  if checkPosition inter 0 
+  then Just $ assembleSecond inter 0 inter 
+  else Nothing
+  where inter =  map assembleFirst code
+
+
+example = [ Label("test",0) ,
+            Value ^= Expr,
+            jmp "test",
+            Label("Hum",22),
+            Expr ^= Stack,
+            condJump "test",
+            fetchCar Value Expr      
+          ]
+            
+
 
  
