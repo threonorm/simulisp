@@ -1,6 +1,6 @@
 Despite having made a lot of progress, there's still tons of work to do!
 
-* Update README
+* Update README + add bibliographic refs.
 
 * Generally: think about mux behavior!
   It seems both the simulator and Caillou.NetlistGen assume
@@ -9,16 +9,14 @@ Despite having made a lot of progress, there's still tons of work to do!
   Make sure conventions are consistent across the board!
 
 * In the simulator:
-  * handle (and allow loading) multiple ROMs
-  * handle RAMs correctly (it should map addresses to words and not bits,
-    i.e. should be of type Environment (IntMap [Bool])
   * cleanup code, and prettify (using stylish-haskell?).
     the code should always be clean before committing!
   * synchronize with real-time clock
   * display time
 
 * In the processor (hardware-level)
-  * add special-purpose operations (mod60, etc.) in ALU (use LUT ROM)
+  * add special-purpose operations (mod60, etc.) in ALU
+    (don't use LUTs, use combinational circuits!)
     + corresponding control signals
   * handle output signals for synchronization + display
   * tweak parameters to fit requirements from the microprogram
@@ -29,4 +27,7 @@ Despite having made a lot of progress, there's still tons of work to do!
   * Write microprogram
   * ???
   * Profit!
+
+* Netlist compilation + hot code swapping?
+  * This seems to be in limbo for now...
 
