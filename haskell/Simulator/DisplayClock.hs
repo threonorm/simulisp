@@ -1,37 +1,79 @@
-import Control.Monad.State
-import Graphics.UI.SDL as SDL
+import Control.Monad.Reader
+import Control.Concurrent
+import Data.Word
+import Data.IORef
+import qualified Graphics.UI.SDL as SDL
+
+type TimeVar = MVar (Int, Int, Int)
 
 main :: IO ()
-main = SDL.withInit [InitVideo] $ do
-         screen <- SDL.setVideoMode 960 400 32 [HWSurface, DoubleBuf]
-         SDL.setCaption "Processor demo: Clock" ""
-         initial_tick <- SDL.getTicks
-         let color2px = SDL.mapRGB (SDL.surfaceGetPixelFormat screen)
-         white      <- color2px 0 0   0
-         lightGreen <- color2px 0 255 0
-         darkGreen  <- color2px 0 64  0
-         execStateT (eventLoop screen initial_tick white lightGreen darkGreen) True
-         return ()
+main = do
+  timeVar <- newMVar (0,0,0)
+  forkIO (commandThread timeVar)
+  displayThread timeVar
 
-eventLoop screen initial_tick white lightGreen darkGreen = do
-  continueLoop <- get
+displayThread :: TimeVar -> IO ()
+displayThread timeVar = SDL.withInit [SDL.InitVideo] $ do
+  screen <- SDL.setVideoMode 960 400 32 [SDL.HWSurface, SDL.DoubleBuf]
+  SDL.setCaption "Processor demo: Clock" ""
+  initial_tick <- SDL.getTicks
+  let color2px = SDL.mapRGB (SDL.surfaceGetPixelFormat screen)
+  white      <- color2px 0 0   0
+  lightGreen <- color2px 0 255 0
+  darkGreen  <- color2px 0 64  0
+  continueLoop <- newIORef True
+  runReaderT (eventLoop initial_tick) $ ELD {
+    _graphicsData = GD { _screen = screen
+                       , _white = white
+                       , _lightGreen = lightGreen
+                       , _darkGreen = darkGreen
+                       }
+    , _continueLoop = continueLoop
+    , _timeVar = timeVar
+    }
+  return ()
+
+data EventLoopData = ELD { _graphicsData :: GraphicsData
+                         , _continueLoop :: IORef Bool
+                         , _timeVar      :: TimeVar
+                         }
+data GraphicsData = GD { _screen       :: SDL.Surface
+                       , _white        :: SDL.Pixel
+                       , _lightGreen   :: SDL.Pixel
+                       , _darkGreen    :: SDL.Pixel
+                       }
+
+type EventLoopMonad a = ReaderT EventLoopData IO a
+
+eventLoop :: Word32 -> EventLoopMonad ()
+eventLoop initial_tick = do
+  continueLoop <- lift . readIORef =<< asks _continueLoop
   when continueLoop $ do
     handleEvents
-    new_tick <- lift SDL.getTicks
-    let time = (new_tick - initial_tick) `div` 1000
+    -- new_tick <- lift SDL.getTicks
+    -- let time = (new_tick - initial_tick) `div` 1000
+    graphicsData <- asks _graphicsData
+    let screen = _screen graphicsData
     lift $ do
-      SDL.fillRect screen Nothing white
-      draw7segs screen lightGreen darkGreen (12, 42, 07)
+      SDL.fillRect screen Nothing (_white graphicsData)
+      draw7segs graphicsData (12, 42, 07)
       SDL.flip screen
       SDL.delay 50
-    eventLoop screen initial_tick white lightGreen darkGreen
+    eventLoop initial_tick
 
+handleEvents :: EventLoopMonad ()
 handleEvents = do
   e <- lift SDL.pollEvent
   case e of
-    NoEvent -> return ()
+    SDL.NoEvent -> return ()
     _ -> handleEvent e >> handleEvents
+  where handleEvent SDL.Quit = quit
+        handleEvent (SDL.KeyUp (SDL.Keysym {SDL.symKey = SDL.SDLK_ESCAPE})) = quit
+        handleEvent _ = return ()
+        quit = lift . flip writeIORef False =<< asks _continueLoop
 
+
+digitTo7Seg :: Int -> [Bool]
 digitTo7Seg 0 = [       True,
                   True,       True,
                         False,
@@ -93,13 +135,17 @@ digitTo7Seg 9 = [       True,
                         True
                 ]
                 
-
-draw7segs screen lightGreen darkGreen (h,m,s) = do
+draw7segs :: GraphicsData -> (Int,Int,Int) -> IO ()
+draw7segs (GD { _screen = screen
+              , _lightGreen = lightGreen
+              , _darkGreen = darkGreen
+              })
+          (hr,mn,sec) = do
   let decompose n = [n `div` 10, n `mod` 10]
-      digits = concatMap decompose [h, m, s]
-  zipWithM (\d x -> drawDigit d x 20)
-           digits
-           [ 20 + k * (width + bigMargin) | k <- [0..5] ]
+      digits = concatMap decompose [hr, mn, sec]
+  zipWithM_ (\d x -> drawDigit d x 20)
+            digits
+            [ 20 + k * (width + bigMargin) | k <- [0..5] ]
   where drawDigit d offsX offsY = do
           zipWithM_
             (\switchOn seg -> if switchOn
@@ -116,15 +162,16 @@ draw7segs screen lightGreen darkGreen (h,m,s) = do
             ]
         horizontal = drawBar lg th
         vertical   = drawBar th lg
-        drawBar w h x y color = SDL.fillRect screen (Just $ Rect x y w h) color
+        drawBar w h x y color = SDL.fillRect screen (Just $ SDL.Rect x y w h) color
         th = 16 -- segment thickness
         lg = 64 -- segment length
         mg = 0  -- margin
         width = 2*th + 2*mg + lg
         bigMargin = 40
 
-  
+ 
+-- Clock advancement controlled by another thread
 
-handleEvent Quit = put False
-handleEvent (KeyUp (Keysym {symKey = SDLK_ESCAPE})) = put False
-handleEvent _ = return ()
+commandThread = undefined
+
+
