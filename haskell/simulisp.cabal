@@ -21,7 +21,3 @@ executable generate-processor
     ghc-options:    -O2 -main-is Processor.Hardware
     build-depends:  array, base, containers, mtl, parsec >= 3.0
 
-executable caillou-test
-    main-is:        CaillouTest.hs
-    build-depends:  array, base, containers, mtl, parsec >= 3.0
-

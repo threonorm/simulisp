@@ -43,7 +43,7 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
         (wt:q3) = q2
         (md:q4) = q3
         (go,q5) = splitAt 2 q4
-        [ac,ua] = q5
+        (ac:ua:_) = q5 -- throwaway suffix which is useless for now
 
 
 -- Strong typing for the win!
@@ -56,13 +56,14 @@ newtype Cons      s = Cons      [s]
 -- Is there a way to make all this repetition nicer?
 
 muxDataField :: (Circuit m s) => s -> DataField s -> DataField s -> m (DataField s)
-muxDataField c (DataField xs) (DataField ys) = DataField <$> bigMux c xs ys
+muxDataField c (DataField xs) (DataField ys) =
+  DataField <$> bigMuxn dataS c xs ys
 
 muxWord :: (Circuit m s) => s -> Word s -> Word s -> m (Word s)
-muxWord c (Word xs) (Word ys) = Word <$> bigMux c xs ys
+muxWord c (Word xs) (Word ys) = Word <$> bigMuxn wordS c xs ys
 
 muxCons :: (Circuit m s) => s -> Cons s -> Cons s -> m (Cons s)
-muxCons c (Cons xs) (Cons ys) = Cons <$> bigMux c xs ys
+muxCons c (Cons xs) (Cons ys) = Cons <$> bigMuxn consS c xs ys
 
 decomposeWord :: Word s -> (TagField s, DataField s)
 decomposeWord (Word w) = (TagField prefix, DataField suffix)
@@ -108,21 +109,21 @@ processor =
 -------------------------------------------
 
 -- Memory system (in charge of implementing alloc_cons, fetch_car, fetch_cdr)
--- Implementation 
 
 memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> Word s -> Word s -> m (Word s)
 memorySystem opCode (DataField ptr) regBus tempBus =
-  do rec codeMem <- Cons <$> accessROM (dataS-1) cellS addrR
-         dataMem <- Cons <$> accessRAM (dataS-1) cellS
+  do rec codeMem <- Cons <$> accessROM ramAddrS consS addrR
+         dataMem <- Cons <$> accessRAM ramAddrS consS
                                        (addrR, allocCons, freeCounter,
                                        consRegTemp)
                              -- write to next free cell iff allocating
-         freeCounter <- bigDelay =<< addBitToWord (allocCons, freeCounter)
+         freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
      (car, cdr) <- decomposeCons <$> muxCons codeOrData codeMem dataMem
      muxWord carOrCdr car cdr
   where [carOrCdr, allocCons] = opCode
         (codeOrData:addrR) = ptr
         (Cons consRegTemp) = recomposeCons regBus tempBus
+        ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
 
 
 -- Testing equality to zero
@@ -160,8 +161,9 @@ registerArray controlSignals (Word regIn) =
 
 singleRegister :: (SequentialCircuit m s) => s -> Word s -> m (Word s)
 singleRegister writeEnable (Word input) = do
-  rec delays <- mapM delay newValue
-      newValue <- zipWithM (\inp del -> mux3 (writeEnable, inp, del)) input delays
+  rec delays <- mapMn wordS delay newValue
+      newValue <- zipWithMn wordS (\inp del -> mux3 (writeEnable, inp, del))
+                                  input delays
   return $ Word delays
   
 
@@ -178,7 +180,7 @@ control (TagField tag) =
          let (jump:dispatchOnTag:suffix) = microInstruction
          nextAddr <- incrementer mpc
          -- maybe replace by a mux between 3 alternatives ?
-         mpc <- bigDelay newMpc
+         mpc <- bigDelayn microAddrS newMpc
          newMpc <- bigDoubleMux [jump, dispatchOnTag]
                                 nextAddr
                                 (take microAddrS suffix)
@@ -193,8 +195,8 @@ control (TagField tag) =
 -- TODO: improve and put in another file
 main :: IO ()
 main = do
-  let inp = (Avar "iod", DataField [ Avar $ "i" ++ show k | k <- [0..(dataS-1)] ])
-      circ (a,b) = miniAlu a b
+  let inp = ()
+      circ () = processor
       (_,nl,_) = synthesizeBarebonesNetlist circ inp
   writeFile "foobar.net" . unlines . map show $ nl
 
