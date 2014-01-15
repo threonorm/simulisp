@@ -11,6 +11,7 @@ import Caillou.Arithmetic
 import Caillou.Patterns
 import Caillou.Circuit
 
+import Netlist.AST
 import Netlist.Print
 
 
@@ -192,7 +193,9 @@ control (TagField tag) =
 -- TODO: improve and put in another file
 main :: IO ()
 main = do
-  let prog = synthesizeNetlistAST (\() -> processor) () [] (const [])
-  printProgToFile prog "foobar.net"
+  let inp = (Avar "iod", DataField [ Avar $ "i" ++ show k | k <- [0..(dataS-1)] ])
+      circ (a,b) = miniAlu a b
+      (_,nl,_) = synthesizeBarebonesNetlist circ inp
+  writeFile "foobar.net" . unlines . map show $ nl
 
 
