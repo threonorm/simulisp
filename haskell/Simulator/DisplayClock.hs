@@ -8,21 +8,22 @@ type TimeVar = MVar (Int, Int, Int)
 
 main :: IO ()
 main = do
+  syncLock <- newMVar ()
   timeVar <- newMVar (0,0,0)
-  forkIO (commandThread timeVar)
-  displayThread timeVar
+  forkIO (commandThread timeVar syncLock)
+  displayThread timeVar syncLock
 
-displayThread :: TimeVar -> IO ()
-displayThread timeVar = SDL.withInit [SDL.InitVideo] $ do
+displayThread :: TimeVar -> MVar () -> IO ()
+displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
   screen <- SDL.setVideoMode 960 400 32 [SDL.HWSurface, SDL.DoubleBuf]
   SDL.setCaption "Processor demo: Clock" ""
-  initial_tick <- SDL.getTicks
   let color2px = SDL.mapRGB (SDL.surfaceGetPixelFormat screen)
   white      <- color2px 0 0   0
   lightGreen <- color2px 0 255 0
   darkGreen  <- color2px 0 64  0
   continueLoop <- newIORef True
-  runReaderT (eventLoop initial_tick) $ ELD {
+  initialTick <- SDL.getTicks
+  runReaderT (eventLoop 0) $ ELD {
     _graphicsData = GD { _screen = screen
                        , _white = white
                        , _lightGreen = lightGreen
@@ -30,12 +31,16 @@ displayThread timeVar = SDL.withInit [SDL.InitVideo] $ do
                        }
     , _continueLoop = continueLoop
     , _timeVar = timeVar
+    , _syncLock = syncLock
+    , _initialTick = initialTick
     }
   return ()
 
 data EventLoopData = ELD { _graphicsData :: GraphicsData
                          , _continueLoop :: IORef Bool
                          , _timeVar      :: TimeVar
+                         , _syncLock     :: MVar ()
+                         , _initialTick  :: Word32
                          }
 data GraphicsData = GD { _screen       :: SDL.Surface
                        , _white        :: SDL.Pixel
@@ -46,20 +51,35 @@ data GraphicsData = GD { _screen       :: SDL.Surface
 type EventLoopMonad a = ReaderT EventLoopData IO a
 
 eventLoop :: Word32 -> EventLoopMonad ()
-eventLoop initial_tick = do
+eventLoop secondsPreviouslyElapsed = do
   continueLoop <- lift . readIORef =<< asks _continueLoop
   when continueLoop $ do
+    syncLock <- asks _syncLock
+    lift $ tryTakeMVar syncLock
+    
     handleEvents
-    -- new_tick <- lift SDL.getTicks
-    -- let time = (new_tick - initial_tick) `div` 1000
-    graphicsData <- asks _graphicsData
-    let screen = _screen graphicsData
-    lift $ do
-      SDL.fillRect screen Nothing (_white graphicsData)
-      draw7segs graphicsData (12, 42, 07)
-      SDL.flip screen
-      SDL.delay 50
-    eventLoop initial_tick
+    
+    newTick <- lift SDL.getTicks
+    initialTick <- asks _initialTick
+    let secondsElapsed = (newTick - initialTick) `div` 1000
+    when (secondsElapsed > secondsPreviouslyElapsed) $ do
+      lift $ tryPutMVar syncLock ()
+      return ()
+      
+    displayTime
+    
+    lift $ SDL.delay 50
+    eventLoop secondsElapsed
+
+displayTime :: EventLoopMonad ()
+displayTime = do
+  time <- lift . readMVar =<< asks _timeVar
+  graphicsData <- asks _graphicsData
+  let screen = _screen graphicsData
+  lift $ do
+    SDL.fillRect screen Nothing (_white graphicsData)
+    draw7segs graphicsData (12, 42, 07)
+    SDL.flip screen
 
 handleEvents :: EventLoopMonad ()
 handleEvents = do
@@ -172,6 +192,7 @@ draw7segs (GD { _screen = screen
  
 -- Clock advancement controlled by another thread
 
-commandThread = undefined
+commandThread :: TimeVar -> MVar () -> IO ()
+commandThread timeVar syncLock = undefined
 
 
