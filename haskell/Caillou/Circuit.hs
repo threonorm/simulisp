@@ -2,7 +2,7 @@
 
 -- TODO : add lots of comments to make the code perfectly clear to the uninitiated
 
-module Circuit where
+module Caillou.Circuit where
 
 import Control.Applicative
 import Control.Monad

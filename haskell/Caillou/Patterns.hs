@@ -1,11 +1,11 @@
-module Patterns where
+module Caillou.Patterns where
 
 import Control.Arrow
 import Control.Applicative
 import Control.Monad
 import Data.List
 
-import Circuit
+import Caillou.Circuit
 
 row :: (Applicative m, Monad m) => ((a, b) -> m (c, a)) -> ((a, [b]) -> m ([c], a))
 row _   (x, []  ) = return ([], x)

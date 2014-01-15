@@ -4,11 +4,14 @@ module Processor.Hardware where
 
 import Control.Applicative
 import Control.Monad
-import Circuit
 import Data.List
 
+import Caillou.NetlistGen
 import Caillou.Arithmetic
 import Caillou.Patterns
+import Caillou.Circuit
+
+import Netlist.Print
 
 
 -- Prolegomena and specifications --
@@ -16,7 +19,7 @@ import Caillou.Patterns
 
 -- Size constants
 
-import Parameters
+import Processor.Parameters
 
 -- Control signals / microcode specification
 
@@ -83,6 +86,7 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control regOutTag
+
          regIn <- muxWord (muxData controlSignals) regOut
                   =<< muxWord (useAlu controlSignals)
                               (recomposeWord regOutTag alu)
@@ -91,11 +95,8 @@ processor =
                                regOutData
                                regOut
                                tempOut
-         let (Word regIn') = regIn
-         tempOut <- Word <$> accessRAM 0 wordS ([],
-                                                writeTemp controlSignals,
-                                                [],
-                                                regIn')
+         tempOut <- singleRegister (writeTemp controlSignals) regIn
+         
          alu <- miniAlu (aluCtrl controlSignals) (snd . decomposeWord $ gcOut)
          regOut <- registerArray controlSignals regIn
          let (regOutTag, regOutData) = decomposeWord regOut
@@ -143,6 +144,8 @@ miniAlu incrOrDecr (DataField (t:q)) =
      DataField . fst <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
 
 
+-- Registers
+
 -- The array of registers
 
 registerArray :: (MemoryCircuit m s) => ControlSignals s -> Word s -> m (Word s)
@@ -150,7 +153,16 @@ registerArray controlSignals (Word regIn) =
   Word <$> accessRAM 3 wordS (regRead   controlSignals,
                               writeFlag controlSignals,
                               regWrite  controlSignals,
-                              regIn) 
+                              regIn)
+  
+-- A single register (used for temp)
+
+singleRegister :: (SequentialCircuit m s) => s -> Word s -> m (Word s)
+singleRegister writeEnable (Word input) = do
+  rec delays <- mapM delay newValue
+      newValue <- zipWithM (\inp del -> mux3 (writeEnable, inp, del)) input delays
+  return $ Word delays
+  
 
 -- The control logic
 -- The microprogram is stored in a ROM, the function of the hardware
@@ -174,4 +186,13 @@ control (TagField tag) =
      notJump <- neg jump
      neutralized <- mapM (notJump -&&-) microInstruction
      return $ decodeMicroInstruction neutralized
+
+
+-- Output netlist
+-- TODO: improve and put in another file
+main :: IO ()
+main = do
+  let prog = synthesizeNetlistAST (\() -> processor) () [] (const [])
+  printProgToFile prog "foobar.net"
+
 

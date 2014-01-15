@@ -1,12 +1,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
 
-module Simulation where
+module Caillou.Simulation where
 
 import Control.Applicative
 import Control.Monad.Identity
 import Control.Monad.State
 
-import Circuit
+import Caillou.Circuit
 
 
 -- Simple simulation of combinational circuits

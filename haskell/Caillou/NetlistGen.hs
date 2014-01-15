@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
 
-module NetlistGen where
+module Caillou.NetlistGen where
 
 import Control.Applicative
 import Control.Arrow
@@ -8,7 +8,8 @@ import Control.Monad.Fix
 import Control.Monad.State
 import qualified Data.Map as Map
 
-import NetlistAST
+import Netlist.AST
+import Caillou.Circuit
 
 
 -- Netlist generation

@@ -15,3 +15,13 @@ executable simulator
     main-is:        Simulator/Main.hs
     ghc-options:    -O2 -main-is Simulator.Main
     build-depends:  array, base, containers, mtl, parsec >= 3.0
+
+executable generate-processor
+    main-is:        Processor/Hardware.hs
+    ghc-options:    -O2 -main-is Processor.Hardware
+    build-depends:  array, base, containers, mtl, parsec >= 3.0
+
+executable caillou-test
+    main-is:        CaillouTest.hs
+    build-depends:  array, base, containers, mtl, parsec >= 3.0
+

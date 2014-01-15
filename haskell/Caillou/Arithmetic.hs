@@ -4,8 +4,8 @@ module Caillou.Arithmetic where
 
 import Control.Applicative
 
-import Circuit
-import Patterns
+import Caillou.Circuit
+import Caillou.Patterns
 
 halfAdd :: (Circuit m s) => (s,s) -> m (s,s)
 halfAdd (a, b) = (,) <$> (a -^^- b) <*> (a -&&- b)
