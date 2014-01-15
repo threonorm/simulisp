@@ -112,7 +112,7 @@ processor =
 
 memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> Word s -> Word s -> m (Word s)
 memorySystem opCode (DataField ptr) regBus tempBus =
-  do rec codeMem <- Cons <$> accessROM ramAddrS consS addrR
+  do rec codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
          dataMem <- Cons <$> accessRAM ramAddrS consS
                                        (addrR, allocCons, freeCounter,
                                        consRegTemp)
@@ -176,7 +176,8 @@ control (TagField tag) =
   do wireZero <- zero
      let initialStateForTag = [wireZero] ++ tag
                               ++ replicate (microAddrS - tagS - 1) wireZero
-     rec microInstruction <- accessROM microAddrS microInstrS mpc
+     rec microInstruction <- accessROM "rom_microcode"
+                                       microAddrS microInstrS mpc
          let (jump:dispatchOnTag:suffix) = microInstruction
          nextAddr <- incrementer mpc
          -- maybe replace by a mux between 3 alternatives ?

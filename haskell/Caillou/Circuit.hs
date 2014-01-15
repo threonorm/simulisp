@@ -69,8 +69,8 @@ class (Circuit m s, MonadFix m) => SequentialCircuit m s where
 
 -- This class is perfectly modeled after the target netlist language
 class (SequentialCircuit m s) => MemoryCircuit m s where
-  -- addr size, word size, read addr
-  accessROM :: Int -> Int -> [s] -> m [s]
+  -- name, addr size, word size, read addr
+  accessROM :: String -> Int -> Int -> [s] -> m [s]
   -- addr size, word size, read addr, write enable, write addr, write data
   accessRAM :: Int -> Int -> ([s], s, [s], [s]) -> m [s]
 

@@ -68,11 +68,14 @@ instance SequentialCircuit NetlistGen Arg where
           ereg (Aconst c) = Earg (Aconst c)
 
 instance MemoryCircuit NetlistGen Arg where
-  accessROM addrSize wordSize readAddrList = do
+  accessROM arrName addrSize wordSize readAddrList = do
     readAddrArr <- listToArr readAddrList
-    wordArr <- makeWhateverWithExpr (TBitArray wordSize)
-               $ Erom addrSize wordSize readAddrArr
-    arrToList wordSize wordArr
+    modify (\s -> s { ngsEqs  = (arrName, Erom addrSize wordSize readAddrArr)
+                                : (ngsEqs s)
+                    , ngsVars = Map.insert arrName (TBitArray wordSize)
+                                $ ngsVars s
+                    })
+    arrToList wordSize (Avar arrName)
 
   accessRAM addrSize wordSize (readAddrList, writeEnable, writeAddrList, writeDataList) = do
     readAddrArr  <- listToArr readAddrList
