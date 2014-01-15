@@ -24,7 +24,7 @@ regToString Temp  = "101"
 data Instruction =
      ExtI ExternalInstruction
     | IntI InternalInstruction
-    | Label (String,Int) 
+    | Label (String,Int) --Int for alignment purpose : in number of words 
 
 data ExternalInstruction = 
     C { regRead :: Reg,
@@ -41,8 +41,7 @@ data InternalInstruction =
      addr :: Label
     }
 
-type Label = String 
-
+type Label =  String
 
 ground  = C {regRead = Value,
            regWrite = Value,
@@ -127,25 +126,29 @@ assembleFirst (IntI instr) =
 assembleFirst (Label blabla) =
   Right (Label blabla)
 
-assembleSecond :: [Intermediate] -> String
-assembleSecond [] = []  
-assembleSecond ((Left blabla):q) = "0"++blabla++assembleSecond q
-assembleSecond code@((Right(IntI instr)): q) =  
+assembleSecond :: [Intermediate] -> Int -> [Intermediate] -> String  -- Code,position, list from position, label
+assembleSecond code pos [] = []  
+assembleSecond code pos ((Left blabla):q) = "0"++blabla++assembleSecond code (pos+1) q
+assembleSecond code pos ((Right(IntI instr)): q) =  
  ("1"++ -- Bit of Jump
   (printBool . isCond $ instr) ++
   ( printAddr 12 . position code. addr $ instr) ++
   "0"  --Useless bit in this case
- ) ++ assembleSecond q
+ ) ++ assembleSecond code (pos+1) q
     
-assembleSecond ((Right(Label string)): q) = 
-  assembleSecond q
- 
+assembleSecond code pos ((Right(Label (s,t))): q) = 
+  (take (15*floodSize) $ repeat '0') ++ assembleSecond code t q
+  where floodSize = t-pos 
 
 position :: [Intermediate] -> Label -> Int
 position ((Right (Label (s,t))):q) lab =
  if s==lab then t else position q lab
 position (_:q) lab =  position q lab
 
+checkPosition :: [Intermediate] -> Int -> Bool
+checkPosition (Right(Label (s,t)):q) prec = if prec <= t then checkPosition q t 
+             else False
+checkPosition (_:q) prec = checkPosition q $ prec + 1  --In number of words
   
 printAddr :: Int -> Int -> String
 printAddr microAddr pos = 
