@@ -20,6 +20,7 @@ Despite having made a lot of progress, there's still tons of work to do!
 
 * Microcode-level:
   * Code a microassembler (Haskell EDSL?)
+        -> TODO : DispatchOn...
   * Write microprogram
   * ???
   * Profit!
