@@ -18,15 +18,15 @@ simple netlist language
 * An assembler (yet to come)
 
 
-INSTALLATION
+Installation
 ------------
 
-=== Requirements
+### Requirements
 
 - Haskell Platform >= 2013.2.0.0
 - (For the emulator only) OCaml >= 4.00
 
-=== Building
+### Building
 
 We use Cabal as our build system.
 
@@ -39,7 +39,7 @@ The binaries generated are:
 - a program to generate the netlist of the processor
   in `dist/build/generate-processor/generate-processor`
 
-SIMULATOR USAGE
+Simulator usage
 ---------------
 
 To simulate juste one step:
@@ -51,8 +51,7 @@ To simulate n steps by feeding n inputs to the program through a file:
 More information:
 `./simulator --help`
 
-Structure of input files
-------------------------
+### Structure of input files
 
     var ::= string                                                        
     val ::= binary number                                                 
@@ -73,8 +72,7 @@ Semantics:
 WARNING: All the required inputs of your Netlists must be described in
 your input file.
 
-Structure of ROM files
-----------------------
+### Structure of ROM files
 
 A succession of lines, each of which is of the type
 
