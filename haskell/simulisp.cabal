@@ -1,0 +1,16 @@
+name:               simulisp
+version:            0.11
+synopsis:           foobar
+description:
+    lorem ipsum
+author:             Nguyễn Lê Thành Dũng, Thomas Bourgeat
+cabal-version:      >= 1.6
+build-type:         Simple
+
+source-repository head
+  type:     git
+  location: git://github.com/threonorm/simulisp.git
+
+executable xmonad
+    main-is:            Simulator/Main.hs
+    build-depends:  base, containers
