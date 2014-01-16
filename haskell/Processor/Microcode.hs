@@ -66,7 +66,7 @@ pushWithReturn retTag reg = [moveToTemp reg,allocConsWithTag Stack Stack retTag]
 walkOnList = undefined
 
 
-returnFirst = undefined
+returnFirst =  undefined
 returnNext = undefined 
 returnLast = undefined
 returnLet      = undefined    -- Perfect indentation: Vim power  
@@ -77,4 +77,6 @@ saveCdrAndEvalCar returnAddr = push Env ++
                                 [fetchCdrTemp Expr]++
                                 pushWithReturn returnAddr Expr++
                                 [fetchCar Expr Expr,
-                                Dispatch Expr]                                 
+                                Dispatch Expr] 
+
+                                
