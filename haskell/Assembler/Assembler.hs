@@ -10,7 +10,7 @@ data Instruction =
      ExtI ExternalInstruction
     | IntI InternalInstruction
     | Dispatch Reg
-    | Label (String,Int)        --Int for alignment purpose : in number of words 
+    | Label (String,Maybe Int)        --Int for alignment purpose : in number of words 
 
 
 --There are three types of instructions : Labels, classical instructions using
@@ -87,27 +87,31 @@ assembleSecond code pos ((Left blabla):q) = "0"++blabla++assembleSecond code (po
 assembleSecond code pos ((Right(IntI instr)): q) =  
  ("1"++ -- Bit of Jump
   (printBool . isCond $ instr) ++
-  ( printAddr 12 . position code. addr $ instr) ++
+  ( printAddr 12 . position code pos. addr $ instr) ++
     replicate (microInstrS - microAddrS - 2) '0'  --Useless bit in this case
  ) ++ assembleSecond code (pos+1) q
-assembleSecond code pos ((Right(Label (s,t))): q) = 
+assembleSecond code pos ((Right(Label (s,Just t))): q) = 
   (take (microInstrS *floodSize) $ repeat '0') ++ assembleSecond code t q
   where floodSize = t-pos 
-
+assembleSecond code pos ((Right(Label (s,Nothing))): q) = 
+   assembleSecond code (pos) q
 
 
 --Give the position of the declaration of the Label in the Code (in words).
-position :: [Intermediate] -> Label -> Int
-position ((Right (Label (s,t))):q) lab =
- if s==lab then t else position q lab
-position (_:q) lab =  position q lab
+position :: [Intermediate] -> Int ->  Label -> Int
+position ((Right (Label (s,Just t))):q) pos lab =
+ if s==lab then t else position q pos lab
 
+position ((Right (Label (s,Nothing))):q) pos lab =
+ if s==lab then pos else position q (pos) lab
+position (_:q) pos lab =  position q (pos+1) lab
 
 --To check if the assembly is possible with the alignment required by the user.
 checkPosition :: [Intermediate] -> Int -> Bool 
 checkPosition [] prec = True  
-checkPosition (Right(Label (s,t)):q) prec = if prec <= t then checkPosition q t 
+checkPosition (Right(Label (s,Just t)):q) prec = if prec <= t then checkPosition q t 
              else False
+checkPosition (Right(Label (s,Nothing)):q) prec = checkPosition q prec 
 checkPosition (_:q) prec = checkPosition q $ prec + 1  --In number of words
 
 ---------- MiniASM as a sort of an eDSL  ---------
@@ -131,7 +135,12 @@ condJump :: Label -> Instruction
 condJump label = IntI $  D {isCond = False,
                             addr = label
                            } 
+loadConditional :: Reg -> Instruction
+loadConditional reg = ExtI $ ground{regRead = reg,
+                                    loadCondReg = True 
+                                   }
 
+  
 fetchCar :: Reg -> Reg -> Instruction
 fetchCar regread regwrite = ExtI $ ground{regRead = regread,
                                       regWrite = regwrite
