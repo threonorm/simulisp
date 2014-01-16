@@ -15,7 +15,6 @@ import Data.Maybe
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 import Data.IntMap (IntMap)
-import Data.Bool
 
 import Netlist.AST
 import Util.ListUtil
@@ -31,25 +30,13 @@ type Outputs = [(Ident, Value)]
 
 extractArg :: WireState -> Arg -> Value
 extractArg st (Avar i) = st Map.! i 
-extractArg st (Aconst v) = v
+extractArg _  (Aconst v) = v
 
-
-vLogic:: (Bool->Bool->Bool) -> Value -> Value -> Value
-vLogic op v1 v2 =
-  case (v1,v2) of
-    (VBit a1,VBit a2)->VBit (op a1 a2)
-    (VBitArray l1, VBitArray l2)-> VBitArray (map (\(a,b)->op a b) $ zip l1 l2)
-   -- (VBitArray l1,VBit a1) ->  --It is not necessary, just imagination
-   --      VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
-   -- (VBit a1,VBitArray l1) ->  --Idem : I'm lazy and don't want read the specs
-   --      VBitArray (map (\(a,b)->op a b) $ zip l1 (repeat a1))
-
+vLogic:: (Bool -> Bool -> Bool) -> Value -> Value -> Value
+vLogic op (VBit a1) (VBit a2) = VBit $ op a1 a2
 
 vNot :: Value -> Value
-vNot v= case v of 
- (VBit a) -> VBit (not a)
- (VBitArray l) -> VBitArray (map not $ l) 
-
+vNot (VBit a) = VBit $ not a
 
 -- Partial function, doesn't handle memory
 -- TODO (in the distant future): improve this with generic programming / SYB stuff
@@ -65,27 +52,20 @@ compute st (Ebinop op a1 a2) =
         opTransf = transfo op
         transfo x = case x of
            And  -> (&&) 
-           Nand -> (\p q-> not $ p && q)
-           Xor  ->(\p q->(p || q) && not (p && q)) 
+           Nand -> \p q -> not $ p && q
+           Xor  -> \p q -> (p || q) && not (p && q)
            Or   -> (||)
 compute st (Emux a1 a2 a3) =
-  case vA1 of
-    VBitArray _ ->
-           VBitArray (zipWith3 (\x y z ->if x then z else y) 
-                      (valueToList vA1) 
-                      (valueToList vA2) 
-                      (valueToList vA3))
-    VBit v1 ->
-           if v1 then vA3 else vA2
-  where vA1 = extractArg st a1
-        vA2 = extractArg st a2
-        vA3 = extractArg st a3
-compute st (Eselect i a)=
-  VBit ((valueToList $ extractArg st a  ) !! i)
-compute st (Eslice i1 i2 a)=
-  VBitArray ( take (i2 - i1+1) . drop i1 . valueToList $ extractArg st a )
+  VBit $ if vA1 then vA3 else vA2
+  where (VBit vA1) = extractArg st a1
+        (VBit vA2) = extractArg st a2
+        (VBit vA3) = extractArg st a3
+compute st (Eselect i a) =
+  VBit $ (valueToList $ extractArg st a) !! i
+compute st (Eslice i1 i2 a) =
+  VBitArray $ take (i2 - i1 + 1) . drop i1 . valueToList $ extractArg st a
 compute st (Econcat a1 a2) =
-  VBitArray ( (valueToList vA1) ++ (valueToList vA2) )   
+  VBitArray $ valueToList vA1 ++ valueToList vA2
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
@@ -131,7 +111,6 @@ simulationStep memory oldWireState (ident, expr) =
             word = case IntMap.lookup wordAddr (ram memory Map.! ident) of
                      Nothing -> replicate wordSize False
                      Just x  -> x
-
 
         -- purely combinational logic: just compute
         f e = compute oldWireState e

@@ -2,11 +2,7 @@ Despite having made a lot of progress, there's still tons of work to do!
 
 * Update README + add bibliographic refs.
 
-* In the simulator:
-  * cleanup code, and prettify (using stylish-haskell?).
-    the code should always be clean before committing!
-  * synchronize with real-time clock
-  * display time
+* In the simulator: DONE!
 
 * In the processor (hardware-level)
   * add special-purpose operations (mod60, etc.) in ALU
@@ -17,9 +13,8 @@ Despite having made a lot of progress, there's still tons of work to do!
   * Fix the problem about readtemp
 
 * Microcode-level:
-  * Code a microassembler (Haskell EDSL?)
-        -> TODO : DispatchOn...
-  * Write microprogram
+  * Code a microassembler (Haskell EDSL?) -> Mostly OK
+  * Write microprogram -> WIP
   * ???
   * Profit!
 
