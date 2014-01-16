@@ -12,6 +12,14 @@ row _   (x, []  ) = return ([], x)
 row cir (x, y:ys) = do (z, x') <- cir (x, y)
                        first (z:) <$> row cir (x', ys)
 
+dichotomicFold :: (Circuit m s) => ((s, s) -> m s) -> [s] -> m s
+dichotomicFold _ []  = error "dichotomicFold: empty list"
+dichotomicFold _ [x] = return x
+dichotomicFold f xs  = dichotomicFold f =<< pass xs
+  where pass []        = return []
+        pass [y]       = return [y]
+        pass (y:y':ys) = (:) <$> f (y, y') <*> pass ys
+
 bigMux :: (Circuit m s) => s -> [s] -> [s] -> m [s]
 bigMux a b c = zipWithM (\y z -> mux3 (a,y,z)) b c
 
