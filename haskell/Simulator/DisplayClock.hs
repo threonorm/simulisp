@@ -169,31 +169,47 @@ draw7segs (GD { _screen = screen
           (hr,mn,sec) = do
   let decompose n = [n `div` 10, n `mod` 10]
       digits = concatMap decompose [hr, mn, sec]
-  zipWithM_ (\d x -> drawDigit d x 20)
+  zipWithM_ (\d x -> drawDigit d x origY)
             digits
-            [ 20 + k * (width + bigMargin) | k <- [0..5] ]
+            [ origX + k * width
+                    + ((k+1) `div` 2) * bigMargin
+                    + (k `div` 2) * hugeMargin
+            | k <- [0..5] ]
   where drawDigit d offsX offsY = do
-          zipWithM_
-            (\switchOn seg -> if switchOn
-                              then seg lightGreen
-                              else seg darkGreen)
-            (digitTo7Seg d)
-            [ horizontal (offsX + th + mg) (offsY)
-            , vertical offsX (offsY + th + mg)                    
-            , vertical (offsX + th + 2*mg + lg) (offsY + th + mg)         
-            , horizontal (offsX + th + mg) (offsY + th + 2*mg + lg)       
-            , vertical offsX (offsY + 2*th + 3*mg + lg)                   
-            , vertical (offsX + th + 2*mg + lg) (offsY + 2*th + 3*mg + lg)
-            , horizontal (offsX + th + mg) (offsY + 2*th + 4*mg + 2*lg)
-            ]
+          let segments =
+                [ horizontal (offsX + th + mg) (offsY)
+                , vertical offsX (offsY + th + mg)                    
+                , vertical (offsX + th + 2*mg + lg) (offsY + th + mg)         
+                , horizontal (offsX + th + mg) (offsY + th + 2*mg + lg)       
+                , vertical offsX (offsY + 2*th + 3*mg + lg)                   
+                , vertical (offsX + th + 2*mg + lg) (offsY + 2*th + 3*mg + lg)
+                , horizontal (offsX + th + mg) (offsY + 2*th + 4*mg + 2*lg)
+                ]
+              light = map snd . filter fst         . zip (digitTo7Seg d)
+                      $ segments
+              dark  = map snd . filter (not . fst) . zip (digitTo7Seg d)
+                      $ segments
+          -- in order to handle overlapping segments (negative margins)
+          -- draw the dark segments first
+          forM_ dark  $ \seg -> seg darkGreen
+          forM_ light $ \seg -> seg lightGreen
+
         horizontal = drawBar lg th
         vertical   = drawBar th lg
         drawBar w h x y color = SDL.fillRect screen (Just $ SDL.Rect x y w h) color
         th = 16 -- segment thickness
         lg = 64 -- segment length
-        mg = 0  -- margin
+        mg = -3 -- hahaha negative margins!
         width = 2*th + 2*mg + lg
-        bigMargin = 40
+        bigMargin = 30
+        hugeMargin = 70
+
+        totalWidth = 6*(2*th + 2*mg + lg) + 3*bigMargin + 2*hugeMargin
+        totalHeight = 3*th + 4*mg + 2*lg
+
+        origX = (960 - totalWidth ) `div` 2
+        origY = (400 - totalHeight) `div` 2
+        
 
  
 -- Clock advancement controlled by another thread
