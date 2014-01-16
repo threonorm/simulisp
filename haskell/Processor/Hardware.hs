@@ -2,6 +2,7 @@
 
 module Processor.Hardware where
 
+import Control.Arrow
 import Control.Applicative
 import Control.Monad
 import Data.List
@@ -36,7 +37,7 @@ data ControlSignals s = CS { regRead   :: [s] -- 3 bits
                            } --           Total: 19 bits (=microInstrS)
                         
 decodeMicroInstruction :: [s] -> ControlSignals s
-decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
+decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua im
   where external = drop 2 microinstr -- first 2 bits are internal to control
         (rr,q0) = splitAt 3 external
         (rw,q1) = splitAt 3 q0
@@ -44,7 +45,8 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
         (wt:q3) = q2
         (md:q4) = q3
         (go,q5) = splitAt 2 q4
-        (ac:ua:_) = q5 -- throwaway suffix which is useless for now
+        (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
+        im = take 6 q6
 
 
 -- Strong typing for the win!
@@ -88,11 +90,19 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
-  do rec controlSignals <- control regOutTag
+  do rec controlSignals <- control condReg regOutTag
+
+         let loadRegCond = undefined
+
+         condReg <- delay =<< mux3 (loadRegCond controlSignals,
+                                    aluNegative,
+                                    regIsNil)
+         let (regOutTag@(TagField tag), regOutData) = decomposeWord regOut
+         regIsNil <- dichotomicFold or2 tag
 
          regIn <- muxWord (muxData controlSignals) regOut
                   =<< muxWord (useAlu controlSignals)
-                              (recomposeWord regOutTag alu)
+                              (recomposeWord regOutTag aluOut)
                               gcOut
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOutData
@@ -100,9 +110,9 @@ processor =
                                tempOut
          tempOut <- singleRegister (writeTemp controlSignals) regIn
          
-         alu <- miniAlu (aluCtrl controlSignals) (snd . decomposeWord $ gcOut)
+         (aluOut, aluNegative) <- miniAlu (aluCtrl controlSignals)
+                                          (snd . decomposeWord $ gcOut)
          regOut <- registerArray controlSignals regIn
-         let (regOutTag, regOutData) = decomposeWord regOut
      return []
 
 
@@ -128,23 +138,29 @@ memorySystem opCode (DataField ptr) regBus tempBus =
 
 
 -- Testing equality to zero
+-- I think it's better with dichotomicFold...
 
-isZero :: (Circuit m s) => [s] -> m s
-isZero = neg <=< orAll
-  --TODO : Check the code generated
-  -- /!\ we can improve with a dichotomy
-  where orAll  [a] = return a           
-        orAll (t:q) = do out <- t -||> orAll q
-                         return out 
+-- isZero :: (Circuit m s) => [s] -> m s
+-- isZero = neg <=< orAll
+--   --TODO : Check the code generated
+--   -- /!\ we can improve with a dichotomy
+--   where orAll  [a] = return a           
+--         orAll (t:q) = do out <- t -||> orAll q
+--                          return out 
 
 
--- A small ALU which can either increment or decrement its argument
-        
-miniAlu :: (SequentialCircuit m s) => s -> (DataField s) -> m (DataField s)
+-- A small ALU which takes a dataS-bit word which can either
+-- * increment or decrement it (i
+-- * decrement either half of the word (special-purpose for lookup of local variables)
+-- * subtract an immediate-mode constant (special-purpose for the clock)
+-- it outputs the result of the computation + a boolean to signal overflow
+-- (when the result of a subtraction is negative)
+                
+miniAlu :: (SequentialCircuit m s) => s -> (DataField s) -> m (DataField s, s)
 miniAlu incrOrDecr (DataField (t:q)) =
   do wireOne <- one
      wireZero <- zero
-     DataField . fst <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
+     first DataField <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
 
 
 -- Registers
@@ -172,22 +188,33 @@ singleRegister writeEnable (Word input) = do
 -- The microprogram is stored in a ROM, the function of the hardware
 -- plumbing here is to handle state transitions
 
-control :: (MemoryCircuit m s) => TagField s -> m (ControlSignals s)
-control (TagField tag) =
+control :: (MemoryCircuit m s) => s -> TagField s -> m (ControlSignals s)
+control cond (TagField tag) =
   do wireZero <- zero
      let initialStateForTag = [wireZero] ++ tag
                               ++ replicate (microAddrS - tagS - 1) wireZero
-     rec microInstruction <- accessROM "rom_microcode"
+                              
+     rec mpc <- bigDelayn microAddrS newMpc -- microprogram counter
+         microInstruction <- accessROM "rom_microcode"
                                        microAddrS microInstrS mpc
-         let (jump:dispatchOnTag:suffix) = microInstruction
-         nextAddr <- incrementer mpc
-         -- maybe replace by a mux between 3 alternatives ?
-         mpc <- bigDelayn microAddrS newMpc
-         newMpc <- bigDoubleMux [jump, dispatchOnTag]
-                                nextAddr
-                                (take microAddrS suffix)
-                                initialStateForTag
-                                initialStateForTag
+
+         let (jump:choice:suffix) = microInstruction
+         let dispatch    = choice -- choice between normal (0) and dispatch (1)
+         let conditional = choice -- choice between jump and branch
+
+         normalNextAddr <- incrementer mpc
+
+         jumpOK <- neg conditional <||- cond
+         nonLocal <- mux3 (jump, dispatch, jumpOK)
+         
+         newMpcNonLocal <- bigMuxn microAddrS jump
+                                   initialStateForTag
+                                   (take microAddrS suffix)
+           
+         newMpc <- bigMuxn microAddrS nonLocal
+                           normalNextAddr
+                           newMpcNonLocal                           
+
      notJump <- neg jump
      neutralized <- mapM (notJump -&&-) microInstruction
      return $ decodeMicroInstruction neutralized
