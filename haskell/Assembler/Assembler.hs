@@ -11,6 +11,7 @@ import Data.List
 data Instruction =
      ExtI ExternalInstruction
     | IntI InternalInstruction
+    | Dispatch Reg
     | Label (String,Int)        --Int for alignment purpose : in number of words 
 
 
@@ -66,6 +67,10 @@ assembleFirst (ExtI instr) = Left ("0"++                -- Bit of internal incr
  (printBool . snd . gcOpcode $ instr ) ++
  (printBool . aluCtrl $ instr ) ++
  (printBool . useAlu $ instr ))
+assembleFirst (Dispatch reg)=
+  Left ( "1" ++
+         regToString reg ++
+         replicate 13 '0') -- Padding with 0 
 assembleFirst (IntI instr) = 
   Right (IntI instr) 
 assembleFirst (Label blabla) =
@@ -114,6 +119,9 @@ jmp :: Label ->  Instruction
 jmp label = IntI $ D {isCond = False,
                       addr = label  
                     }
+
+dispatchOnReg :: Reg -> Instruction
+dispatchOn 
 
 condJump :: Label -> Instruction
 condJump label = IntI $  D {isCond = False,
