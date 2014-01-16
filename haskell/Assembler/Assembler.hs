@@ -1,7 +1,5 @@
 module Assembler.Assembler where
 
-import Control.Applicative
-import Control.Monad
 import Data.List
 
 
@@ -79,7 +77,7 @@ assembleFirst (Label blabla) =
 
 
 assembleSecond :: [Intermediate] -> Int -> [Intermediate] -> String  -- Code,position, list from position, label
-assembleSecond code pos [] = []  
+assembleSecond code pos [] = []
 assembleSecond code pos ((Left blabla):q) = "0"++blabla++assembleSecond code (pos+1) q
 assembleSecond code pos ((Right(IntI instr)): q) =  
  ("1"++ -- Bit of Jump
@@ -189,7 +187,7 @@ printAddr microAddr pos =
   take microAddr $ aux pos ++ repeat '0' -- Lazyness rocks!!! 
  where aux pos = 
         if pos == 0 then [] else 
-          (show $ pos `mod` 2) ++ aux (pos `div` 2)
+          (show $ pos `mod` 2) ++ aux (pos `div` 2)
 
            
 
