@@ -6,6 +6,7 @@ type prim = Car
           | Incr
           | Decr
           | Isgt60
+          | Isgt24
           | IsZero 
           | PrintSec
           | PrintMin
@@ -249,7 +250,7 @@ module Eval :
             | Cdr  -> return_value (Gc.fetch_cdr (get_ptr lastarg))
             | Cons -> let (car,Gc.List cdr) = Gc.fetch_cell (get_ptr !args) in
                       let cadr= Gc.fetch_car cdr in
-                      return_value (Gc.List(Gc.alloc_cons cadr car))
+                      return_value (Gc.List(Gc.alloc_cons car cadr))
             | Incr -> let (Gc.Num a) = lastarg in 
                       return_value (Gc.Num (a+1))
             | Decr -> let (Gc.Num a) = lastarg in
@@ -260,10 +261,9 @@ module Eval :
             | Isgt60 -> let (Gc.Num a) = lastarg in
                         if a>=60 then return_value( Gc.Symb("T") )
                         else return_value Gc.Nil
-            (* | PseudoMod60 -> let (Gc.Num a) = lastarg in *)
-            (*                  if a >= 60 then a - 60 else a *)
-            (* | PseudoMod24 -> let (Gc.Num a) = lastarg in *)
-            (*                  if a >= 24 then a - 24 else a *)
+            | Isgt24 -> let (Gc.Num a) = lastarg in
+                        if a>=24 then return_value( Gc.Symb("T") )
+                        else return_value Gc.Nil
             | PrintSec -> let (Gc.Num a) = lastarg in
                           Printf.printf "seconds: %d\n" a;
                           dispatch_on_stack ()
