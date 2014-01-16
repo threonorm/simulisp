@@ -32,11 +32,12 @@ data ControlSignals s = CS { regRead   :: [s] -- 3 bits
                            , gcOpcode  :: [s] -- 2 bits
                            , aluCtrl   :: s   -- 1 bit
                            , useAlu    :: s   -- 1 bit
+                           , loadCondReg :: s -- 1 bit
                            , immediate :: [s] -- 6 bits
-                           } --           Total: 19 bits (=microInstrS)
+                           } --           Total: 20 bits (=microInstrS)
                         
 decodeMicroInstruction :: [s] -> ControlSignals s
-decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
+decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
   where external = drop 2 microinstr -- first 2 bits are internal to control
         (rr,q0) = splitAt 3 external
         (rw,q1) = splitAt 3 q0
@@ -44,8 +45,8 @@ decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua
         (wt:q3) = q2
         (md:q4) = q3
         (go,q5) = splitAt 2 q4
-        (ac:ua:_) = q5 -- throwaway suffix which is useless for now
-
+        (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
+        (lcr:im) =  q6 
 
 -- Strong typing for the win!
 

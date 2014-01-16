@@ -26,7 +26,8 @@ data ExternalInstruction =
       gcOpcode :: (Bool,Bool),
       aluCtrl :: Bool,
       useAlu :: Bool,
-      immediate :: [Bool]}
+      immediate :: [Bool],
+      loadCondReg :: Bool}
 
 data InternalInstruction =
     D {isCond :: Bool,
@@ -66,7 +67,8 @@ assembleFirst (ExtI instr) = Left ("0"++                -- Bit of internal incr
  (printBool . snd . gcOpcode $ instr ) ++
  (printBool . aluCtrl $ instr ) ++
  (printBool . useAlu $ instr )++
- "000000000") --padding for immediate
+ replicate (microInstrS-15) '0')  --Padding immediate + lgr
+
 assembleFirst (Dispatch reg)=
   Left ( "1" ++
          regToString reg ++
@@ -86,7 +88,7 @@ assembleSecond code pos ((Right(IntI instr)): q) =
  ("1"++ -- Bit of Jump
   (printBool . isCond $ instr) ++
   ( printAddr 12 . position code. addr $ instr) ++
-  "0000000000"  --Useless bit in this case
+    replicate (microInstrS - microAddrS - 2) '0'  --Useless bit in this case
  ) ++ assembleSecond code (pos+1) q
 assembleSecond code pos ((Right(Label (s,t))): q) = 
   (take (microInstrS *floodSize) $ repeat '0') ++ assembleSecond code t q
@@ -188,7 +190,8 @@ ground  = C {regRead = Value,
            gcOpcode = (False,False),
            aluCtrl = False,
            useAlu = False,
-           immediate = replicate 9 False}
+           immediate = replicate 9 False,
+           loadCondReg = False}
 
 
 

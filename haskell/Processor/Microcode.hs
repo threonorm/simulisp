@@ -56,6 +56,10 @@ processor =  (Label ("Nil",0):selfEvaluating) ++
               --TODO pritimive
               (Label("Sequence", undefined):
                saveCdrAndEvalCar returnSequence) 
+
+
+              
+
 push :: Reg -> [Instruction]                 
 
 push reg = [moveToTemp reg,allocCons Stack Stack]
@@ -64,7 +68,6 @@ pushWithReturn :: [Bool] -> Reg -> [Instruction]
 pushWithReturn retTag reg = [moveToTemp reg,allocConsWithTag Stack Stack retTag]
 
 walkOnList = undefined
-
 
 returnFirst =  undefined
 returnNext = undefined 
