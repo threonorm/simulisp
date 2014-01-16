@@ -1,5 +1,5 @@
 name:               simulisp
-version:            0.11
+version:            0.2
 synopsis:           foobar
 description:
     lorem ipsum
@@ -14,7 +14,7 @@ source-repository head
 executable simulator
     main-is:        Simulator/Main.hs
     ghc-options:    -O2 -main-is Simulator.Main
-    build-depends:  array, base, containers, mtl, parsec >= 3.0
+    build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
 
 executable generate-processor
     main-is:        Processor/Hardware.hs
