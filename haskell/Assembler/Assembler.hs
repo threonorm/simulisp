@@ -1,11 +1,7 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
-
-
-module Assembler  where
+module Assembler.Assembler where
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Fix
 import Data.List
 
 

@@ -2,12 +2,6 @@ Despite having made a lot of progress, there's still tons of work to do!
 
 * Update README + add bibliographic refs.
 
-* Generally: think about mux behavior!
-  It seems both the simulator and Caillou.NetlistGen assume
-  mux(a,b,c) = if a=1 then b else c.
-  Is that the right thing to do?
-  Make sure conventions are consistent across the board!
-
 * In the simulator:
   * cleanup code, and prettify (using stylish-haskell?).
     the code should always be clean before committing!

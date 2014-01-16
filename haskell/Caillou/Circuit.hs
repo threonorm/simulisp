@@ -30,7 +30,7 @@ class (Applicative m, Monad m) => Circuit m s | m -> s where
   xor2 (a,b) = (a -||- b) <&&> (neg =<< (a -&&- b))
   nand2 = neg <=< and2
   nor2  = neg <=< or2
-  mux3 (s, a, b) = (s -&&- a) <||> (neg s <&&- b)
+  mux3 (s, a, b) = (s -&&- b) <||> (neg s <&&- a)
 
 (-&&-), (-||-), (-^^-), (-~&-), (-~|-) :: (Circuit m s) => s -> s -> m s
 a -&&- b = and2  (a, b)

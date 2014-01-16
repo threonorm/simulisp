@@ -71,12 +71,12 @@ compute st (Ebinop op a1 a2) =
 compute st (Emux a1 a2 a3) =
   case vA1 of
     VBitArray _ ->
-           VBitArray (zipWith3 (\x y z ->if x then y else z) 
+           VBitArray (zipWith3 (\x y z ->if x then z else y) 
                       (valueToList vA1) 
                       (valueToList vA2) 
                       (valueToList vA3))
     VBit v1 ->
-           if v1 then vA2 else vA3
+           if v1 then vA3 else vA2
   where vA1 = extractArg st a1
         vA2 = extractArg st a2
         vA3 = extractArg st a3
