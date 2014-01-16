@@ -32,7 +32,8 @@ data ControlSignals s = CS { regRead   :: [s] -- 3 bits
                            , gcOpcode  :: [s] -- 2 bits
                            , aluCtrl   :: s   -- 1 bit
                            , useAlu    :: s   -- 1 bit
-                           } --           Total: 13 bits (=microInstrS)
+                           , immediate :: [s] -- 6 bits
+                           } --           Total: 19 bits (=microInstrS)
                         
 decodeMicroInstruction :: [s] -> ControlSignals s
 decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua

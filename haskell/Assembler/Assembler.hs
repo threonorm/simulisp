@@ -3,7 +3,7 @@ module Assembler.Assembler where
 import Control.Applicative
 import Control.Monad
 import Data.List
-
+import Processor.Parameters
 
 --------- MiniAssembler V0.1 -------------
 
@@ -66,11 +66,12 @@ assembleFirst (ExtI instr) = Left ("0"++                -- Bit of internal incr
  (printBool . fst . gcOpcode $  instr ) ++
  (printBool . snd . gcOpcode $ instr ) ++
  (printBool . aluCtrl $ instr ) ++
- (printBool . useAlu $ instr ))
+ (printBool . useAlu $ instr )++
+ "000000000") --padding for immediate
 assembleFirst (Dispatch reg)=
   Left ( "1" ++
          regToString reg ++
-         replicate 13 '0') -- Padding with 0 
+         replicate 19 '0') -- Padding with 0 
 assembleFirst (IntI instr) = 
   Right (IntI instr) 
 assembleFirst (Label blabla) =
@@ -80,15 +81,16 @@ assembleFirst (Label blabla) =
 
 assembleSecond :: [Intermediate] -> Int -> [Intermediate] -> String  -- Code,position, list from position, label
 assembleSecond code pos [] = []  
-assembleSecond code pos ((Left blabla):q) = "0"++blabla++assembleSecond code (pos+1) q
+assembleSecond code pos ((Left blabla):q) = "0"++blabla
+  ++assembleSecond code (pos+1) q
 assembleSecond code pos ((Right(IntI instr)): q) =  
  ("1"++ -- Bit of Jump
   (printBool . isCond $ instr) ++
   ( printAddr 12 . position code. addr $ instr) ++
-  "0"  --Useless bit in this case
+  "0000000000"  --Useless bit in this case
  ) ++ assembleSecond code (pos+1) q
 assembleSecond code pos ((Right(Label (s,t))): q) = 
-  (take (15*floodSize) $ repeat '0') ++ assembleSecond code t q
+  (take (microInstrS *floodSize) $ repeat '0') ++ assembleSecond code t q
   where floodSize = t-pos 
 
 
