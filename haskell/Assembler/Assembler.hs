@@ -25,7 +25,8 @@ data ExternalInstruction =
       muxData :: Bool,
       gcOpcode :: (Bool,Bool),
       aluCtrl :: Bool,
-      useAlu :: Bool}
+      useAlu :: Bool,
+      immediate :: [Bool]}
 
 data InternalInstruction =
     D {isCond :: Bool,
@@ -151,12 +152,23 @@ fetchCdrTemp regread = ExtI $ ground{regRead = regread,
                                  gcOpcode = (False,True)
                                 }
 
-allocCons :: Reg -> Reg -> Instruction
+allocCons :: Reg -> Reg -> Instruction --By default tag = List
 allocCons input output = ExtI $ ground{regRead = input, 
                                    writeFlag = True,
                                    writeTemp = True,
                                    regWrite = output,
-                                   gcOpcode = (True,True)
+                                   gcOpcode = (True,True),
+                                   immediate = [True,False,True,False,False] 
+                                               ++ replicate 4 False
+                                  }
+
+allocConsWithTag :: Reg -> Reg -> [Bool] -> Instruction
+allocConsWithTag input output tag = ExtI $ ground{regRead = input, 
+                                   writeFlag = True,
+                                   writeTemp = True,
+                                   regWrite = output,
+                                   gcOpcode = (True,True),
+                                   immediate = tag
                                   }
 
 ----- Administrative tools dedicate to the assembling.-----
@@ -175,7 +187,8 @@ ground  = C {regRead = Value,
            muxData = False,
            gcOpcode = (False,False),
            aluCtrl = False,
-           useAlu = False}
+           useAlu = False,
+           immediate = replicate 9 False}
 
 
 

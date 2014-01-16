@@ -30,8 +30,7 @@ processor =  (Label ("Nil",0):selfEvaluating) ++
              
              [Label("Proc",7*blockSize),
               moveToTemp Env,
-              allocCons Expr Value,
-                --TODO modifier tag de Value
+              allocConsWithTag Expr Value [True,True,False,False,False],
              Dispatch Stack
              ]++  
              
@@ -57,13 +56,27 @@ processor =  (Label ("Nil",0):selfEvaluating) ++
               --TODO pritimive
               (Label("Sequence", undefined):
                saveCdrAndEvalCar returnSequence) 
-                 
+push :: Reg -> [Instruction]                 
 
 push reg = [moveToTemp reg,allocCons Stack Stack]
 
+pushWithReturn :: [Bool] -> Reg -> [Instruction]
+pushWithReturn retTag reg = [moveToTemp reg,allocConsWithTag Stack Stack retTag]
+
+walkOnList = undefined
+
+
+returnFirst =  undefined
+returnNext = undefined 
+returnLast = undefined
+returnLet      = undefined    -- Perfect indentation: Vim power  
+returnSequence = undefined  
+returnApplyOne = undefined 
+
 saveCdrAndEvalCar returnAddr = push Env ++
                                 [fetchCdrTemp Expr]++
-                                push Expr++
-                                --TODO modify tag of Stack
+                                pushWithReturn returnAddr Expr++
                                 [fetchCar Expr Expr,
-                                Dispatch Expr]                                 
+                                Dispatch Expr] 
+
+                                
