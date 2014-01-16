@@ -10,7 +10,7 @@ selfEvaluating = [ Value ^= Expr,
 
 blockSize = microAddrS - tagS
 
-processor =  (Label ("Nil",0):selfEvaluating) ++ 
+processor =  (Label ("Nil",Just 0):selfEvaluating) ++ 
 
              [Label ("Local",Just blockSize)] ++
                   walkOnList ++ 
