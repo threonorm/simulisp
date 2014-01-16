@@ -1,3 +1,5 @@
+module Processor.Microcode where
+
 import Assembler.Assembler
 import Processor.Parameters
 import Data.List
