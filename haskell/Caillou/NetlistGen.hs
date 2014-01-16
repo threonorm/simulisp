@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
 
-module NetlistGen where
+module Caillou.NetlistGen where
 
 import Control.Applicative
 import Control.Arrow
@@ -8,7 +8,8 @@ import Control.Monad.Fix
 import Control.Monad.State
 import qualified Data.Map as Map
 
-import NetlistAST
+import Netlist.AST
+import Caillou.Circuit
 
 
 -- Netlist generation
@@ -50,8 +51,10 @@ mkBinopGate :: Binop -> (Arg, Arg) -> NetlistGen Arg
 mkBinopGate binop = \(a, b) -> makeWireWithExpr $ Ebinop binop a b
 
 instance Circuit NetlistGen Arg where
-  one = makeWireWithExpr $ Earg (Aconst (VBit True)) 
-  zero = makeWireWithExpr $ Earg (Aconst (VBit False)) 
+  -- one = makeWireWithExpr $ Earg (Aconst (VBit True)) 
+  -- zero = makeWireWithExpr $ Earg (Aconst (VBit False))
+  zero = return . Aconst . VBit $ False
+  one  = return . Aconst . VBit $ True
   neg a = makeWireWithExpr $ Enot a
   and2  = mkBinopGate And
   or2   = mkBinopGate Or
@@ -65,11 +68,14 @@ instance SequentialCircuit NetlistGen Arg where
           ereg (Aconst c) = Earg (Aconst c)
 
 instance MemoryCircuit NetlistGen Arg where
-  accessROM addrSize wordSize readAddrList = do
+  accessROM arrName addrSize wordSize readAddrList = do
     readAddrArr <- listToArr readAddrList
-    wordArr <- makeWhateverWithExpr (TBitArray wordSize)
-               $ Erom addrSize wordSize readAddrArr
-    arrToList wordSize wordArr
+    modify (\s -> s { ngsEqs  = (arrName, Erom addrSize wordSize readAddrArr)
+                                : (ngsEqs s)
+                    , ngsVars = Map.insert arrName (TBitArray wordSize)
+                                $ ngsVars s
+                    })
+    arrToList wordSize (Avar arrName)
 
   accessRAM addrSize wordSize (readAddrList, writeEnable, writeAddrList, writeDataList) = do
     readAddrArr  <- listToArr readAddrList

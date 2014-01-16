@@ -2,7 +2,7 @@
 
 -- TODO : add lots of comments to make the code perfectly clear to the uninitiated
 
-module Circuit where
+module Caillou.Circuit where
 
 import Control.Applicative
 import Control.Monad
@@ -13,7 +13,7 @@ import Control.Monad.Fix
 
 -- Require Applicative for convenience,
 -- since it is not a superclass of Monad by historical accident
-class (Applicative m, Monad m) => Circuit m s |m -> s where
+class (Applicative m, Monad m) => Circuit m s | m -> s where
   zero :: m s
   one :: m s
   neg  :: s     -> m s
@@ -69,8 +69,8 @@ class (Circuit m s, MonadFix m) => SequentialCircuit m s where
 
 -- This class is perfectly modeled after the target netlist language
 class (SequentialCircuit m s) => MemoryCircuit m s where
-  -- addr size, word size, read addr
-  accessROM :: Int -> Int -> [s] -> m [s]
+  -- name, addr size, word size, read addr
+  accessROM :: String -> Int -> Int -> [s] -> m [s]
   -- addr size, word size, read addr, write enable, write addr, write data
   accessRAM :: Int -> Int -> ([s], s, [s], [s]) -> m [s]
 

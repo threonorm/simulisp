@@ -1,0 +1,23 @@
+name:               simulisp
+version:            0.2
+synopsis:           foobar
+description:
+    lorem ipsum
+author:             Nguyễn Lê Thành Dũng, Thomas Bourgeat
+cabal-version:      >= 1.6
+build-type:         Simple
+
+source-repository head
+  type:     git
+  location: git://github.com/threonorm/simulisp.git
+
+executable simulator
+    main-is:        Simulator/Main.hs
+    ghc-options:    -O2 -main-is Simulator.Main
+    build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
+
+executable generate-processor
+    main-is:        Processor/Hardware.hs
+    ghc-options:    -O2 -main-is Processor.Hardware
+    build-depends:  array, base, containers, mtl, parsec >= 3.0
+

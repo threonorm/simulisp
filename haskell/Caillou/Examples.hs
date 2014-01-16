@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, DoRec #-}
 
-module Examples where
+module Caillou.Examples where
 
 import Control.Applicative
 import Control.Monad
@@ -8,8 +8,8 @@ import Circuit
 import Data.List
 
 -- temporary for testing
-import Arithmetic
-import Simulation
+import Caillou.Arithmetic
+import Caillou.Simulation
 
 wordS = 24
 addrS = 20 

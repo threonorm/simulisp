@@ -1,49 +1,57 @@
-Simulisp 0.01
-=============
+Simulisp 0.2
+============
 
-Some tools to simulate synchronous digital circuits written in the netlist
-language outputted by the MiniJazz compiler. (see the `minijazz` subfolder)
+A very basic processor simulated at the logic gate level, based on an
+experimental Lisp machine architecture brought back from the dead, and
+designed using copious amounts of Haskell.
 
-Written completely in Haskell.
+This is actually a school project for a hardware architecture course
+at Ecole Normale Supérieure.
 
-V0.01 contains : 
-- A parser for netlists
-- A scheduler (using topological sorting)
-- A basic netlist interpreter
-
-Both the purely combinational logic and the sequential features
-(registers and memory) are supported in this release.
-
-TODO:
-- Code cleanup
-- Compilation of Netlist and Hot Code Swapping
+Contents:
+* Some tools to simulate synchronous digital circuits written in a
+simple netlist language
+* An emulator for the processor (in imperative-style OCaml)
+* A high-level hardware description language embedded in Haskell,
+  inspired by Lava
+* A toolset to write the microcode
+* An assembler (yet to come)
 
 
-INSTALLATION
+Installation
 ------------
 
-Requirements:
-- Haskell Platform >= 2013.2.0.0
+### Requirements
 
-Building: 
+- Haskell Platform >= 2013.2.0.0
+- (For the emulator only) OCaml >= 4.00
+
+### Building
+
+We use Cabal as our build system.
 
     cd ./simulisp/haskell
-    ghc --make Main
+    cabal configure
+    cabal build
 
-USAGE
------
+The binaries generated are:
+- the simulator in `dist/build/simulator/simulator`
+- a program to generate the netlist of the processor
+  in `dist/build/generate-processor/generate-processor`
+
+Simulator usage
+---------------
 
 To simulate juste one step:
-`./Main --input=var1:(val1)+,...,vari:(vali)+ <netlist file name>`
+`./simulator --input=var1:(val1)+,...,vari:(vali)+ <netlist file name>`
 
 To simulate n steps by feeding n inputs to the program through a file:
-`./Main --finput=<input file name> <netlist file name>`
+`./simulator --finput=<input file name> <netlist file name>`
 
 More information:
-`./Main --help`
+`./simulator --help`
 
-Structure of input files
-------------------------
+### Structure of input files
 
     var ::= string                                                        
     val ::= binary number                                                 
@@ -64,6 +72,9 @@ Semantics:
 WARNING: All the required inputs of your Netlists must be described in
 your input file.
 
-----------------------
+### Structure of ROM files
 
-The ultimate goal is to simulate a Lisp machine.
+A succession of lines, each of which is of the type
+
+    <ID of the ROM chip in the netlist>:<contents in binary>
+
