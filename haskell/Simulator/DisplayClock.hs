@@ -1,3 +1,9 @@
+module Simulator.DisplayClock (TimeVar,
+                               displayClock,
+                               CommandThread,
+                               ClockCommands(..),
+                               makeCommandThread) where
+
 import Control.Monad.Reader
 import Control.Concurrent
 import Data.Word
@@ -5,9 +11,10 @@ import Data.IORef
 import qualified Graphics.UI.SDL as SDL
 
 type TimeVar = MVar (Int, Int, Int)
+type CommandThread = TimeVar -> MVar () -> IO ()
 
-main :: IO ()
-main = do
+displayClock :: CommandThread -> IO ()
+displayClock commandThread = do
   syncLock <- newMVar ()
   timeVar <- newMVar (0,0,0)
   forkIO (commandThread timeVar syncLock)
@@ -191,20 +198,19 @@ draw7segs (GD { _screen = screen
  
 -- Clock advancement controlled by another thread
 
-commandThread :: TimeVar -> MVar () -> IO ()
-commandThread timeVar syncLock = do
-  ctr <- newIORef 0
-  forever $ do
-    takeMVar syncLock
-    setHour =<< readIORef ctr
-    nextCtr ctr
-    setMinute =<< readIORef ctr
-    nextCtr ctr
-    setSecond =<< readIORef ctr
-    nextCtr ctr
-    
-  where setHour   h = modifyMVar_ timeVar (\(_,m,s) -> return (h,m,s))
-        setMinute m = modifyMVar_ timeVar (\(h,_,s) -> return (h,m,s))
-        setSecond s = modifyMVar_ timeVar (\(h,m,_) -> return (h,m,s))
-        nextCtr ctr = modifyIORef ctr (\x -> (x*x + 1) `mod` 100)
+data ClockCommands = ClockCommands { waitNextSec :: IO ()
+                                   , setHour     :: Int -> IO ()
+                                   , setMinute   :: Int -> IO ()
+                                   , setSecond   :: Int -> IO ()
+                                   }
+
+makeCommandThread :: (ClockCommands -> IO ()) -> CommandThread
+makeCommandThread f timeVar syncLock = 
+  f $ ClockCommands {
+    setHour   = \h -> modifyMVar_ timeVar (\(_,m,s) -> return (h,m,s)), 
+    setMinute = \m -> modifyMVar_ timeVar (\(h,_,s) -> return (h,m,s)),
+    setSecond = \s -> modifyMVar_ timeVar (\(h,m,_) -> return (h,m,s)),
+    waitNextSec = takeMVar syncLock
+    }
+  
 

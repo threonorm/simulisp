@@ -1,4 +1,9 @@
-module Simulator.Simulator (iteratedSimulation, WireState, initialWireState) where
+module Simulator.Simulator (iteratedSimulation,
+                            WireState,
+                            initialWireState,
+                            valueToList,
+                            valueToInt,
+                            binaryToInt) where
 
 import Control.Arrow
 import Control.Applicative
@@ -87,8 +92,12 @@ compute st (Econcat a1 a2) =
 
 valueToInt :: Value -> Int
 valueToInt (VBit b) = if b then 1 else 0
-valueToInt (VBitArray bs) =
+valueToInt (VBitArray bs) = binaryToInt bs
+
+binaryToInt :: [Bool] -> Int
+binaryToInt bs =
   foldl' (\acc digit -> acc*2+digit) 0 . map (valueToInt . VBit) . reverse $ bs
+  
 
 valueToList :: Value -> [Bool]
 valueToList (VBit b)       = [b]

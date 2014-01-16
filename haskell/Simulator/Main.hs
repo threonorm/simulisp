@@ -5,6 +5,7 @@ module Simulator.Main (main) where
 import Control.Applicative
 import Control.Arrow
 import Control.Monad
+import Control.Concurrent
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
@@ -21,6 +22,7 @@ import Netlist.Parser
 import Simulator.Scheduler
 import Simulator.Simulator
 import Simulator.InputParser
+import Simulator.DisplayClock
 
 versionNumber :: String -- more flexible than int/float/whatever
 versionNumber = "0.2"
@@ -38,25 +40,43 @@ main = do
       Right netlist -> case schedule netlist of
         Nothing -> failwith "The netlist contains a combinational cycle."
         Just orderedNetlist ->
-          let launchSim inp = launchSimulation orderedNetlist (p_cycles p) inp (p_rom p) in
-          case p_input p of
-            Nothing -> launchSim Nothing 
-            Just inputs -> case mapM (initialWireState orderedNetlist) inputs of
-              Nothing -> failwith "Invalid inputs."
-              Just initWS -> launchSim $ Just initWS
+          if p_clockMode p
+          then launchClockSimulation orderedNetlist (p_rom p)
+          else (
+            let launchSim inp = launchBasicSimulation orderedNetlist
+                                (p_cycles p) inp (p_rom p) in
+            case p_input p of
+              Nothing -> launchSim Nothing 
+              Just inputs -> case mapM (initialWireState orderedNetlist) inputs of
+                Nothing -> failwith "Invalid inputs."
+                Just initWS -> launchSim $ Just initWS
+            )
 
-launchSimulation :: Program
-                 -> Maybe Int
-                 -> Maybe [WireState]
-                 -> Maybe (Environment [Bool])
-                 -> IO ()
-launchSimulation netlist maybeCycles maybeInputs maybeROMs = do
+launchBasicSimulation :: Program
+                      -> Maybe Int
+                      -> Maybe [WireState]
+                      -> Maybe (Environment [Bool])
+                      -> IO ()
+launchBasicSimulation netlist maybeCycles maybeInputs maybeROMs = do
   case (maybeCycles, maybeInputs) of
     (Just n, Just inp) | length inp < n ->
       putStrLn $ "Warning: not enough inputs to last for " ++ show n ++ " cycles."
     _ -> return ()
   let results = iteratedSimulation netlist maybeInputs maybeROMs
   mapM_ (putStrLn . formatOutputs) . maybe id take maybeCycles $ results
+
+
+launchClockSimulation :: Program -> Maybe (Environment [Bool]) -> IO ()
+launchClockSimulation netlist maybeROMs = displayClock . makeCommandThread $ \commands -> do
+  let outputs = iteratedSimulation netlist Nothing maybeROMs
+  forM_ outputs $ \assocList -> do
+    let (b1:b2:b3:rest) = concatMap (valueToList . snd) assocList
+    when b1 $ case (b2,b3) of
+      (True,  True ) -> waitNextSec commands
+      (False, True ) -> setHour   commands $ binaryToInt rest
+      (True , False) -> setMinute commands $ binaryToInt rest
+      (False, False) -> setSecond commands $ binaryToInt rest
+
 
 formatOutputs :: [(Ident, Value)] -> String
 formatOutputs = intercalate "," . map (\(i,v) -> i ++ ":" ++ p v)
@@ -75,13 +95,15 @@ data Option = Version
             | FileInput FilePath
             | FileROM FilePath
             | Cycles String
+            | ClockMode
             deriving (Eq)
 
 -- TODO: type alisases for ROM array and RAM map
-data Params = P { p_filename :: FilePath
-                , p_input    :: Maybe ([Environment Value])
-                , p_rom      :: Maybe (Environment [Bool])
-                , p_cycles   :: Maybe Int
+data Params = P { p_filename  :: FilePath
+                , p_input     :: Maybe ([Environment Value])
+                , p_rom       :: Maybe (Environment [Bool])
+                , p_cycles    :: Maybe Int
+                , p_clockMode :: Bool
                 }
               deriving (Eq)
 
@@ -95,10 +117,11 @@ getParams = do
       | otherwise -> do input <- getInput
                         rom <- getROM
                         cycles <- getCycles
-                        return $ P { p_filename = filename
-                                   , p_input    = (fmap.fmap) Map.fromList input
-                                   , p_rom      = rom
-                                   , p_cycles   = cycles }
+                        return $ P { p_filename  = filename
+                                   , p_input     = (fmap.fmap) Map.fromList input
+                                   , p_rom       = rom
+                                   , p_cycles    = cycles
+                                   , p_clockMode = clockMode }
       where getInput
               -- pattern guards to the rescue!
               | Just inputFileName <- findFileInput opts = do
@@ -130,6 +153,9 @@ getParams = do
                   Just n -> return (Just n)
               | otherwise = return Nothing
 
+            clockMode = ClockMode `elem` opts
+
+
 
     -- TODO: handle unrecognized arguments
     (_, _, []) -> failwith helpMsg
@@ -146,6 +172,8 @@ getParams = do
                   , Option [] ["fROM"] (ReqArg FileROM "FILENAME")
                     "File containing the contents of the ROM."
                   , Option ['n'] ["num-cycles"] (ReqArg Cycles "N")
+                    "Forces the simulation to stop after N cycles."
+                  , Option [] ["clock-mode"] (NoArg ClockMode)
                     "Forces the simulation to stop after N cycles."
                   ]
         usage = "Usage: simulator --input=var1:(0|1)*,var2:(0|1)* FILE"
