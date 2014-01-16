@@ -27,7 +27,7 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
   let color2px = SDL.mapRGB (SDL.surfaceGetPixelFormat screen)
   white      <- color2px 0 0   0
   lightGreen <- color2px 0 255 0
-  darkGreen  <- color2px 0 64  0
+  darkGreen  <- color2px 0 40  0
   continueLoop <- newIORef True
   initialTick <- SDL.getTicks
   runReaderT (eventLoop 0) $ ELD {
