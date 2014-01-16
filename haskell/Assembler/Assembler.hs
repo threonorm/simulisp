@@ -120,8 +120,9 @@ jmp label = IntI $ D {isCond = False,
                       addr = label  
                     }
 
-dispatchOnReg :: Reg -> Instruction
-dispatchOn 
+moveToTemp :: Reg -> Instruction
+moveToTemp regread = ExtI $ ground{regRead = regread,
+                                   writeTemp = True} 
 
 condJump :: Label -> Instruction
 condJump label = IntI $  D {isCond = False,
