@@ -2,7 +2,7 @@ module Processor.Microcode where
 
 import Control.Arrow
 
-import Assembler.Assembler
+import Processor.MicroAssembler
 import Processor.Parameters
 import Data.List
 
@@ -133,24 +133,17 @@ return = [ (RFirst    , standardRestore ++
 
 push :: Reg -> [Instruction]                 
 
-push reg = [moveToTemp reg,allocCons Stack Stack]
+push reg = [ moveToTemp reg
+           , allocCons Stack Stack]
 
 -- pushWithReturn :: [Bool] -> Reg -> [Instruction]
 -- pushWithReturn retTag reg = [moveToTemp reg,allocConsWithTag Stack Stack retTag]
 
 walkOnList = undefined
 
-returnFirst =  undefined
-returnNext = undefined 
-returnLast = undefined
-returnLet      = undefined    -- Perfect indentation: Vim power  
-returnSequence = undefined  
-returnApplyOne = undefined 
-
-saveCdrAndEvalCar returnAddr = push Env ++
-                                [fetchCdrTemp Expr]++
-                                pushWithReturn returnAddr Expr++
-                                [fetchCar Expr Expr,
-                                Dispatch Expr] 
-
+saveCdrAndEvalCar returnTag = push Env ++
+                              [ fetchCdrTemp Expr
+                              , allocConsWithTag Stack Stack returnTag
+                              , fetchCar Expr Expr
+                              , Dispatch Expr] 
                                 
