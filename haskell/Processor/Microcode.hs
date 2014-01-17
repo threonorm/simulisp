@@ -16,7 +16,7 @@ label x = Label x Nothing
 
 
 -- program start at address 0
-boot = [ fetchCar registerNull Expr
+boot = [ fetchCar Null Expr
        , dispatchEval ]
 
 eval = [ (TNil     , selfEvaluating)
@@ -54,11 +54,29 @@ eval = [ (TNil     , selfEvaluating)
        | prim <- [TCar, TCdr, TCons, TIncr, TDecr, TIsZero,
                   TIsgt60, TIsgt24, TPrintSec, TPrintMin, TPrintHour] ]
 
+decrUpper = undefined
+decrLower = undefined
+
+lookupLocal = [ label "local_outerloop"
+              , decrUpper Expr -- sets condition register to (expr.upper = 0)?
+              , condJump "local_endouterloop"
+              , fetchCdr Env Env
+              , jmp "local_outerloop"
+              , label "local_endouterloop"
+              , fetchCar Env Env
+              , label "local_innerloop"
+              , decrLower Expr
+              , condJump "local_endinnerloop"
+              , fetchCdr Env Env
+              , jmp "local_innerloop"
+              , label "local_endinnerloop"
+              , fetchCar Env Value
+              ]
+
+
 -- kind of a todo list...
-registerNull = undefined
 allocSingleton src dest = [ moveToTemp src
-                          , allocCons registerNull dest ]
-lookupLocal = undefined
+                          , allocCons Null dest ]
 getLastArg = fetchCar Args Value
 fetchCarAndIncr = undefined
 fetchCarAndDecr = undefined

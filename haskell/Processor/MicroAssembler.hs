@@ -19,15 +19,15 @@ data Instruction =
 
 data ExternalInstruction = 
     C { regRead :: Reg,
-      regWrite :: Reg,
-      writeFlag :: Bool,
-      writeTemp :: Bool,
-      muxData :: Bool,
-      gcOpcode :: (Bool,Bool),
-      aluCtrl :: Bool,
-      useAlu :: Bool,
-      immediate :: [Bool],
-      loadCondReg :: Bool}
+        regWrite :: Reg,
+        writeFlag :: Bool,
+        writeTemp :: Bool,
+        muxData :: Bool,
+        gcOpcode :: (Bool,Bool),
+        aluCtrl :: Bool,
+        useAlu :: Bool,
+        immediate :: [Bool],
+        loadCondReg :: Bool}
 
 data InternalInstruction =
     D {isCond :: Bool,
@@ -37,12 +37,13 @@ data InternalInstruction =
 type Label =  String
 
 
-data Reg = Value
-    | Expr
-    | Env
-    | Args
-    | Stack          
-    | Temp
+data Reg = Null
+         | Value
+         | Expr
+         | Env
+         | Args
+         | Stack
+         | Temp
 
 type Intermediate =  Either String Instruction 
 
@@ -181,6 +182,8 @@ allocConsWithTag input output tag = ExtI $ ground{regRead = input,
                                    gcOpcode = (True,True),
                                    immediate = tag
                                   }
+
+
 
 ----- Administrative tools dedicate to the assembling.-----
 
