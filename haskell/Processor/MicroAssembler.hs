@@ -1,4 +1,4 @@
-module Assembler.Assembler where
+module Processor.MicroAssembler where
 
 import Data.List
 import Processor.Parameters
