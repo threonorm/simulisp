@@ -9,7 +9,7 @@ import Processor.Parameters
 data Instruction =
      ExtI ExternalInstruction
     | IntI InternalInstruction
-    | Dispatch Reg
+    | Dispatch Reg [Bool]
     | Label (String,Maybe Int)        --Int for alignment purpose : in number of words 
 
 
@@ -69,14 +69,14 @@ assembleFirst (ExtI instr) = Left ("0"++                -- Bit of internal incr
  (printBool . useAlu $ instr )++
  replicate (microInstrS-15) '0')  --Padding immediate + lgr
 
-assembleFirst (Dispatch reg)=
-  Left ( "1" ++
-         regToString reg ++
-         replicate 19 '0') -- Padding with 0 
-assembleFirst (IntI instr) = 
-  Right (IntI instr) 
-assembleFirst (Label blabla) =
-  Right (Label blabla)
+-- assembleFirst (Dispatch reg)=
+--   Left ( "1" ++
+--          regToString reg ++
+--          replicate 19 '0') -- Padding with 0 
+-- assembleFirst (IntI instr) = 
+--   Right (IntI instr) 
+-- assembleFirst (Label blabla) =
+--   Right (Label blabla)
 
 
 

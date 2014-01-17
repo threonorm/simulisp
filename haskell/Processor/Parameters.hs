@@ -1,5 +1,7 @@
 module Processor.Parameters where
 
+-- Size constants
+
 consS, wordS, dataS, tagS, microInstrS, microAddrS :: Int
 
 tagS  = 5
@@ -9,6 +11,8 @@ consS = 2 * wordS
 microInstrS = 24
 microAddrS = 12
 -- also: number of registers = 2^3
+
+-- Enumeration of tags, and their binary format
 
 data Tag = TNil
          | TLocal
@@ -59,6 +63,14 @@ tagBin = go tagS . tagNum
   where go 0 _ = []
         go k n = (n `mod` 2 /= 0) : go (k-1) (n `div` 2)
 
+-- 00 suffix: bootloading segment
+tagSuffixS :: Int
+tagSuffixS = 2
+
+evalSuffix, applySuffix, returnSuffix :: [Bool]
+evalSuffix   = [True , False]
+applySuffix  = [False, True]
+returnSuffix = [True , True]
 
 data ReturnTag = RFirst
                | RNext

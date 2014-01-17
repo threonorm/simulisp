@@ -9,7 +9,7 @@ import Data.List
 blockSize = microAddrS - tagS
 
 selfEvaluating = [ Value ^= Expr,
-                   Dispatch Stack ]
+                   dispatchReturn ]
 
 label x = Label (x, Nothing)
 
@@ -20,9 +20,9 @@ eval = [ (TNil     , selfEvaluating)
        , (TNum     , selfEvaluating)
          
        , (TLocal   , lookupLocal ++
-                     [Dispatch Stack])
+                     [ dispatchReturn ])
        , (TGlobal  , [ fetchCar Expr Value
-                     , Dispatch Stack ])
+                     , dispatchReturn ])
          
        , (TCond    , [ loadConditional Value
                      , condJump "condNotNil"
@@ -32,7 +32,7 @@ eval = [ (TNil     , selfEvaluating)
          
        , (TProc    , [ moveToTemp Env
                      , allocConsWithTag Expr Value (tagBin TClosure)
-                     , Dispatch Stack])
+                     , dispatchReturn ])
 
        , (TFirst   , saveCdrAndEvalCar RFirst)
        , (TNext    , push Args ++
@@ -54,7 +54,6 @@ registerNull = undefined
 allocSingleton src dest = [ moveToTemp src
                           , allocCons registerNull dest ]
 lookupLocal = undefined
-doEval = Dispatch Expr
 doApply = undefined
 getLastArg = fetchCar Args Value
 fetchCarAndIncr = undefined
@@ -62,15 +61,20 @@ fetchCarAndDecr = undefined
 fetchCarAndDecrRetrievingComp = undefined
 fetchCarAndSubImmediate = undefined
 pushWithReturn = undefined
+allocConsWithReturn = undefined
+
+dispatchEval   = Dispatch Expr  evalSuffix
+dispatchApply  = Dispatch Expr  applySuffix
+dispatchReturn = Dispatch Stack returnSuffix
 
 apply = [ (t, allocSingleton Args Env ++
               [ Expr ^= Value
-              , doEval ])
+              , dispatchEval ])
         | t <- [TNil, TList, TNum, TLocal, TGlobal, TCond, TProc,
                 TFirst, TNext, TLast, TApplyOne, TLet, TSequence]
         ]
         ++
-        map (second (++ [Dispatch Stack]))
+        map (second (++ [dispatchReturn]))
         [ (TCar      , [ getLastArg
                        , fetchCar Value Value ])
         , (TCdr      , [ getLastArg
@@ -97,34 +101,37 @@ standardRestore = popToReg Expr ++
 
 return = [ (RFirst    , standardRestore ++
                         allocSingleton Value Args ++
-                        [ doEval ])
+                        [ dispatchEval ])
            
          , (RNext     , standardRestore ++
                         popToReg Args ++
                         [ moveToTemp Value
                         , allocCons Args Args
-                        , doEval ])
+                        , dispatchEval ])
            
          , (RLast     , standardRestore ++
                         popToReg Args ++
                         [ moveToTemp Value
-                        , allocCons Args Args ] ++
-                        pushWithReturn Args RApply ++
-                        [ doEval ])
+                        , allocCons Args Args 
+                        , moveToTemp Args
+                        , allocConsWithReturn Stack Stack RApply
+                        , dispatchEval ])
            
          , (RApplyOne , standardRestore ++
                         allocSingleton Value Args ++
                         pushWithReturn Args RApply ++
-                        [ doEval ])
+                        [ moveToTemp Args
+                        , allocConsWithReturn Stack Stack RApply
+                        , dispatchEval ])
            
          , (RLet      , standardRestore ++
                         allocSingleton Value Value ++
                         [ moveToTemp Value
                         , allocCons Env Env
-                        , doEval ])
+                        , dispatchEval ])
 
          , (RSequence , standardRestore ++
-                        [ doEval ])
+                        [ dispatchEval ])
 
          , (RApply    , popToReg Args ++
                         [ doApply ])
@@ -132,7 +139,6 @@ return = [ (RFirst    , standardRestore ++
                     
 
 push :: Reg -> [Instruction]                 
-
 push reg = [ moveToTemp reg
            , allocCons Stack Stack]
 
@@ -143,7 +149,7 @@ walkOnList = undefined
 
 saveCdrAndEvalCar returnTag = push Env ++
                               [ fetchCdrTemp Expr
-                              , allocConsWithTag Stack Stack returnTag
+                              , allocConsWithReturn Stack Stack returnTag
                               , fetchCar Expr Expr
-                              , Dispatch Expr] 
+                              , dispatchEval ] 
                                 
