@@ -1,18 +1,23 @@
 module Processor.Microcode where
 
+import Prelude hiding (return)
+
 import Control.Arrow
+import Data.Function
 
 import Processor.MicroAssembler
 import Processor.Parameters
 import Data.List
 
-blockSize = microAddrS - tagS
-
 selfEvaluating = [ Value ^= Expr,
                    dispatchReturn ]
 
-label x = Label (x, Nothing)
+label x = Label x Nothing
 
+
+-- program start at address 0
+boot = [ fetchCar registerNull Expr
+       , dispatchEval ]
 
 eval = [ (TNil     , selfEvaluating)
        , (TClosure , selfEvaluating)
@@ -54,7 +59,6 @@ registerNull = undefined
 allocSingleton src dest = [ moveToTemp src
                           , allocCons registerNull dest ]
 lookupLocal = undefined
-doApply = undefined
 getLastArg = fetchCar Args Value
 fetchCarAndIncr = undefined
 fetchCarAndDecr = undefined
@@ -134,9 +138,32 @@ return = [ (RFirst    , standardRestore ++
                         [ dispatchEval ])
 
          , (RApply    , popToReg Args ++
-                        [ doApply ])
+                        [ dispatchApply ])
          ]
-                    
+
+microprogram :: [Instruction]
+microprogram = boot ++ eval' ++ apply' ++ return'
+  where eval'   = concat [ Label ("E" ++ show tag) (Just $ evalAddr tag) : code
+                         | (tag, code) <- sortBy (compare `on` (evalAddr . fst)) eval ]
+        apply'  = concat [ Label ("A" ++ show tag) (Just $ applyAddr tag) : code
+                         | (tag, code) <- sortBy (compare `on` (applyAddr . fst)) apply ]
+        return' = concat [ Label (show tag) (Just $ returnAddr tag) : code
+                         | (tag, code) <- sortBy (compare `on` (returnAddr . fst)) return ]
+        evalAddr   = addressOfTag evalSuffix   . tagNum
+        applyAddr  = addressOfTag applySuffix  . tagNum
+        returnAddr = addressOfTag returnSuffix . returnNum
+        smallBlockSize = 2^(microAddrS - tagS - 2)
+        bigBlockSize   = 2^(microAddrS - 2)
+        addressOfTag [b0,b1] i = j*bigBlockSize + i*smallBlockSize
+          where j = 2*b1' + b0'
+                b1' | b1 = 1
+                    | otherwise = 0
+                b0' | b0 = 1
+                    | otherwise = 0
+        
+
+
+         
 
 push :: Reg -> [Instruction]                 
 push reg = [ moveToTemp reg

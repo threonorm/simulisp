@@ -40,6 +40,7 @@ data Tag = TNil
          | TPrintSec
          | TPrintMin
          | TPrintHour
+         deriving (Show)
 
 -- Explicit instead of "deriving Enum" for easy reference
 tagNum :: Tag -> Int
@@ -58,11 +59,6 @@ tagNum TApplyOne = 11
 tagNum TLet      = 12
 tagNum TSequence = 13
 
-tagBin :: Tag -> [Bool]
-tagBin = go tagS . tagNum
-  where go 0 _ = []
-        go k n = (n `mod` 2 /= 0) : go (k-1) (n `div` 2)
-
 -- 00 suffix: bootloading segment
 tagSuffixS :: Int
 tagSuffixS = 2
@@ -79,7 +75,24 @@ data ReturnTag = RFirst
                | RLet
                | RSequence
                | RApply
-                 
+               deriving (Show)
+
+returnNum :: ReturnTag -> Int
+returnNum RFirst    = 0
+returnNum RNext     = 1
+returnNum RLast     = 2
+returnNum RApplyOne = 3
+returnNum RLet      = 4
+returnNum RSequence = 5
+returnNum RApply    = 6
+
+tagBinGeneric :: Int -> [Bool]
+tagBinGeneric = go tagS
+  where go 0 _ = []
+        go k n = (n `mod` 2 /= 0) : go (k-1) (n `div` 2)
+
+tagBin    = tagBinGeneric . tagNum
+returnBin = tagBinGeneric . returnNum
 
 -- microinstruction format: see Hardware.hs
 
