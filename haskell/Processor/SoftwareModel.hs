@@ -108,11 +108,12 @@ main = displayClock . makeCommandThread $ \commands -> do
         incrCtr = jumpTo $ ctr + 1
     case microcode ! ctr of
       
-      Jump { jumpIsConditional = cond, jumpAddress = addr } ->
+      Jump { jumpIsConditional = cond, jumpAddress = addr } -> do
+        putStrLn $ "jump " ++ show addr
         if cond
-        then do b <- readIORef condReg
-                if b then jumpTo addr else incrCtr
-        else jumpTo addr
+          then do b <- readIORef condReg
+                  if b then jumpTo addr else incrCtr
+          else jumpTo addr
              
       Dispatch register suffix -> do
         (tag, _) <- readIORef (regs register)

@@ -32,8 +32,10 @@ eval = [ (TNil     , selfEvaluating)
        , (TCond    , [ loadConditional Value
                      , condJump "condNotNil"
                      , fetchCdr Expr Expr
+                     , dispatchEval
                      , label "condNotNil"
-                     , fetchCar Expr Expr ])
+                     , fetchCar Expr Expr
+                     , dispatchEval ])
          
        , (TProc    , [ moveToTemp Env
                      , allocConsWithTag TClosure Expr Value
@@ -51,7 +53,7 @@ eval = [ (TNil     , selfEvaluating)
          
        , (TSync    , [ fetchCar Expr Expr
                      , sync
-                     , dispatchReturn ])
+                     , dispatchEval ])
        ]
        ++
        [ (prim     , selfEvaluating)
