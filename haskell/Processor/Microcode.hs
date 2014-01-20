@@ -1,4 +1,4 @@
-module Processor.Microcode where
+module Processor.Microcode (microprogram) where
 
 import Prelude hiding (return)
 
@@ -153,7 +153,7 @@ return = [ (RFirst    , standardRestore ++
            
          , (RLast     , standardRestore ++
                         popToReg Args ++
-                        [ moveToTemp Value
+x                        [ moveToTemp Value
                         , allocCons Args Args 
                         , moveToTemp Args
                         , allocConsWithReturn RApply Stack Stack

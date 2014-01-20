@@ -4,10 +4,12 @@ import Control.Applicative
 import Control.Monad
 import Data.IORef
 import Data.List
-import Data.Array.IArray (Array, (!))
-import qualified Data.Array.IArray as Array
+import Data.IntMap (IntMap, (!))
+import qualified Data.IntMap as IntMap
 
 import Processor.Parameters
+import Processor.Microcode
+import Processor.MicroAssembler
 import Simulator.DisplayClock
 
 data WordTag = T Tag | R ReturnTag deriving (Eq)
@@ -70,8 +72,8 @@ mainProgram = (T TFirst, P ((T TNum, N 0),
                             (T TLast, P ((T TNum, N 0),
                                          (T TGlobal, PClock)))))
 
-microcode :: Array Int MicroInstruction
-microcode = undefined
+microcode :: IntMap MicroInstruction
+microcode = IntMap.fromList . secondPass . firstPass $ microprogram
 
 bools2int = foldl' (\acc b -> 2*acc + if b then 1 else 0) 0 . reverse
 
@@ -81,7 +83,7 @@ aluCompute :: ALUOp -> Immediate -> Int -> (Bool, Int)
 
 aluCompute ALUIncr _ n = (False, n+1) -- overflow -> what happens?
 
-aluCompute ALUDecrImmediate (ImmN imm) n = (n > imm, max (n - imm) 0)
+aluCompute ALUDecrImmediate (ImmN imm) n = (n < imm, max (n - imm) 0)
 
 aluCompute ALUDecrUpper _ n | hi == 0   = (True, lo)
                             | otherwise = (False, (hi-1)*upperWeight + lo)
@@ -115,6 +117,7 @@ main = displayClock . makeCommandThread $ \commands -> do
         let bin = case tag of T t -> tagBin t
                               R r -> returnBin r
         let addr = bools2int $ bin ++ suffix
+        putStrLn $ "dispatch " ++ show addr ++ show (bin ++ suffix)
         jumpTo addr
         
       ExtInstr instr -> do
@@ -145,10 +148,13 @@ main = displayClock . makeCommandThread $ \commands -> do
                                       ImmR r -> R r
                                       ImmN _ -> error "wrong kind of immediate"
                                 writeToDest (tag, P (car, cdr))
-                        else if wordRead == (T TGlobal, PClock) -- HACK!
+                        else if wordRead == (T TGlobal, PClock) -- HACK! 1
                              then writeToDest clockProgram
-                             else do let (car, cdr) = ptrRead
-                                     writeToDest $ if carOrCdr then cdr else car
+                             else if regRead instr == Null
+                                  then writeToDest mainProgram -- HACK! 2
+                                  else do
+                                    let (car, cdr) = ptrRead
+                                    writeToDest $ if carOrCdr then cdr else car
               -- operation by ALU     
               else if aluCtrl instr == ALUNop
                    then writeToDest wordRead

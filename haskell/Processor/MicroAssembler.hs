@@ -1,35 +1,51 @@
 module Processor.MicroAssembler where
 
+import Control.Arrow
 import Data.List
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Processor.Parameters
 
 --------- MiniAssembler V0.1 -------------
 
+-- There are three types of instructions : Labels, classical instructions using
+-- the mini ALU and finishing by the incrementation of the micro program counter,
+-- and jumps (conditional or not).
 
 data Instruction = ActualInstr MicroInstruction
                  | JumpLabel Bool String
                  | Label String (Maybe Int) -- "Just n": align on address n
 
--- --There are three types of instructions : Labels, classical instructions using
--- --the mini ALU and finishing by the incrementation of the micro program counter,
--- --and jumps (conditional or not).
+-- 2 passes of assembling which absolutely do not concern themselves
+-- with turning the microprogram into a sequence of zeroes and ones
+-- only aligning the addresses and resolving labels and jumps correctly
+
+-- First pass: resolve and eliminate labels, and give explicit positions
+
+firstPass :: [Instruction] -> (Map String Int, [(Int, Instruction)])
+firstPass = go 0
+  where go _ [] = (Map.empty, [])
+        go i ((Label l (Just j)) : xs)
+          | i <= j = let (labels, instructions) = go j xs in
+                     (Map.insert l j labels, instructions)
+          | otherwise = error "alignment issues"
+        go i ((Label l Nothing) : xs) =
+          let (labels, instructions) = go i xs in
+          (Map.insert l i labels, instructions)
+        go i (x:xs) =
+          let (labels, instructions) = go i xs in
+          (labels, (i, x) : instructions)
+
+-- Second pass: eliminate named jumps
+
+secondPass :: (Map String Int, [(Int, Instruction)]) -> [(Int, MicroInstruction)]
+secondPass (labels, instructions) = map (second f) instructions
+  where f (ActualInstr mi) = mi
+        f (JumpLabel cond l) = Jump { jumpIsConditional = cond
+                                    , jumpAddress = labels Map.! l }
+        f _ = error "You should eliminate labels first with firstPass."
 
 
--- data InternalInstruction =
---     D {isCond :: Bool,
---      addr :: Label
---     }
-
--- type Label =  String
-
-
--- data Reg = Null
---          | Value
---          | Expr
---          | Env
---          | Args
---          | Stack
---          | Temp
 
 -- type Intermediate =  Either String Instruction 
 

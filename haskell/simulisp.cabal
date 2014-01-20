@@ -21,3 +21,8 @@ executable generate-processor
     ghc-options:    -O2 -main-is Processor.Hardware
     build-depends:  array, base, containers, mtl, parsec >= 3.0
 
+executable software-model
+    main-is:        Processor/SoftwareModel.hs
+    ghc-options:    -O2 -main-is Processor.SoftwareModel
+    build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
+
