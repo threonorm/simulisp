@@ -211,6 +211,8 @@ sync = makeInstr $ ground { interactWithOutside = True
 
 ----- Administrative tools dedicate to the assembling.-----
 
+-- TODO: add Null register
+
 regToString Value = "000"  
 regToString Expr  = "001"
 regToString Env   = "010"
@@ -232,12 +234,6 @@ ground = CS { regRead = Null
             , outsideOpcode = [False, False]
             , immediate = ImmN 0
             }
-
-
-
-  
-
-
 
 printBool :: Bool -> String
 printBool True  = "1"  

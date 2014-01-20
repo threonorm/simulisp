@@ -112,6 +112,7 @@ main = displayClock . makeCommandThread $ \commands -> do
         putStrLn $ "jump " ++ show addr
         if cond
           then do b <- readIORef condReg
+                  putStrLn $ "conditional jump: " ++ show b
                   if b then jumpTo addr else incrCtr
           else jumpTo addr
              
@@ -138,11 +139,13 @@ main = displayClock . makeCommandThread $ \commands -> do
           [False, False] -> setSecond commands intRead
 
           else do
-          when (writeReg instr || writeTemp instr) $ do
             let dest | writeTemp instr = Temp
                      | otherwise       = regWrite instr
-                writeToDest x = do putStrLn $ show dest ++ " := " ++ show x
-                                   writeIORef (regs dest) x
+                writeOn = writeReg instr || writeTemp instr
+                writeToDest x
+                  | writeOn = do putStrLn $ show dest ++ " := " ++ show x
+                                 writeIORef (regs dest) x
+                  | otherwise = return ()
             if useGC instr
               -- operation by GC 
               then do let [alloc, carOrCdr] = gcOpcode instr
@@ -170,8 +173,10 @@ main = displayClock . makeCommandThread $ \commands -> do
                            writeIORef condReg flag
                            writeToDest (T TNum, N result)
 
-          when (loadCondReg instr) $ do
-            writeIORef condReg $ tagRead /= T TNil
+
+            when (loadCondReg instr) $ do
+              putStrLn $ "conditional on tag " ++ show tagRead
+              writeIORef condReg $ tagRead /= T TNil
 
         -- don't forget this at the end!      
         incrCtr

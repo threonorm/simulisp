@@ -115,21 +115,27 @@ apply = [ (t, allocSingleton Args Env ++
                        , doALU ALUDecrImmediate 1 Value Null
                        , condJump "zero"
                        , Value ^= Null
+                       , dispatchReturn
                        , label "zero"
                        , doALU ALUIncr 0 Null Value -- using Num(1) as constant True
+                       , dispatchReturn
                        ])
         , (TIsgt60   , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 60 Value Null
                        , condJump "strictlt60"
                        , doALU ALUIncr 0 Null Value
+                       , dispatchReturn
                        , label "strictlt60"
-                       , Value ^= Null ])
+                       , Value ^= Null
+                       , dispatchReturn])
         , (TIsgt24   , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 24 Value Null
                        , condJump "strictlt24"
                        , doALU ALUIncr 0 Null Value
+                       , dispatchReturn
                        , label "strictlt24"
-                       , Value ^= Null ])
+                       , Value ^= Null
+                       , dispatchReturn ])
         , (TPrintSec , [ getLastArg
                        , printSec Value ])
         , (TPrintMin , [ getLastArg
