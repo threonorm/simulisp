@@ -62,9 +62,9 @@ clockProgram = (T TSequence,
                                         (T TNil, N 0))),
                                    (T TSync,
                                     P ((T TFirst,
-                                        P ((T TApplyOne, P (localVar 1 1, (T TIncr, N 0))),
+                                        P (localVar 1 1,
                                            (T TLast,
-                                            P ((T TNum, N 0),
+                                            P (localVar 0 0,
                                                (T TGlobal, PClock))))),
                                         (T TNil, N 0)))))))))))))
 

@@ -201,9 +201,9 @@ printSth op src = makeInstr $ ground { regRead = src
                                      , interactWithOutside = True
                                      , outsideOpcode = op }
 printSec, printMin, printHour :: Reg -> Instruction
-printSec  = printSth [False, True]
+printHour  = printSth [False, True]
 printMin  = printSth [True, False]
-printHour = printSth [False, False]
+printSec = printSth [False, False]
 
 sync :: Instruction
 sync = makeInstr $ ground { interactWithOutside = True
