@@ -144,7 +144,7 @@ digitTo7Seg 6 = [       True,
                 ]
 digitTo7Seg 7 = [       True,
                   False,      True,
-                        True,
+                        False,
                   False,      True,
                         False
                 ]
