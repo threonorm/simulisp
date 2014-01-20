@@ -109,10 +109,10 @@ main = displayClock . makeCommandThread $ \commands -> do
     case microcode ! ctr of
       
       Jump { jumpIsConditional = cond, jumpAddress = addr } -> do
-        putStrLn $ "jump " ++ show addr
+        printLog $ "jump " ++ show addr
         if cond
           then do b <- readIORef condReg
-                  putStrLn $ "conditional jump: " ++ show b
+                  printLog $ "conditional jump: " ++ show b
                   if b then jumpTo addr else incrCtr
           else jumpTo addr
              
@@ -121,11 +121,11 @@ main = displayClock . makeCommandThread $ \commands -> do
         let bin = case tag of T t -> tagBin t
                               R r -> returnBin r
         let addr = bools2int $ replicate (microAddrS - tagS - 2) False ++ bin ++ suffix
-        putStrLn $ "dispatch " ++ show (bin ++ suffix)
+        printLog $ "dispatch " ++ show (bin ++ suffix)
         jumpTo addr
         
       ExtInstr instr -> do
-        putStrLn "exti"
+        printLog "exti"
         
         wordRead@(tagRead, dataRead) <- readIORef . regs . regRead $ instr
         let ~(N intRead) = dataRead
@@ -143,7 +143,7 @@ main = displayClock . makeCommandThread $ \commands -> do
                      | otherwise       = regWrite instr
                 writeOn = writeReg instr || writeTemp instr
                 writeToDest x
-                  | writeOn = do putStrLn $ show dest ++ " := " ++ show x
+                  | writeOn = do printLog $ show dest ++ " := " ++ show x
                                  writeIORef (regs dest) x
                   | otherwise = return ()
             if useGC instr
@@ -175,9 +175,13 @@ main = displayClock . makeCommandThread $ \commands -> do
 
 
             when (loadCondReg instr) $ do
-              putStrLn $ "conditional on tag " ++ show tagRead
+              printLog $ "conditional on tag " ++ show tagRead
               writeIORef condReg $ tagRead /= T TNil
 
         -- don't forget this at the end!      
         incrCtr
+
+printLog :: String -> IO ()
+printLog _ = return ()
+-- printLog = putStrLn
 

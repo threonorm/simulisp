@@ -29,6 +29,7 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
   lightGreen <- color2px 0 255 0
   darkGreen  <- color2px 0 40  0
   continueLoop <- newIORef True
+  accel <- newIORef False
   initialTick <- SDL.getTicks
   runReaderT (eventLoop 0) $ ELD {
     _graphicsData = GD { _screen = screen
@@ -37,6 +38,7 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
                        , _darkGreen = darkGreen
                        }
     , _continueLoop = continueLoop
+    , _accel = accel
     , _timeVar = timeVar
     , _syncLock = syncLock
     , _initialTick = initialTick
@@ -45,6 +47,7 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
 
 data EventLoopData = ELD { _graphicsData :: GraphicsData
                          , _continueLoop :: IORef Bool
+                         , _accel        :: IORef Bool
                          , _timeVar      :: TimeVar
                          , _syncLock     :: MVar ()
                          , _initialTick  :: Word32
@@ -64,11 +67,13 @@ eventLoop secondsPreviouslyElapsed = do
     syncLock <- asks _syncLock
     
     handleEvents
-    
+
+    accel <- lift . readIORef =<< asks _accel
+
     newTick <- lift SDL.getTicks
     initialTick <- asks _initialTick
     let secondsElapsed = (newTick - initialTick) `div` 1000
-    when (secondsElapsed > secondsPreviouslyElapsed) $ do
+    when (secondsElapsed > secondsPreviouslyElapsed || accel) $ do
       lift $ tryPutMVar syncLock ()
       return ()
       
@@ -94,7 +99,13 @@ handleEvents = do
     SDL.NoEvent -> return ()
     _ -> handleEvent e >> handleEvents
   where handleEvent SDL.Quit = quit
-        handleEvent (SDL.KeyUp (SDL.Keysym {SDL.symKey = SDL.SDLK_ESCAPE})) = quit
+        handleEvent (SDL.KeyUp (SDL.Keysym {SDL.symKey = k})) = case k of
+          SDL.SDLK_ESCAPE -> quit
+          SDL.SDLK_RETURN -> lift . flip writeIORef False =<< asks _accel
+          _ -> return ()
+        handleEvent (SDL.KeyDown (SDL.Keysym {SDL.symKey = k})) = case k of
+          SDL.SDLK_RETURN -> lift . flip writeIORef True =<< asks _accel
+          _ -> return ()
         handleEvent _ = return ()
         quit = lift . flip writeIORef False =<< asks _continueLoop
 
