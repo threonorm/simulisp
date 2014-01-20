@@ -125,6 +125,7 @@ data MicroInstruction = ExtInstr ExternalInstruction
                       | Jump { jumpIsConditional :: Bool
                              , jumpAddress :: Int }
                       | Dispatch Reg [Bool]
+                      deriving (Show)
 
 type ExternalInstruction = ControlSignals Reg Bool ALUOp Immediate
 
@@ -140,11 +141,12 @@ data ControlSignals r s a i = CS { regRead :: r
                                  , outsideOpcode :: [s]
                                  , immediate :: i
                                  }
+                              deriving (Show)
 
                                    
 data ALUOp = ALUNop | ALUIncr | ALUDecrUpper | ALUDecrImmediate
-           deriving (Eq)
+           deriving (Eq, Show)
 
 data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
-               deriving (Eq)
+               deriving (Eq, Show)
   

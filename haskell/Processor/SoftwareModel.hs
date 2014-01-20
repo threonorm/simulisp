@@ -12,10 +12,10 @@ import Processor.Microcode
 import Processor.MicroAssembler
 import Simulator.DisplayClock
 
-data WordTag = T Tag | R ReturnTag deriving (Eq)
+data WordTag = T Tag | R ReturnTag deriving (Eq, Show)
 data WordData = N Int | P (Word, Word)
               | PClock -- quick and dirty hack to handle the only global pointer
-              deriving (Eq)
+              deriving (Eq, Show)
 type Word = (WordTag, WordData)
 
 -- Imperative-style Haskell: yes, it's possible!
@@ -72,6 +72,8 @@ mainProgram = (T TFirst, P ((T TNum, N 0),
                             (T TLast, P ((T TNum, N 0),
                                          (T TGlobal, PClock)))))
 
+
+
 microcode :: IntMap MicroInstruction
 microcode = IntMap.fromList . secondPass . firstPass $ microprogram
 
@@ -116,11 +118,13 @@ main = displayClock . makeCommandThread $ \commands -> do
         (tag, _) <- readIORef (regs register)
         let bin = case tag of T t -> tagBin t
                               R r -> returnBin r
-        let addr = bools2int $ bin ++ suffix
-        putStrLn $ "dispatch " ++ show addr ++ show (bin ++ suffix)
+        let addr = bools2int $ replicate (microAddrS - tagS - 2) False ++ bin ++ suffix
+        putStrLn $ "dispatch " ++ show (bin ++ suffix)
         jumpTo addr
         
       ExtInstr instr -> do
+        putStrLn "exti"
+        
         wordRead@(tagRead, dataRead) <- readIORef . regs . regRead $ instr
         let ~(N intRead) = dataRead
             ~(P ptrRead) = dataRead
@@ -136,7 +140,8 @@ main = displayClock . makeCommandThread $ \commands -> do
           when (writeReg instr || writeTemp instr) $ do
             let dest | writeTemp instr = Temp
                      | otherwise       = regWrite instr
-                writeToDest = writeIORef (regs dest)
+                writeToDest x = do putStrLn $ show dest ++ " := " ++ show x
+                                   writeIORef (regs dest) x
             if useGC instr
               -- operation by GC 
               then do let [alloc, carOrCdr] = gcOpcode instr

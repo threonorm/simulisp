@@ -33,7 +33,7 @@ firstPass = go 0
           let (labels, instructions) = go i xs in
           (Map.insert l i labels, instructions)
         go i (x:xs) =
-          let (labels, instructions) = go i xs in
+          let (labels, instructions) = go (i+1) xs in
           (labels, (i, x) : instructions)
 
 -- Second pass: eliminate named jumps

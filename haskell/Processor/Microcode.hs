@@ -153,7 +153,7 @@ return = [ (RFirst    , standardRestore ++
            
          , (RLast     , standardRestore ++
                         popToReg Args ++
-x                        [ moveToTemp Value
+                        [ moveToTemp Value
                         , allocCons Args Args 
                         , moveToTemp Args
                         , allocConsWithReturn RApply Stack Stack
