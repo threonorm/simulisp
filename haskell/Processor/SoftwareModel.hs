@@ -12,6 +12,8 @@ import Simulator.DisplayClock
 
 data WordTag = T Tag | R ReturnTag deriving (Eq)
 data WordData = N Int | P (Word, Word)
+              | PClock -- quick and dirty hack to handle the only global pointer
+              deriving (Eq)
 type Word = (WordTag, WordData)
 
 -- Imperative-style Haskell: yes, it's possible!
@@ -37,8 +39,36 @@ initRegs = do
       f Temp = t
   return f
 
+
+
 clockProgram :: Word
-clockProgram = undefined
+clockProgram = (T TSequence,
+                P ((T TApplyOne, P (localVar 0 1, (T TPrintMin, N 0))),
+                   (T TSequence,
+                    P ((T TApplyOne, P (localVar 0 0, (T TPrintSec, N 0))),
+                       (T TLet,
+                        P ((T TApplyOne, P (localVar 0 0, (T TIncr, N 0))),
+                           (T TSequence,
+                            P ((T TApplyOne, P (localVar 0 0, (T TIsgt60, N 0))),
+                               (T TCond,
+                                P ((T TSync,
+                                    P ((T TFirst,
+                                        P ((T TApplyOne, P (localVar 1 1, (T TIncr, N 0))),
+                                           (T TLast,
+                                            P ((T TNum, N 0),
+                                               (T TGlobal, PClock))))),
+                                        (T TNil, N 0))),
+                                   (T TSync,
+                                    P ((T TFirst,
+                                        P ((T TApplyOne, P (localVar 1 1, (T TIncr, N 0))),
+                                           (T TLast,
+                                            P ((T TNum, N 0),
+                                               (T TGlobal, PClock))))),
+                                        (T TNil, N 0)))))))))))))
+
+mainProgram = (T TFirst, P ((T TNum, N 0),
+                            (T TLast, P ((T TNum, N 0),
+                                         (T TGlobal, PClock)))))
 
 microcode :: Array Int MicroInstruction
 microcode = undefined
@@ -62,6 +92,7 @@ aluCompute ALUDecrUpper _ n | hi == 0   = (True, lo)
 
 upperWeight = 2^10 -- the 10 is arbitrary, change later
 
+localVar k l = (T TLocal, N $ k * upperWeight + l)
 
 main :: IO ()
 main = displayClock . makeCommandThread $ \commands -> do
@@ -115,8 +146,10 @@ main = displayClock . makeCommandThread $ \commands -> do
                                       ImmR r -> R r
                                       ImmN _ -> error "wrong kind of immediate"
                                 writeToDest (tag, P (car, cdr))
-                        else do let (car, cdr) = ptrRead
-                                writeToDest $ if carOrCdr then cdr else car
+                        else if wordRead == (T TGlobal, PClock) -- HACK!
+                             then writeToDest clockProgram
+                             else do let (car, cdr) = ptrRead
+                                     writeToDest $ if carOrCdr then cdr else car
               -- operation by ALU     
               else if aluCtrl instr == ALUNop
                    then writeToDest wordRead

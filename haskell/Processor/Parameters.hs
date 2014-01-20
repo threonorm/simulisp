@@ -37,6 +37,7 @@ data Tag = TNil
          | TApplyOne
          | TLet
          | TSequence
+         | TSync
          -- Primitives
          | TCar
          | TCdr 
@@ -67,6 +68,20 @@ tagNum TLast     = 10
 tagNum TApplyOne = 11
 tagNum TLet      = 12
 tagNum TSequence = 13
+tagNum TSync     = 14
+
+tagNum TCar       = 16
+tagNum TCdr       = 17
+tagNum TCons      = 18
+tagNum TIncr      = 19
+tagNum TDecr      = 20
+tagNum TIsZero    = 21
+tagNum TIsgt60    = 22
+tagNum TIsgt24    = 23
+tagNum TPrintSec  = 24
+tagNum TPrintMin  = 25
+tagNum TPrintHour = 26
+
 
 -- 00 suffix: bootloading segment
 tagSuffixS :: Int
