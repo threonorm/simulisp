@@ -101,8 +101,11 @@ main = displayClock . makeCommandThread $ \commands -> do
   regs <- initRegs
   condReg <- newIORef False
   ctrRef <- newIORef (0 :: Int)
+  numCycles <- newIORef (0 :: Int)
 
   forever $ do
+    modifyIORef numCycles ((+) 1)
+    
     ctr <- readIORef ctrRef
     let jumpTo = writeIORef ctrRef
         incrCtr = jumpTo $ ctr + 1
@@ -133,7 +136,11 @@ main = displayClock . makeCommandThread $ \commands -> do
             
         if interactWithOutside instr
           then case outsideOpcode instr of
-          [True,  True ] -> waitNextSec commands
+          [True,  True ] -> do
+            nc <- readIORef numCycles
+            writeIORef numCycles 0
+            printLog $ show nc ++ " cycles since the previous second."
+            waitNextSec commands
           [False, True ] -> setHour   commands intRead
           [True , False] -> setMinute commands intRead
           [False, False] -> setSecond commands intRead
