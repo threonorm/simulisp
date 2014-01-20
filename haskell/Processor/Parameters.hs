@@ -12,6 +12,15 @@ microInstrS = 24
 microAddrS = 12
 -- also: number of registers = 2^3
 
+data Reg = Null
+         | Value
+         | Expr
+         | Env
+         | Args
+         | Stack
+         | Temp
+         deriving (Eq, Show)
+
 -- Enumeration of tags, and their binary format
 
 data Tag = TNil
@@ -40,7 +49,7 @@ data Tag = TNil
          | TPrintSec
          | TPrintMin
          | TPrintHour
-         deriving (Show)
+         deriving (Eq, Show)
 
 -- Explicit instead of "deriving Enum" for easy reference
 tagNum :: Tag -> Int
@@ -75,7 +84,7 @@ data ReturnTag = RFirst
                | RLet
                | RSequence
                | RApply
-               deriving (Show)
+               deriving (Eq, Show)
 
 returnNum :: ReturnTag -> Int
 returnNum RFirst    = 0
@@ -94,5 +103,35 @@ tagBinGeneric = go tagS
 tagBin    = tagBinGeneric . tagNum
 returnBin = tagBinGeneric . returnNum
 
--- microinstruction format: see Hardware.hs
+-- microinstruction format
 
+-- s: signal type (polymorphic to use with Caillou)
+data MicroInstruction = ExtInstr ExternalInstruction
+                      | Jump { jumpIsConditional :: Bool
+                             , jumpAddress :: Int }
+                      | Dispatch Reg [Bool]
+
+type ExternalInstruction = ControlSignals Reg Bool ALUOp Immediate
+
+
+data ControlSignals r s a i = CS { regRead :: r
+                                 , regWrite :: r
+                                 , writeReg :: s
+                                 , writeTemp :: s
+                                 , useGC :: s
+                                 , gcOpcode :: [s]
+                                 , aluCtrl :: a
+                                 , loadCondReg :: s
+                                 , interactWithOutside :: s
+                                 , outsideOpcode :: [s]
+                                 , immediate :: i
+                                 }
+
+                                   
+data ALUOp = ALUNop | ALUIncr | ALUDecr | ALUDecrUpper
+           | ALUCompareImmediate
+           deriving (Eq)
+
+data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
+               deriving (Eq)
+  

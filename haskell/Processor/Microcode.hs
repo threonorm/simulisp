@@ -54,6 +54,8 @@ eval = [ (TNil     , selfEvaluating)
        | prim <- [TCar, TCdr, TCons, TIncr, TDecr, TIsZero,
                   TIsgt60, TIsgt24, TPrintSec, TPrintMin, TPrintHour] ]
 
+
+-- note: decrupper must leave its argument zero if it was zero
 decrUpper = undefined
 decrLower = undefined
 
