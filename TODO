@@ -21,3 +21,14 @@ Despite having made a lot of progress, there's still tons of work to do!
 * Netlist compilation + hot code swapping?
   * This seems to be in limbo for now...
 
+
+Note about overflow bit for ALU:
+
+when adding: overflow iff last carry = 1
+when subtracting: n - k ~ n + (2^p - k)
+  carry = 1 iff 2^p + n - k >= 2^p iff n - k >= 0 iff n >= k
+  overflow (into negative numbers) iff k > n
+  therefore: overflow iff carry = 0 (!)
+  --> compute overflow bit = carry XOR switch between + and -
+   
+

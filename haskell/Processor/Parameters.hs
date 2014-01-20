@@ -128,7 +128,6 @@ data MicroInstruction = ExtInstr ExternalInstruction
 
 type ExternalInstruction = ControlSignals Reg Bool ALUOp Immediate
 
-
 data ControlSignals r s a i = CS { regRead :: r
                                  , regWrite :: r
                                  , writeReg :: s
@@ -143,8 +142,7 @@ data ControlSignals r s a i = CS { regRead :: r
                                  }
 
                                    
-data ALUOp = ALUNop | ALUIncr | ALUDecr | ALUDecrUpper
-           | ALUCompareImmediate
+data ALUOp = ALUNop | ALUIncr | ALUDecrUpper | ALUDecrImmediate
            deriving (Eq)
 
 data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int

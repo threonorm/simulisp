@@ -36,7 +36,7 @@ eval = [ (TNil     , selfEvaluating)
                      , fetchCar Expr Expr ])
          
        , (TProc    , [ moveToTemp Env
-                     , allocConsWithTag Expr Value (tagBin TClosure)
+                     , allocConsWithTag TClosure Expr Value
                      , dispatchReturn ])
 
        , (TFirst   , saveCdrAndEvalCar RFirst)
@@ -48,6 +48,10 @@ eval = [ (TNil     , selfEvaluating)
        , (TApplyOne, saveCdrAndEvalCar RApplyOne)
        , (TLet     , saveCdrAndEvalCar RLet)
        , (TSequence, saveCdrAndEvalCar RSequence)
+         
+       , (TSync    , [ fetchCar Expr Expr
+                     , sync
+                     , dispatchReturn ])
        ]
        ++
        [ (prim     , selfEvaluating)
@@ -56,18 +60,17 @@ eval = [ (TNil     , selfEvaluating)
 
 
 -- note: decrupper must leave its argument zero if it was zero
-decrUpper = undefined
-decrLower = undefined
 
 lookupLocal = [ label "local_outerloop"
-              , decrUpper Expr -- sets condition register to (expr.upper = 0)?
+              -- sets condition register to (expr.upper = 0)?
+              , doALU ALUDecrUpper 0 Expr Expr
               , condJump "local_endouterloop"
               , fetchCdr Env Env
               , jmp "local_outerloop"
               , label "local_endouterloop"
               , fetchCar Env Env
               , label "local_innerloop"
-              , decrLower Expr
+              , doALU ALUDecrImmediate 1 Expr Expr
               , condJump "local_endinnerloop"
               , fetchCdr Env Env
               , jmp "local_innerloop"
@@ -80,22 +83,16 @@ lookupLocal = [ label "local_outerloop"
 allocSingleton src dest = [ moveToTemp src
                           , allocCons Null dest ]
 getLastArg = fetchCar Args Value
-fetchCarAndIncr = undefined
-fetchCarAndDecr = undefined
-fetchCarAndDecrRetrievingComp = undefined
-fetchCarAndSubImmediate = undefined
-pushWithReturn = undefined
-allocConsWithReturn = undefined
 
-dispatchEval   = Dispatch Expr  evalSuffix
-dispatchApply  = Dispatch Expr  applySuffix
-dispatchReturn = Dispatch Stack returnSuffix
+dispatchEval   = ActualInstr $ Dispatch Expr  evalSuffix
+dispatchApply  = ActualInstr $ Dispatch Expr  applySuffix
+dispatchReturn = ActualInstr $ Dispatch Stack returnSuffix
 
 apply = [ (t, allocSingleton Args Env ++
               [ Expr ^= Value
               , dispatchEval ])
         | t <- [TNil, TList, TNum, TLocal, TGlobal, TCond, TProc,
-                TFirst, TNext, TLast, TApplyOne, TLet, TSequence]
+                TFirst, TNext, TLast, TApplyOne, TLet, TSequence, TSync]
         ]
         ++
         map (second (++ [dispatchReturn]))
@@ -108,14 +105,35 @@ apply = [ (t, allocSingleton Args Env ++
                        , fetchCdr Args Value
                        , fetchCar Value Value
                        , allocCons Value Value ])
-        , (TIncr     , [ fetchCarAndIncr Args Value ])
-        , (TDecr     , [ fetchCarAndDecr Args Value ])
-        , (TIsZero   , [ fetchCarAndDecrRetrievingComp Args Value ])
-        , (TIsgt60   , [ fetchCarAndSubImmediate Args Value 60 ])
-        , (TIsgt24   , [ fetchCarAndSubImmediate Args Value 24 ])
-        , (TPrintSec , undefined)
-        , (TPrintMin , undefined)
-        , (TPrintHour, undefined)
+        , (TIncr     , [ fetchCar Args Value
+                       , doALU ALUIncr 0 Value Value ])
+        , (TDecr     , [ fetchCar Args Value
+                       , doALU ALUDecrImmediate 1 Value Value])
+        , (TIsZero   , [ fetchCar Args Value
+                       , doALU ALUDecrImmediate 1 Value Null
+                       , condJump "zero"
+                       , Value ^= Null
+                       , label "zero"
+                       , doALU ALUIncr 0 Null Value -- using Num(1) as constant True
+                       ])
+        , (TIsgt60   , [ fetchCar Args Value
+                       , doALU ALUDecrImmediate 60 Value Null
+                       , condJump "strictlt60"
+                       , doALU ALUIncr 0 Null Value
+                       , label "strictlt60"
+                       , Value ^= Null ])
+        , (TIsgt24   , [ fetchCar Args Value
+                       , doALU ALUDecrImmediate 24 Value Null
+                       , condJump "strictlt24"
+                       , doALU ALUIncr 0 Null Value
+                       , label "strictlt24"
+                       , Value ^= Null ])
+        , (TPrintSec , [ getLastArg
+                       , printSec Value ])
+        , (TPrintMin , [ getLastArg
+                       , printMin Value ])
+        , (TPrintHour , [ getLastArg
+                        , printHour Value ])
         ]
 
 popToReg reg = [ fetchCar Stack reg
@@ -138,14 +156,14 @@ return = [ (RFirst    , standardRestore ++
                         [ moveToTemp Value
                         , allocCons Args Args 
                         , moveToTemp Args
-                        , allocConsWithReturn Stack Stack RApply
+                        , allocConsWithReturn RApply Stack Stack
                         , dispatchEval ])
            
          , (RApplyOne , standardRestore ++
                         allocSingleton Value Args ++
-                        pushWithReturn Args RApply ++
+                        pushWithReturn RApply Args ++
                         [ moveToTemp Args
-                        , allocConsWithReturn Stack Stack RApply
+                        , allocConsWithReturn RApply Stack Stack
                         , dispatchEval ])
            
          , (RLet      , standardRestore ++
@@ -182,21 +200,18 @@ microprogram = boot ++ eval' ++ apply' ++ return'
                     | otherwise = 0
         
 
-
-         
-
 push :: Reg -> [Instruction]                 
 push reg = [ moveToTemp reg
            , allocCons Stack Stack]
 
--- pushWithReturn :: [Bool] -> Reg -> [Instruction]
--- pushWithReturn retTag reg = [moveToTemp reg,allocConsWithTag Stack Stack retTag]
+pushWithReturn :: ReturnTag -> Reg -> [Instruction]
+pushWithReturn retTag reg = [ moveToTemp reg
+                            , allocConsWithReturn retTag Stack Stack]
 
-walkOnList = undefined
-
+saveCdrAndEvalCar :: ReturnTag -> [Instruction]
 saveCdrAndEvalCar returnTag = push Env ++
-                              [ fetchCdrTemp Expr
-                              , allocConsWithReturn Stack Stack returnTag
+                              [ fetchCdr Expr Temp
+                              , allocConsWithReturn returnTag Stack Stack
                               , fetchCar Expr Expr
                               , dispatchEval ] 
                                 

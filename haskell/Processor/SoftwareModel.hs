@@ -80,10 +80,8 @@ bools2int = foldl' (\acc b -> 2*acc + if b then 1 else 0) 0 . reverse
 aluCompute :: ALUOp -> Immediate -> Int -> (Bool, Int)
 
 aluCompute ALUIncr _ n = (False, n+1) -- overflow -> what happens?
-aluCompute ALUDecr _ 0 = (True, 0) -- pred(0) = 0
-aluCompute ALUDecr _ n = (False, n-1)
 
-aluCompute ALUCompareImmediate (ImmN imm) n = (n > imm, 42)
+aluCompute ALUDecrImmediate (ImmN imm) n = (n > imm, max (n - imm) 0)
 
 aluCompute ALUDecrUpper _ n | hi == 0   = (True, lo)
                             | otherwise = (False, (hi-1)*upperWeight + lo)
@@ -99,6 +97,7 @@ main = displayClock . makeCommandThread $ \commands -> do
   regs <- initRegs
   condReg <- newIORef False
   ctrRef <- newIORef (0 :: Int)
+
   forever $ do
     ctr <- readIORef ctrRef
     let jumpTo = writeIORef ctrRef
@@ -157,7 +156,7 @@ main = displayClock . makeCommandThread $ \commands -> do
                                                            (immediate instr)
                                                            intRead
                            writeIORef condReg flag
-                           writeToDest (tagRead, N result)
+                           writeToDest (T TNum, N result)
 
           when (loadCondReg instr) $ do
             writeIORef condReg $ tagRead /= T TNil
