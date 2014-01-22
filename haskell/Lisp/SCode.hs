@@ -19,4 +19,12 @@ data Tag = TNil
          | TSync
          | TPrim Primitive
          deriving (Eq, Show)
-                  
+
+type SCons = (SWord, SWord)
+
+data SWord = SWord Tag SData -- be careful not to cut yourself
+
+data SData = SPtr SCons | SNum Int | SGlobal String
+
+type SProgram = [(String, SWord)]
+
