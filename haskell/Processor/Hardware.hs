@@ -29,10 +29,14 @@ type ControlSignals s = GenericExternalInstruction (s,s,s) s (s,s) [s]
 
 
 -- TODO: implement decodeMicroInstruction AFTER the binary format has been decided
+-- this must be consistent with the microassembler
                         
-decodeMicroInstruction :: [s] -> ControlSignals s
+decodeMicroInstruction :: [s] -- EXTERNAL control signals
+                              -- the 2 internal bits have already been removed
+                       -> ControlSignals s
 -- decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
 --   where external = drop 2 microinstr -- first 2 bits are internal to control
+--         ^ attention, ça ça devient faux
 --         (rr,q0) = splitAt 3 external
 --         (rw,q1) = splitAt 3 q0
 --         (wf:q2) = q1
@@ -42,7 +46,31 @@ decodeMicroInstruction :: [s] -> ControlSignals s
 --         (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
 --         (lcr:im) =  q6 
 
+-------------------------------------------------------------
+-- Thomas, tu te charges de ça !!!!!
+-- !!!!!!!!!!!!!!!!!!
+-- un truc possiblement pertinent serait de mettre
+-- decodeMicroInstruction et la fonction
+-- microinstruction -> (0|1)* côte à côte dans un fichier
+-- afin de pouvoir vérifier d'un coup d'oeil la cohérence
+--
+-- attention aussi au dispatchsuffix juste au dessous
+-- note: je choisis d'utiliser les bits du suffixe pour
+-- décider eval vs apply vs return dans dispatch
+-- mais il faut pas que ces bits viennent influencer,
+-- par exemple, l'écriture de registres
+-- je les mets dans immediate parce que ça me paraît
+-- inoffensif, mais si tu as mieux, n'hésites pas
+-- à changer !
+-------------------------------------------------------------
+
 decodeMicroInstruction = undefined
+
+dispatchSuffix :: [s] -- raw unformatted *external* microinstruction
+               -> [s] -- 2 bits which indicate whether we should execute
+                      -- eval, apply or return
+dispatchSuffix = take 2 . immediate . decodeMicroInstruction
+
 
 
 -- Strong typing for the win!
@@ -130,18 +158,6 @@ memorySystem opCode (DataField ptr) regBus tempBus =
         ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
 
 
--- Testing equality to zero
--- I think it's better with dichotomicFold...
-
--- isZero :: (Circuit m s) => [s] -> m s
--- isZero = neg <=< orAll
---   --TODO : Check the code generated
---   -- /!\ we can improve with a dichotomy
---   where orAll  [a] = return a           
---         orAll (t:q) = do out <- t -||> orAll q
---                          return out 
-
-
 -- A small ALU which takes a word (i.e. tag + data) and operates on the data part;
 -- it can either:
 -- * increment or decrement it
@@ -217,7 +233,7 @@ registerArray controlSignals (Word regIn) =
 singleRegister :: (SequentialCircuit m s) => s -> Word s -> m (Word s)
 singleRegister writeEnable (Word input) = do
   rec delays <- mapMn wordS delay newValue
-      newValue <- zipWithMn wordS (\inp del -> mux3 (writeEnable, inp, del))
+      newValue <- zipWithMn wordS (\inp del -> mux3 (writeEnable, del, inp))
                                   input delays
   return $ Word delays
   
@@ -229,32 +245,33 @@ singleRegister writeEnable (Word input) = do
 control :: (MemoryCircuit m s) => s -> TagField s -> m (ControlSignals s)
 control cond (TagField tag) =
   do wireZero <- zero
-     let initialStateForTag = [wireZero] ++ tag
-                              ++ replicate (microAddrS - tagS - 1) wireZero
-                              
+
      rec mpc <- bigDelayn microAddrS newMpc -- microprogram counter
          microInstruction <- accessROM "rom_microcode"
                                        microAddrS microInstrS mpc
 
-         let (jump:choice:suffix) = microInstruction
+         let (jump:choice:external) = microInstruction
          let dispatch    = choice -- choice between normal (0) and dispatch (1)
          let conditional = choice -- choice between jump and branch
 
          normalNextAddr <- incrementer mpc
+         let initialStateForTag = replicate (microAddrS - tagS - 2) wireZero
+                                  ++ tag
+                                  ++ dispatchSuffix external
 
          jumpOK <- neg conditional <||- cond
          nonLocal <- mux3 (jump, dispatch, jumpOK)
          
          newMpcNonLocal <- bigMuxn microAddrS jump
                                    initialStateForTag
-                                   (take microAddrS suffix)
+                                   (take microAddrS external)
            
          newMpc <- bigMuxn microAddrS nonLocal
                            normalNextAddr
                            newMpcNonLocal                           
 
      notJump <- neg jump
-     neutralized <- mapM (notJump -&&-) microInstruction
+     neutralized <- mapM (notJump -&&-) external
      return $ decodeMicroInstruction neutralized
 
 
