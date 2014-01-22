@@ -119,7 +119,8 @@ processor =
          condReg <- delay =<< mux3 (loadCondReg controlSignals,
                                     aluOverflow,
                                     regIsNil)
-         let (regOutTag@(TagField tag), regOutData) = decomposeWord regOut
+         let (regOutTag@(TagField tag), regOutData@(DataField df)) =
+               decomposeWord regOut
          regIsNil <- dichotomicFold or2 tag
 
          regIn <- muxWord (useGC controlSignals) aluOut gcOut
@@ -133,8 +134,10 @@ processor =
          regOut <- registerArray controlSignals regIn
          tempOut <- singleRegister (writeTemp controlSignals) regIn
          
+     
      return (interactWithOutside controlSignals
-             : outsideOpcode controlSignals)
+             : outsideOpcode controlSignals
+             ++ df)
 
 
 -- Definitions for the functional blocks --
