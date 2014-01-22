@@ -119,16 +119,17 @@ processor =
          condReg <- delay =<< mux3 (loadCondReg controlSignals,
                                     aluOverflow,
                                     regIsNil)
-         let (regOutTag@(TagField tag), regOutData@(DataField df)) =
+         let (regOutTag@(TagField tag), (DataField df)) =
                decomposeWord regOut
          regIsNil <- dichotomicFold or2 tag
 
          regIn <- muxWord (useGC controlSignals) aluOut gcOut
 
          gcOut <- memorySystem (gcOpcode controlSignals)
-                               regOutData
                                regOut
                                tempOut
+                               (TagField . take tagS . immediate
+                                $ controlSignals)
          (aluOut, aluOverflow) <- miniAlu controlSignals regOut
                                   
          regOut <- registerArray controlSignals regIn
@@ -145,17 +146,23 @@ processor =
 
 -- Memory system (in charge of implementing alloc_cons, fetch_car, fetch_cdr)
 
-memorySystem :: (MemoryCircuit m s) => [s] -> DataField s -> Word s -> Word s -> m (Word s)
-memorySystem opCode (DataField ptr) regBus tempBus =
-  do rec codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
+memorySystem :: (MemoryCircuit m s) =>
+                [s] -> Word s -> Word s -> TagField s -> m (Word s)
+memorySystem opCode regBus tempBus tagForNewCons =
+  do wireOne <- one
+     rec codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
          dataMem <- Cons <$> accessRAM ramAddrS consS
-                                       (addrR, allocCons, freeCounter,
-                                       consRegTemp)
+                                       (addrR,
+                                        allocCons, freeCounter, consRegTemp)
                              -- write to next free cell iff allocating
          freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
+     let freeCellPtr = DataField $ wireOne : freeCounter
+         allocResult = recomposeWord tagForNewCons freeCellPtr
      (car, cdr) <- decomposeCons <$> muxCons codeOrData codeMem dataMem
-     muxWord carOrCdr car cdr
+     fetchResult <- muxWord carOrCdr car cdr
+     muxWord allocCons fetchResult allocResult
   where [carOrCdr, allocCons] = opCode
+        (_, DataField ptr) = decomposeWord regBus
         (codeOrData:addrR) = ptr
         (Cons consRegTemp) = recomposeCons regBus tempBus
         ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
