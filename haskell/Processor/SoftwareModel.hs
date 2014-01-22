@@ -104,7 +104,7 @@ main = displayClock . makeCommandThread $ \commands -> do
   numCycles <- newIORef (0 :: Int)
 
   forever $ do
-    modifyIORef numCycles ((+) 1)
+    modifyIORef' numCycles (+1)
     
     ctr <- readIORef ctrRef
     let jumpTo = writeIORef ctrRef

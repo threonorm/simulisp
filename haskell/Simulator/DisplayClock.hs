@@ -10,18 +10,19 @@ import Data.Word
 import Data.IORef
 import qualified Graphics.UI.SDL as SDL
 
-type TimeVar = MVar (Int, Int, Int)
-type CommandThread = TimeVar -> MVar () -> IO ()
+type TimeVar = IORef (Int, Int, Int)
+type CommandThread = TimeVar -> MVar () -> IORef Bool -> IO ()
 
 displayClock :: CommandThread -> IO ()
 displayClock commandThread = do
   syncLock <- newMVar ()
-  timeVar <- newMVar (0,0,0)
-  forkIO (commandThread timeVar syncLock)
-  displayThread timeVar syncLock
+  accelVar <- newIORef False
+  timeVar <- newIORef (0,0,0)
+  forkIO (commandThread timeVar syncLock accelVar)
+  displayThread timeVar syncLock accelVar
 
-displayThread :: TimeVar -> MVar () -> IO ()
-displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
+displayThread :: TimeVar -> MVar () -> IORef Bool -> IO ()
+displayThread timeVar syncLock accelVar = SDL.withInit [SDL.InitVideo] $ do
   screen <- SDL.setVideoMode 960 400 32 [SDL.HWSurface, SDL.DoubleBuf]
   SDL.setCaption "Processor demo: Clock" ""
   let color2px = SDL.mapRGB (SDL.surfaceGetPixelFormat screen)
@@ -29,7 +30,6 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
   lightGreen <- color2px 0 255 0
   darkGreen  <- color2px 0 0  0
   continueLoop <- newIORef True
-  accel <- newIORef False
   initialTick <- SDL.getTicks
   runReaderT (eventLoop 0) $ ELD {
     _graphicsData = GD { _screen = screen
@@ -38,7 +38,7 @@ displayThread timeVar syncLock = SDL.withInit [SDL.InitVideo] $ do
                        , _darkGreen = darkGreen
                        }
     , _continueLoop = continueLoop
-    , _accel = accel
+    , _accel = accelVar
     , _timeVar = timeVar
     , _syncLock = syncLock
     , _initialTick = initialTick
@@ -84,7 +84,7 @@ eventLoop secondsPreviouslyElapsed = do
 
 displayTime :: EventLoopMonad ()
 displayTime = do
-  time <- lift . readMVar =<< asks _timeVar
+  time <- lift . readIORef =<< asks _timeVar
   graphicsData <- asks _graphicsData
   let screen = _screen graphicsData
   lift $ do
@@ -232,12 +232,13 @@ data ClockCommands = ClockCommands { waitNextSec :: IO ()
                                    }
 
 makeCommandThread :: (ClockCommands -> IO ()) -> CommandThread
-makeCommandThread f timeVar syncLock = 
+makeCommandThread f timeVar syncLock accelVar = 
   f $ ClockCommands {
-    setHour   = \h -> modifyMVar_ timeVar (\(_,m,s) -> return (h,m,s)), 
-    setMinute = \m -> modifyMVar_ timeVar (\(h,_,s) -> return (h,m,s)),
-    setSecond = \s -> modifyMVar_ timeVar (\(h,m,_) -> return (h,m,s)),
-    waitNextSec = takeMVar syncLock
+    setHour   = \h -> modifyIORef timeVar (\(_,m,s) -> (h,m,s)), 
+    setMinute = \m -> modifyIORef timeVar (\(h,_,s) -> (h,m,s)),
+    setSecond = \s -> modifyIORef timeVar (\(h,m,_) -> (h,m,s)),
+    waitNextSec = do accel <- readIORef accelVar
+                     when (not accel) $ takeMVar syncLock
     }
   
 
