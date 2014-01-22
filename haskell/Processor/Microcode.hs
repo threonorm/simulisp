@@ -4,10 +4,12 @@ import Prelude hiding (return)
 
 import Control.Arrow
 import Data.Function
+import Data.List
 
 import Processor.MicroAssembler
 import Processor.Parameters
-import Data.List
+import Lisp.SCode
+import Lisp.Primitives
 
 selfEvaluating = [ Value ^= Expr,
                    dispatchReturn ]
@@ -56,9 +58,9 @@ eval = [ (TNil     , selfEvaluating)
                      , dispatchEval ])
        ]
        ++
-       [ (prim     , selfEvaluating)
-       | prim <- [TCar, TCdr, TCons, TIncr, TDecr, TIsZero,
-                  TIsgt60, TIsgt24, TPrintSec, TPrintMin, TPrintHour] ]
+       [ (TPrim prim, selfEvaluating)
+       | prim <- [PCar, PCdr, PCons, PIncr, PDecr, PIsZero,
+                  PIsgt60, PIsgt24, PPrintSec, PPrintMin, PPrintHour] ]
 
 
 -- note: decrupper must leave its argument zero if it was zero
@@ -97,21 +99,21 @@ apply = [ (t, allocSingleton Args Env ++
                 TFirst, TNext, TLast, TApplyOne, TLet, TSequence, TSync]
         ]
         ++
-        map (second (++ [dispatchReturn]))
-        [ (TCar      , [ getLastArg
+        map (TPrim *** (++ [dispatchReturn]))
+        [ (PCar      , [ getLastArg
                        , fetchCar Value Value ])
-        , (TCdr      , [ getLastArg
+        , (PCdr      , [ getLastArg
                        , fetchCdr Value Value ])
-        , (TCons     , [ getLastArg
+        , (PCons     , [ getLastArg
                        , moveToTemp Value
                        , fetchCdr Args Value
                        , fetchCar Value Value
                        , allocCons Value Value ])
-        , (TIncr     , [ fetchCar Args Value
+        , (PIncr     , [ fetchCar Args Value
                        , doALU ALUIncr 0 Value Value ])
-        , (TDecr     , [ fetchCar Args Value
+        , (PDecr     , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 1 Value Value])
-        , (TIsZero   , [ fetchCar Args Value
+        , (PIsZero   , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 1 Value Null
                        , condJump "zero"
                        , Value ^= Null
@@ -120,7 +122,7 @@ apply = [ (t, allocSingleton Args Env ++
                        , doALU ALUIncr 0 Null Value -- using Num(1) as constant True
                        , dispatchReturn
                        ])
-        , (TIsgt60   , [ fetchCar Args Value
+        , (PIsgt60   , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 60 Value Null
                        , condJump "strictlt60"
                        , doALU ALUIncr 0 Null Value
@@ -128,7 +130,7 @@ apply = [ (t, allocSingleton Args Env ++
                        , label "strictlt60"
                        , Value ^= Null
                        , dispatchReturn])
-        , (TIsgt24   , [ fetchCar Args Value
+        , (PIsgt24   , [ fetchCar Args Value
                        , doALU ALUDecrImmediate 24 Value Null
                        , condJump "strictlt24"
                        , doALU ALUIncr 0 Null Value
@@ -136,11 +138,11 @@ apply = [ (t, allocSingleton Args Env ++
                        , label "strictlt24"
                        , Value ^= Null
                        , dispatchReturn ])
-        , (TPrintSec , [ getLastArg
+        , (PPrintSec , [ getLastArg
                        , printSec Value ])
-        , (TPrintMin , [ getLastArg
+        , (PPrintMin , [ getLastArg
                        , printMin Value ])
-        , (TPrintHour , [ getLastArg
+        , (PPrintHour , [ getLastArg
                         , printHour Value ])
         ]
 

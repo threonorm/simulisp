@@ -6,6 +6,9 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Processor.Parameters
 
+import Lisp.SCode
+import Lisp.Primitives
+
 --------- MiniAssembler V0.1 -------------
 
 -- There are three types of instructions : Labels, classical instructions using
