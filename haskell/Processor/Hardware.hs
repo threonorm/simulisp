@@ -25,29 +25,25 @@ import Processor.Parameters
 
 -- Control signals / microcode specification
 
-data ControlSignals s = CS { regRead   :: [s] -- 3 bits
-                           , regWrite  :: [s] -- 3 bits
-                           , writeFlag :: s   -- 1 bit
-                           , writeTemp :: s   -- 1 bit
-                           , muxData   :: s   -- 1 bit
-                           , gcOpcode  :: [s] -- 2 bits
-                           , aluCtrl   :: s   -- 1 bit
-                           , useAlu    :: s   -- 1 bit
-                           , loadCondReg :: s -- 1 bit
-                           , immediate :: [s] -- 6 bits
-                           } --           Total: 20 bits (=microInstrS)
+type ControlSignals s = GenericExternalInstruction (s,s,s) s (s,s) [s]
+
+
+-- TODO: implement decodeMicroInstruction AFTER the binary format has been decided
                         
 decodeMicroInstruction :: [s] -> ControlSignals s
-decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
-  where external = drop 2 microinstr -- first 2 bits are internal to control
-        (rr,q0) = splitAt 3 external
-        (rw,q1) = splitAt 3 q0
-        (wf:q2) = q1
-        (wt:q3) = q2
-        (md:q4) = q3
-        (go,q5) = splitAt 2 q4
-        (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
-        (lcr:im) =  q6 
+-- decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
+--   where external = drop 2 microinstr -- first 2 bits are internal to control
+--         (rr,q0) = splitAt 3 external
+--         (rw,q1) = splitAt 3 q0
+--         (wf:q2) = q1
+--         (wt:q3) = q2
+--         (md:q4) = q3
+--         (go,q5) = splitAt 2 q4
+--         (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
+--         (lcr:im) =  q6 
+
+decodeMicroInstruction = undefined
+
 
 -- Strong typing for the win!
 
@@ -92,28 +88,25 @@ processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control condReg regOutTag
 
-         let loadRegCond = undefined
-
-         condReg <- delay =<< mux3 (loadRegCond controlSignals,
-                                    aluNegative,
+         condReg <- delay =<< mux3 (loadCondReg controlSignals,
+                                    aluOverflow,
                                     regIsNil)
          let (regOutTag@(TagField tag), regOutData) = decomposeWord regOut
          regIsNil <- dichotomicFold or2 tag
 
-         regIn <- muxWord (muxData controlSignals) regOut
-                  =<< muxWord (useAlu controlSignals)
-                              (recomposeWord regOutTag aluOut)
-                              gcOut
+         regIn <- muxWord (useGC controlSignals) aluOut gcOut
+
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOutData
                                regOut
                                tempOut
+         (aluOut, aluOverflow) <- miniAlu controlSignals regOut
+                                  
+         regOut <- registerArray controlSignals regIn
          tempOut <- singleRegister (writeTemp controlSignals) regIn
          
-         (aluOut, aluNegative) <- miniAlu (aluCtrl controlSignals)
-                                          (snd . decomposeWord $ gcOut)
-         regOut <- registerArray controlSignals regIn
-     return []
+     return (interactWithOutside controlSignals
+             : outsideOpcode controlSignals)
 
 
 -- Definitions for the functional blocks --
@@ -149,30 +142,75 @@ memorySystem opCode (DataField ptr) regBus tempBus =
 --                          return out 
 
 
--- A small ALU which takes a dataS-bit word which can either
--- * increment or decrement it (i
--- * decrement either half of the word (special-purpose for lookup of local variables)
+-- A small ALU which takes a word (i.e. tag + data) and operates on the data part;
+-- it can either:
+-- * increment or decrement it
+-- * decrement the upper half of the word (special-purpose for lookup of local variables)
 -- * subtract an immediate-mode constant (special-purpose for the clock)
 -- it outputs the result of the computation + a boolean to signal overflow
--- (when the result of a subtraction is negative)
+-- The tag of the output is TNum unless the ALU was requested to do nothing,
+-- in which case it maintains the tag of the input.
+-- When computing n (input) - k (immediate) with k > n, the result is 0
                 
-miniAlu :: (SequentialCircuit m s) => s -> (DataField s) -> m (DataField s, s)
-miniAlu incrOrDecr (DataField (t:q)) =
-  do wireOne <- one
-     wireZero <- zero
-     first DataField <$> adder (wireZero, (wireOne,t):zip (repeat incrOrDecr) q)
+miniAlu :: (Circuit m s) => (ControlSignals s) -> (Word s) -> m (Word s, s)
+miniAlu controlSignals inputWord = do
+  let (TagField tag, DataField df) = decomposeWord inputWord
+      upperS = dataS `div` 2
+      lowerS = dataS - upperS
+      (ctrl0, ctrl1) = aluCtrl controlSignals
+      imm = immediate controlSignals
+      
+  -- ensure consistency with encodeALUOp in Parameters.hs!
+  let actOnLower = ctrl0 -- else, don't touch the lower half
+      decr       = ctrl1
+  doSomething <- ctrl0 -||- ctrl1
+  decrImm <- ctrl0 -&&- ctrl1
 
+  -- Expected specification for the second operand and initial carry
+  -- TODO: test with quickcheck
+  -- Abbreviations: so(l|u) = second operand (lower|upper) half
+  -- 
+  -- Operation | sol       | sou           | initial carry
+  -- -----------------------------------------------------
+  -- Nop       | zero      | zero          | 0
+  -- Incr      | zero      | zero          | 1
+  -- DecrUpper | 11...11   | zero          | 0
+  -- DecrImm   | 11...11   | 11..not(imm)  | 1
+
+  solImm <- mapMn immediateS (\i -> decrImm -&&> neg i) imm
+  let sol = replicate (lowerS - immediateS) decrImm ++ solImm
+      sou = replicate upperS decr
+      secondOperand = sol ++ sou
+      initialCarry = actOnLower
+
+  (result, finalCarry) <- adder (initialCarry, zip df secondOperand)
+  overflowBit <- decr -^^- finalCarry
+  
+  tagOut <- bigMuxnWithConst tagS doSomething tag (tagBin TNum)
+  
+  return (recomposeWord (TagField tagOut) (DataField result),
+          overflowBit)
+
+  where bigMuxnWithConst 0 _ _ _ = return []
+        bigMuxnWithConst n ctrl ~(s:ss) ~(b:bs)
+          -- if ctrl then true  else s
+          | b         = (:) <$> (ctrl -||- s)
+                            <*> bigMuxnWithConst n ctrl ss bs
+          -- if ctrl then false else s
+          | otherwise = (:) <$> (neg ctrl <&&- s)
+                            <*> bigMuxnWithConst n ctrl ss bs
+                        
 
 -- Registers
 
 -- The array of registers
 
 registerArray :: (MemoryCircuit m s) => ControlSignals s -> Word s -> m (Word s)
-registerArray controlSignals (Word regIn) = 
-  Word <$> accessRAM 3 wordS (regRead   controlSignals,
-                              writeFlag controlSignals,
-                              regWrite  controlSignals,
-                              regIn)
+registerArray controlSignals (Word regIn) =
+  Word <$> accessRAM 3 wordS ([r0,r1,r2], w, [w0,w1,w2], regIn)
+  where (r0, r1, r2) = regRead  controlSignals
+        (w0, w1, w2) = regWrite controlSignals
+        w = writeReg controlSignals
   
 -- A single register (used for temp)
 

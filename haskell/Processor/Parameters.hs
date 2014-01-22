@@ -2,7 +2,7 @@ module Processor.Parameters where
 
 -- Size constants
 
-consS, wordS, dataS, tagS, microInstrS, microAddrS :: Int
+consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS :: Int
 
 tagS  = 5
 dataS = 19
@@ -10,6 +10,7 @@ wordS = tagS + dataS
 consS = 2 * wordS
 microInstrS = 24
 microAddrS = 12
+immediateS = 8 -- should not exceed dataS / 2, cf. ALU implementation
 -- also: number of registers = 2^3
 
 data Reg = Null
@@ -127,25 +128,33 @@ data MicroInstruction = ExtInstr ExternalInstruction
                       | Dispatch Reg [Bool]
                       deriving (Show)
 
-type ExternalInstruction = ControlSignals Reg Bool ALUOp Immediate
+type ExternalInstruction = GenericExternalInstruction Reg Bool ALUOp Immediate
 
-data ControlSignals r s a i = CS { regRead :: r
-                                 , regWrite :: r
-                                 , writeReg :: s
-                                 , writeTemp :: s
-                                 , useGC :: s
-                                 , gcOpcode :: [s]
-                                 , aluCtrl :: a
-                                 , loadCondReg :: s
-                                 , interactWithOutside :: s
-                                 , outsideOpcode :: [s]
-                                 , immediate :: i
-                                 }
-                              deriving (Show)
+data GenericExternalInstruction r s a i =
+  CS { regRead :: r
+     , regWrite :: r
+     , writeReg :: s
+     , writeTemp :: s
+     , useGC :: s
+     , gcOpcode :: [s]
+     , aluCtrl :: a
+     , loadCondReg :: s
+     , interactWithOutside :: s
+     , outsideOpcode :: [s]
+     , immediate :: i
+     }
+  deriving (Show)
 
                                    
 data ALUOp = ALUNop | ALUIncr | ALUDecrUpper | ALUDecrImmediate
            deriving (Eq, Show)
+
+-- This is actually a smart encoding, see ALU implementation to see the tricks used
+encodeALUOp :: ALUOp -> (Bool, Bool)
+encodeALUOp ALUNop            = (False, False)
+encodeALUOp ALUIncr           = (True,  False)
+encodeALUOp ALUDecrUpper      = (False, True)
+encodeALUOp ALUDecrImmediate  = (True,  True)
 
 data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
                deriving (Eq, Show)
