@@ -23,6 +23,7 @@ import Simulator.Scheduler
 import Simulator.Simulator
 import Simulator.InputParser
 import Simulator.DisplayClock
+import Util.BinUtils
 
 versionNumber :: String -- more flexible than int/float/whatever
 versionNumber = "0.2"
@@ -73,9 +74,9 @@ launchClockSimulation netlist maybeROMs = displayClock . makeCommandThread $ \co
     let (b1:b2:b3:rest) = concatMap (valueToList . snd) assocList
     when b1 $ case (b2,b3) of
       (True,  True ) -> waitNextSec commands
-      (False, True ) -> setHour   commands $ binaryToInt rest
-      (True , False) -> setMinute commands $ binaryToInt rest
-      (False, False) -> setSecond commands $ binaryToInt rest
+      (False, True ) -> setHour   commands $ boolsToInt rest
+      (True , False) -> setMinute commands $ boolsToInt rest
+      (False, False) -> setSecond commands $ boolsToInt rest
 
 
 formatOutputs :: [(Ident, Value)] -> String
