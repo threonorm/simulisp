@@ -24,14 +24,19 @@ clockProgram = [multilineQuote|
 
 (Right lispProg) = parse miniLispParser "" clockProgram
 
-
-
-banane = [multilineQuote|
+universalAnswer = [multilineQuote|
 (defun main ()
   (+1 41))
 |] 
 
-(Right lisp1Prog) = parse miniLispParser "" banane
+(Right lisp1Prog) = parse miniLispParser "" universalAnswer
+scodeAnswer = compileProgram lisp1Prog 
+
+
 scode = compileProgram lispProg                
-scode1 = compileProgram lisp1Prog 
+
+main =
+  let Just compiled = scode in 
+  putStrLn $"rom_code:"++assemble compiled
+
 
