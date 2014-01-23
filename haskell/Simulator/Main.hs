@@ -176,7 +176,7 @@ getParams = do
                   , Option ['n'] ["num-cycles"] (ReqArg Cycles "N")
                     "Forces the simulation to stop after N cycles."
                   , Option [] ["clock-mode"] (NoArg ClockMode)
-                    "Forces the simulation to stop after N cycles."
+                    "Run simulator in \"display clock\" mode."
                   ]
         usage = "Usage: simulator --input=var1:(0|1)*,var2:(0|1)* FILE"
         helpMsg = usageInfo usage options

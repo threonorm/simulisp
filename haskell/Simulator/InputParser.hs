@@ -52,7 +52,7 @@ inlineInputParser = ( (,) <$> identifier <*> (char ':' *> value) )
 -- Parser for ROM files
 
 romParser :: Parser [(Ident, [Bool])]
-romParser = (romLine `sepBy` char '\n') <* (spaces >> eof)
+romParser = romLine `sepEndBy` newline
 
 romLine :: Parser (Ident, [Bool])
 romLine = (,) <$> ((:) <$> (letter <|> char '_')
