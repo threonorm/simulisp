@@ -65,7 +65,7 @@ unfoldTree tree pos =
     Just (w1,w2) -> let (t1,intPos) = unfoldTree w1 $ pos + 1
                         (t2,newPos) = unfoldTree w2 $ intPos in
                     ((tree,pos):(t1++t2),newPos)
-  where ptr (SWord tag d
+  where ptr (SWord tag d)=
           case d of
             SPtr (a,b) -> Just (a,b)
             _          -> Nothing
@@ -73,13 +73,15 @@ unfoldTree tree pos =
 
                                
 tagToString :: Tag -> String
-tagToString tag = . tagBin $ tag
+tagToString tag = map boolToChar . tagBin $ tag
+    where boolToChar True = '1'
+          boolToChar False = '0'
 
 sdataToString :: Int -> SData -> String
 sdataToString pos d = undefined
 
       
-getAddr :: Int -> [(SWord,Int)] -> Int
-getAddr int list =
-  head $ findIndices pred list
-  where pred = \(x,y)-> y==int
+--getAddr :: Int -> [(SWord,Int)] -> Int
+--getAddr int list =
+--  head $ findIndices pred list
+--  where pred = \(x,y)-> y==int
