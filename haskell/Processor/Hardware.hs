@@ -70,7 +70,6 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control condReg regOutTag
-         wireZero <- zero
          condReg <- delay =<< mux3 (loadCondReg controlSignals,
                                     aluOverflow,
                                     regIsNil)
@@ -90,7 +89,7 @@ processor =
      
      return (interactWithOutside controlSignals
              : outsideOpcode controlSignals
-             ++ df)
+             ++ take 7 df)
 
 
 -- Definitions for the functional blocks --
@@ -111,7 +110,6 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
      dataMem <- Cons <$> accessRAM ramAddrS consS
                                    (addrR, allocCons, freeCounter, consRegTemp)
                                    -- write to next free cell iff allocating
-         
          
      let freeCellPtr = DataField $ wireOne : freeCounter
          allocResult = recomposeWord tagForNewCons freeCellPtr
@@ -253,6 +251,8 @@ control cond (TagField tag) =
 main :: IO ()
 main = do
   let circ () = processor
-  writeFile "processor.net" . unlines . map show $ nl
+      outf = zip [ "o" ++ show i | i <- [0..] ]
+      ast = synthesizeNetlistAST circ () [] outf
+  printProgToFile ast "processor.net"
 
 
