@@ -7,14 +7,14 @@ Despite having made a lot of progress, there's still tons of work to do!
 * In the processor (hardware-level)
   * add special-purpose operations (mod60, etc.) in ALU
     (don't use LUTs, use combinational circuits!)
-    + corresponding control signals
-  * handle output signals for synchronization + display
-  * tweak parameters to fit requirements from the microprogram
-  * Fix the problem about readtemp
+    + corresponding control signals --> DONE
+  * handle output signals for synchronization + display --> DONE
+  * tweak parameters to fit requirements from the microprogram --> DONE
+  * Fix the problem about readtemp --> unnecessary
 
 * Microcode-level:
   * Code a microassembler (Haskell EDSL?) -> Mostly OK
-  * Write microprogram -> WIP
+  * Write microprogram -> mostly done!
   * ???
   * Profit!
 
@@ -30,5 +30,10 @@ when subtracting: n - k ~ n + (2^p - k)
   overflow (into negative numbers) iff k > n
   therefore: overflow iff carry = 0 (!)
   --> compute overflow bit = carry XOR switch between + and -
+^^
+OK, this should be implemented correctly.
+
+Other thing to do: update format of instructions to outside world!!!
+(note that 000 is reserved for nop)
    
 

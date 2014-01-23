@@ -62,3 +62,7 @@ bigMuxn n a b c = zipWithMn n (\y z -> mux3 (a, y, z)) b c
 bigDelayn :: (SequentialCircuit m s, Integral i) => i -> [s] -> m [s]
 bigDelayn n = mapMn n delay
 
+takeForce :: Int -> [a] -> [a]
+takeForce 0 _ = []
+takeForce n ~(x:xs) = x : takeForce (n-1) xs
+

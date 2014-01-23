@@ -70,26 +70,23 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control condReg regOutTag
-
+         wireZero <- zero
          condReg <- delay =<< mux3 (loadCondReg controlSignals,
                                     aluOverflow,
                                     regIsNil)
-         let (regOutTag@(TagField tag), (DataField df)) =
-               decomposeWord regOut
+         let (regOutTag@(TagField tag), (DataField df)) = decomposeWord regOut
          regIsNil <- dichotomicFold or2 tag
 
          regIn <- muxWord (useGC controlSignals) aluOut gcOut
-
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOut
                                tempOut
                                (TagField . take tagS . immediate
                                 $ controlSignals)
          (aluOut, aluOverflow) <- miniAlu controlSignals regOut
-                                  
+
          regOut <- registerArray controlSignals regIn
          tempOut <- singleRegister (writeTemp controlSignals) regIn
-         
      
      return (interactWithOutside controlSignals
              : outsideOpcode controlSignals
@@ -108,12 +105,13 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
      allocCons <- opcode0 -&&- opcode1
      let carOrCdr = opcode1
          
-     rec codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
-         dataMem <- Cons <$> accessRAM ramAddrS consS
-                                       (addrR,
-                                        allocCons, freeCounter, consRegTemp)
-                             -- write to next free cell iff allocating
-         freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
+     rec freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
+
+     codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
+     dataMem <- Cons <$> accessRAM ramAddrS consS
+                                   (addrR, allocCons, freeCounter, consRegTemp)
+                                   -- write to next free cell iff allocating
+         
          
      let freeCellPtr = DataField $ wireOne : freeCounter
          allocResult = recomposeWord tagForNewCons freeCellPtr
@@ -168,7 +166,8 @@ miniAlu controlSignals inputWord = do
       secondOperand = sol ++ sou
       initialCarry = actOnLower
 
-  (result, finalCarry) <- adder (initialCarry, zip df secondOperand)
+  (result', finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
+  let result = take dataS result'
   overflowBit <- decr -^^- finalCarry
   
   tagOut <- bigMuxnWithConst tagS doSomething tag (tagBin TNum)
@@ -180,10 +179,10 @@ miniAlu controlSignals inputWord = do
         bigMuxnWithConst n ctrl ~(s:ss) ~(b:bs)
           -- if ctrl then true  else s
           | b         = (:) <$> (ctrl -||- s)
-                            <*> bigMuxnWithConst n ctrl ss bs
+                            <*> bigMuxnWithConst (n-1) ctrl ss bs
           -- if ctrl then false else s
           | otherwise = (:) <$> (neg ctrl <&&- s)
-                            <*> bigMuxnWithConst n ctrl ss bs
+                            <*> bigMuxnWithConst (n-1) ctrl ss bs
                         
 
 -- Registers
