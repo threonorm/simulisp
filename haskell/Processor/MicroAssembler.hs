@@ -4,12 +4,11 @@ import Control.Arrow
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Processor.Parameters
 
+import Processor.Parameters
 import Lisp.SCode
 import Lisp.Primitives
-
---------- MiniAssembler V0.1 -------------
+import Util.BinUtils
 
 -- There are three types of instructions : Labels, classical instructions using
 -- the mini ALU and finishing by the incrementation of the micro program counter,
@@ -51,77 +50,16 @@ secondPass (labels, instructions) = map (second f) instructions
 
 -- Third pass: actually generate a binary string
 
-              
+assembleMicrocode :: [Instruction] -> String
+assembleMicrocode = g . f 0 . secondPass . firstPass
+  where f currentAddr instructions@((wantedAddr, instruction):rest)
+          | wantedAddr < currentAddr = error "assembly doesn't fit????"
+          | wantedAddr > currentAddr = padding microInstrS
+                                       ++ f (currentAddr+1) instructions
+          | otherwise = assembleInstruction instruction
+                        ++ f (currentAddr+1) rest
+        g = map (\b -> if b then '1' else '0')
 
--- type Intermediate =  Either String Instruction 
-
---MiniAssembler makes two passes
-
--- assemble :: [Instruction] -> Maybe String 
--- assemble code =
---   if checkPosition inter 0 
---   then Just $ assembleSecond inter 0 inter 
---   else Nothing
---   where inter =  map assembleFirst code
-
-
--- assembleFirst :: Instruction -> Intermediate
--- assembleFirst (ActualInstr instr) = Left ("0"++                -- Bit of internal incr 
---  (regToString . regRead $  instr ) ++
---  (regToString . regWrite $  instr ) ++
---  (printBool . writeFlag $  instr ) ++
---  (printBool . writeTemp $  instr ) ++
---  (printBool . muxData $  instr ) ++
---  (printBool . fst . gcOpcode $  instr ) ++
---  (printBool . snd . gcOpcode $ instr ) ++
---  (printBool . aluCtrl $ instr ) ++
---  (printBool . useAlu $ instr )++
---  replicate (microInstrS-15) '0')  --Padding immediate + lgr
-
--- -- assembleFirst (Dispatch reg)=
--- --   Left ( "1" ++
--- --          regToString reg ++
--- --          replicate 19 '0') -- Padding with 0 
--- -- assembleFirst (IntI instr) = 
--- --   Right (IntI instr) 
--- -- assembleFirst (Label blabla) =
--- --   Right (Label blabla)
-
-
-
--- assembleSecond :: [Intermediate] -> Int -> [Intermediate] -> String  -- Code,position, list from position, label
--- assembleSecond code pos [] = []
--- assembleSecond code pos ((Left blabla):q) = "0"++blabla++assembleSecond code (pos+1) q
-
--- assembleSecond code pos ((Right(IntI instr)): q) =  
---  ("1"++ -- Bit of Jump
---   (printBool . isCond $ instr) ++
---   ( printAddr 12 . position code pos. addr $ instr) ++
---     replicate (microInstrS - microAddrS - 2) '0'  --Useless bit in this case
---  ) ++ assembleSecond code (pos+1) q
--- assembleSecond code pos ((Right(Label s (Just t))): q) = 
---   (take (microInstrS *floodSize) $ repeat '0') ++ assembleSecond code t q
---   where floodSize = t-pos 
--- assembleSecond code pos ((Right(Label s Nothing)): q) = 
---    assembleSecond code (pos) q
-
-
--- --Give the position of the declaration of the Label in the Code (in words).
--- position :: [Intermediate] -> Int ->  Label -> Int
--- position ((Right (Label s (Just t))):q) pos lab =
---  if s==lab then t else position q pos lab
-
--- position ((Right (Label s Nothing)):q) pos lab =
---  if s==lab then pos else position q (pos) lab
--- position (_:q) pos lab =  position q (pos+1) lab
-
--- --To check if the assembly is possible with the alignment required by the user.
--- checkPosition :: [Intermediate] -> Int -> Bool 
--- checkPosition [] prec = True  
--- checkPosition (Right(Label s (Just t)):q) prec = if prec <= t then checkPosition q t 
---              else False
--- checkPosition (Right(Label s Nothing):q) prec = checkPosition q prec 
--- checkPosition (_:q) prec = checkPosition q $ prec + 1  --In number of words
 
 ---------- MiniASM as a sort of an eDSL  ---------
 
@@ -217,16 +155,6 @@ sync = makeInstr $ ground { interactWithOutside = True
 
 ----- Administrative tools dedicate to the assembling.-----
 
--- TODO: add Null register
-
-regToString Value = "000"  
-regToString Expr  = "001"
-regToString Env   = "010"
-regToString Args  = "011"
-regToString Stack = "100"
-regToString Temp  = "101"
-
-
 ground :: ExternalInstruction
 ground = CS { regRead = Null
             , regWrite = Null          
@@ -240,11 +168,6 @@ ground = CS { regRead = Null
             , outsideOpcode = [False, False]
             , immediate = ImmN 0
             }
-
-printBool :: Bool -> String
-printBool True  = "1"  
-printBool False = "0"
-
 
 printAddr :: Int -> Int -> String
 printAddr microAddr pos = 

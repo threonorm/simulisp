@@ -25,7 +25,8 @@ import Lisp.SCode (Tag(..))
 dispatchSuffix :: [s] -- raw unformatted *external* microinstruction
                -> [s] -- 2 bits which indicate whether we should execute
                       -- eval, apply or return
-dispatchSuffix = take 2 . drop 18 -- CHECK CONSISTENCY! cf. parameters.hs
+dispatchSuffix = take 2 . drop (microInstrS - 2 - immediateS)
+                 -- CHECK CONSISTENCY! cf. parameters.hs
 
 
 -- Strong typing for the win!

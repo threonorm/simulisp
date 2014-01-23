@@ -5,6 +5,8 @@ import Lisp.Primitives
 
 import Caillou.Circuit
 
+import Util.BinUtils
+
 -- Size constants
 
 consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS, upperS, lowerS :: Int
@@ -102,16 +104,12 @@ returnNum RLet      = 4
 returnNum RSequence = 5
 returnNum RApply    = 6
 
-tagBinGeneric :: Int -> [Bool]
-tagBinGeneric = go tagS
-  where go 0 _ = []
-        go k n = (n `mod` 2 /= 0) : go (k-1) (n `div` 2)
 
 tagBin :: Tag -> [Bool]
-tagBin    = tagBinGeneric . tagNum
+tagBin    = decToBools tagS . tagNum
 
 returnBin :: ReturnTag-> [Bool]
-returnBin = tagBinGeneric . returnNum
+returnBin = decToBools tagS . returnNum
 
 -- microinstruction format
 
@@ -166,8 +164,10 @@ data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
                deriving (Eq, Show)
 
 
--- Binary serialization of microinstructions
 
+-----------------------------------------------
+-- Binary serialization of microinstructions --
+-----------------------------------------------
 
 -- Binary format spec
 -- ------------------
@@ -215,7 +215,46 @@ decodeMicroInstruction extMicroInstr = do
          :oo1:oo2:oo3
          :imm) = extMicroInstr
 
- 
+assembleInstruction :: MicroInstruction -> [Bool]
+assembleInstruction j@(Jump _ _) =
+  True : jumpIsConditional j
+  : decToBools microAddrS (jumpAddress j)
+  ++ padding (microInstrS - microAddrS - 2) 
 
-                        
-  
+-- TODO: make this cleaner
+
+assembleInstruction (Dispatch reg suffix) =
+  [ False , True ]
+  ++ decToBools 3 (regNum reg) -- is this right? 
+  ++ padding (microInstrS - 2 - 3 - immediateS)
+  ++ suffix
+  ++ padding (immediateS - length suffix)
+
+assembleInstruction (ExtInstr extInstr) =
+  -- Note: useGC and interactWithOutside are derived signals
+  -- they are not in the ROM
+  let CS { regRead = rr
+         , regWrite = rw
+         , writeReg = wr
+         , writeTemp = wt
+         , gcOpcode = go
+         , aluCtrl = ac
+         , loadCondReg = lcr
+         , outsideOpcode = [oo0, oo1, oo2]
+         , immediate = imm } = extInstr
+      (go0, go1) = encodeGCOp go
+      (ac0, ac1) = encodeALUOp ac
+  in
+   [ False, False ]
+   ++ decToBools 3 (regNum rr)
+   ++ decToBools 3 (regNum rw)
+   ++ [ wr, wt, go0, go1, ac0, ac1
+      , lcr, oo0, oo1, oo2 ]
+   ++ printImm imm
+   where printImm (ImmT tag) = tagBin    tag ++ padding (immediateS - tagS)
+         printImm (ImmR ret) = returnBin ret ++ padding (immediateS - tagS)
+         printImm (ImmN n  ) = decToBools immediateS n
+      
+
+
+
