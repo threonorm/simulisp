@@ -10,7 +10,7 @@ import qualified Data.IntMap as IntMap
 import Lisp.SCode
 import Lisp.Primitives
 import Processor.Parameters
-import Processor.Microcode
+import Processor.Microcode hiding (main)
 import Processor.MicroAssembler
 import Simulator.DisplayClock
 import Util.BinUtils
@@ -107,7 +107,7 @@ main = displayClock . makeCommandThread $ \commands -> do
   numCycles <- newIORef (0 :: Int)
 
   forever $ do
-    modifyIORef' numCycles (+1)
+    modifyIORef numCycles (+1)
     
     ctr <- readIORef ctrRef
     let jumpTo = writeIORef ctrRef
