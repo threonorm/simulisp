@@ -71,12 +71,13 @@ launchClockSimulation :: Program -> Maybe (Environment [Bool]) -> IO ()
 launchClockSimulation netlist maybeROMs = displayClock . makeCommandThread $ \commands -> do
   let outputs = iteratedSimulation netlist Nothing maybeROMs
   forM_ outputs $ \assocList -> do
-    let (b1:b2:b3:rest) = concatMap (valueToList . snd) assocList
-    when b1 $ case (b2,b3) of
-      (True,  True ) -> waitNextSec commands
-      (False, True ) -> setHour   commands $ boolsToInt rest
-      (True , False) -> setMinute commands $ boolsToInt rest
-      (False, False) -> setSecond commands $ boolsToInt rest
+    let (b1:b2:b3:b4:rest) = concatMap (valueToList . snd) assocList
+    when b1 $ case boolsToInt [b2, b3, b4] of
+      1 -> setSecond commands $ boolsToInt rest
+      2 -> setMinute commands $ boolsToInt rest
+      3 -> setHour   commands $ boolsToInt rest
+      7 -> waitNextSec commands
+      _ -> return ()
 
 
 formatOutputs :: [(Ident, Value)] -> String
