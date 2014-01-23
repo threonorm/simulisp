@@ -50,7 +50,7 @@ interToString list =
           case d of
             SPtr cons  -> (decToBin (dataS-1) $ b+1)++"0" --Code in ROM
             SNum i     -> decToBin dataS $ i
-            SLocal i j -> undefined --TODO 
+            SLocal i j -> (decToBin lowerS $ j) ++ (decToBin upperS $ i )   
             SGlobal s  -> (decToBin (dataS-1) $ posGlobal s list) ++ "0" --idem
         posGlobal s ((a,b,c):q)= if a == s then c else posGlobal s q 
         posGlobal s [] = undefined  --We suppose that the global exist
