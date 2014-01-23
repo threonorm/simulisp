@@ -3,6 +3,8 @@ module Processor.Parameters where
 import Lisp.SCode (Tag(..))
 import Lisp.Primitives
 
+import Caillou.Circuit
+
 -- Size constants
 
 consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS :: Int
@@ -155,62 +157,48 @@ data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
 --
 -- Signals stored in ROM: (total: 24 bits)
 --
--- Name of field    | # of bits | Cumulative sum
---  internalControl |        2  |
---  regRead         |        3  |    3 
---  regWrite        |        3  |    6  
---  writeReg        |        1  |    7 
---  writeTemp       |        1  |    8 
---  useGC           |        1  |    9 
---  gcOpcode        |        2  |   11
---  aluCtrl         |        2  |   13 
---  loadCondReg     |        1  |   14 
---  outsideOpcode   |        3  |   18 
---  immediate       |        6  |   24
+-- Name of field    | # of bits |
+--  internalControl |        2  |  2
+--  regRead         |        3  |  5 
+--  regWrite        |        3  |  8   
+--  writeReg        |        1  |  9
+--  writeTemp       |        1  | 10
+--  gcOpcode        |        2  | 12
+--  aluCtrl         |        2  | 14
+--  loadCondReg     |        1  | 15
+--  outsideOpcode   |        3  | 18
+--  immediate       |        6  | 24
 --
 -- Derived signals: useGC (1 bit) and interactWithOutside (1 bit)
 
--------------------------------------------------------------
--- Thomas, tu te charges de ça !!!!!
--- !!!!!!!!!!!!!!!!!!
--- un truc possiblement pertinent serait de mettre
--- decodeMicroInstruction et la fonction
--- microinstruction -> (0|1)* côte à côte dans un fichier
--- afin de pouvoir vérifier d'un coup d'oeil la cohérence
---
--- attention aussi au dispatchsuffix juste au dessous
--- note: je choisis d'utiliser les bits du suffixe pour
--- décider eval vs apply vs return dans dispatch
--- mais il faut pas que ces bits viennent influencer,
--- par exemple, l'écriture de registres
--- je les mets dans immediate parce que ça me paraît
--- inoffensif, mais si tu as mieux, n'hésites pas
--- à changer !
--------------------------------------------------------------
+type ControlSignals s = GenericExternalInstruction
+                        (s,s,s) -- registers on 3 bits
+                        s       -- signal type
+                        (s,s)   -- aluCtrl on 2 bits
+                        (s,s)   -- gcOpcode on 2 bits
+                        [s]     -- immediate = list
 
 
+-- Takes EXTERNAL part of microinstruction from the ROM
+-- computes derived signals
+-- and returns the signals structured in a record
+decodeMicroInstruction :: (Circuit m s) => [s] -> m (ControlSignals s)
+decodeMicroInstruction extMicroInstr = do
+  ug  <- go1 -||- go2
+  iwo <- (oo1 -||- oo2) <||- oo3
+  return $ CS (rr1, rr2, rr3) (rw1, rw2, rw3) wr wt ug (go1, go2) (ac1, ac2) lcr
+              iwo [oo1, oo2, oo3] imm
+  where (rr1:rr2:rr3
+         :rw1:rw2:rw3
+         :wr
+         :wt
+         :go1:go2
+         :ac1:ac2
+         :lcr
+         :oo1:oo2:oo3
+         :imm) = extMicroInstr
 
-type ControlSignals s = GenericExternalInstruction (s,s,s) s (s,s) (s,s) [s]
-
-decodeMicroInstruction :: [s] -- EXTERNAL control signals
-                              -- the 2 internal bits have already been removed
-                       -> ControlSignals s
-
-decodeMicroInstruction = undefined
-
-
--- decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
---   where external = drop 2 microinstr -- first 2 bits are internal to control
---         ^ attention, ça ça devient faux
---         (rr,q0) = splitAt 3 external
---         (rw,q1) = splitAt 3 q0
---         (wf:q2) = q1
---         (wt:q3) = q2
---         (md:q4) = q3
---         (go,q5) = splitAt 2 q4
---         (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
---         (lcr:im) =  q6 
-
+ 
 
                         
   

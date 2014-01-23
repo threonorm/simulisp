@@ -19,11 +19,13 @@ import Processor.Parameters
 import Lisp.SCode (Tag(..))
 
 
+-- Using immediate part of microinstruction
+-- to specify dispatch (eval vs apply vs return)
+
 dispatchSuffix :: [s] -- raw unformatted *external* microinstruction
                -> [s] -- 2 bits which indicate whether we should execute
                       -- eval, apply or return
-dispatchSuffix = take 2 . immediate . decodeMicroInstruction
-
+dispatchSuffix = take 2 . drop 18 -- CHECK CONSISTENCY! cf. parameters.hs
 
 
 -- Strong typing for the win!
@@ -239,7 +241,7 @@ control cond (TagField tag) =
 
      notJump <- neg jump
      neutralized <- mapM (notJump -&&-) external
-     return $ decodeMicroInstruction neutralized
+     decodeMicroInstruction neutralized
 
 
 -- Output netlist
