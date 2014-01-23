@@ -136,8 +136,6 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
 miniAlu :: (Circuit m s) => (ControlSignals s) -> (Word s) -> m (Word s, s)
 miniAlu controlSignals inputWord = do
   let (TagField tag, DataField df) = decomposeWord inputWord
-      upperS = dataS `div` 2
-      lowerS = dataS - upperS
       (ctrl0, ctrl1) = aluCtrl controlSignals
       imm = immediate controlSignals
       

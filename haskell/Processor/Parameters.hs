@@ -7,16 +7,19 @@ import Caillou.Circuit
 
 -- Size constants
 
-consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS :: Int
+consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS, upperS, lowerS :: Int
 
 tagS  = 5
 dataS = 19
 wordS = tagS + dataS
+upperS = dataS `div` 2
+lowerS = dataS - upperS
 consS = 2 * wordS
 microInstrS = 24
 microAddrS = 12
 immediateS = 6 -- should not exceed dataS / 2, cf. ALU implementation
 -- also: number of registers = 2^3
+
 
 data Reg = Null
          | Value
@@ -26,6 +29,17 @@ data Reg = Null
          | Stack
          | Temp
          deriving (Eq, Show)
+
+-- Enumeration of the registers
+regNum :: Reg -> Int
+regNum Null  = 0
+regNum Value = 1
+regNum Expr  = 2
+regNum Env   = 3
+regNum Args  = 4
+regNum Stack = 5
+regNum Temp  = 6
+
 
 -- Enumeration of the tags
 -- For the definition of the tags, see Lisp.SCode

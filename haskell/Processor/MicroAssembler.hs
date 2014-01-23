@@ -49,6 +49,9 @@ secondPass (labels, instructions) = map (second f) instructions
         f _ = error "You should eliminate labels first with firstPass."
 
 
+-- Third pass: actually generate a binary string
+
+              
 
 -- type Intermediate =  Either String Instruction 
 
