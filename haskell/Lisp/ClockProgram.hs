@@ -24,6 +24,14 @@ clockProgram = [multilineQuote|
 
 (Right lispProg) = parse miniLispParser "" clockProgram
 
-scode = compileProgram lispProg                
 
+
+banane = [multilineQuote|
+(defun main ()
+  (+1 41))
+|] 
+
+(Right lisp1Prog) = parse miniLispParser "" banane
+scode = compileProgram lispProg                
+scode1 = compileProgram lisp1Prog 
 
