@@ -144,14 +144,13 @@ printSth :: [Bool] -> Reg -> Instruction
 printSth op src = makeInstr $ ground { regRead = src
                                      , interactWithOutside = True
                                      , outsideOpcode = op }
-printSec, printMin, printHour :: Reg -> Instruction
-printHour  = printSth [False, True]
-printMin  = printSth [True, False]
-printSec = printSth [False, False]
+printSec, printMin, printHour, printDay, printMonth, printYear :: Reg -> Instruction
+[printSec, printMin, printHour, printDay, printMonth, printYear] =
+  [  printSth (decToBools 3 x) | x <- [1..6] ]
 
 sync :: Instruction
 sync = makeInstr $ ground { interactWithOutside = True
-                          , outsideOpcode = [True, True] }
+                          , outsideOpcode = [True, True, True] }
 
 ----- Administrative tools dedicate to the assembling.-----
 
@@ -165,18 +164,8 @@ ground = CS { regRead = Null
             , aluCtrl = ALUNop
             , loadCondReg = False        
             , interactWithOutside = False
-            , outsideOpcode = [False, False]
+            , outsideOpcode = [False, False, False]
             , immediate = ImmN 0
             }
-
-printAddr :: Int -> Int -> String
-printAddr microAddr pos = 
-  take microAddr $ aux pos ++ repeat '0' -- Lazyness rocks!!! 
- where aux pos = 
-        if pos == 0 then [] else 
-          (show $ pos `mod` 2) ++ aux (pos `div` 2)
-
-           
-
 
  
