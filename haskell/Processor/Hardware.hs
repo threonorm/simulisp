@@ -153,15 +153,20 @@ miniAlu controlSignals inputWord = do
   -- TODO: test with quickcheck
   -- Abbreviations: so(l|u) = second operand (lower|upper) half
   -- 
-  -- Operation | sol       | sou           | initial carry
+  -- Operation | sou       | sol           | initial carry
   -- -----------------------------------------------------
   -- Nop       | zero      | zero          | 0
   -- Incr      | zero      | zero          | 1
   -- DecrUpper | 11...11   | zero          | 0
   -- DecrImm   | 11...11   | 11..not(imm)  | 1
+  --
+  -- Note: in the above table, the numbers are written with
+  -- with the strongest bit to the left,
+  -- but in the code, the first element of a list is
+  -- the *weakest* bit
 
   solImm <- mapMn immediateS (\i -> decrImm -&&> neg i) imm
-  let sol = replicate (lowerS - immediateS) decrImm ++ solImm
+  let sol = solImm ++ replicate (lowerS - immediateS) decrImm
       sou = replicate upperS decr
       secondOperand = sol ++ sou
       initialCarry = actOnLower
@@ -247,9 +252,7 @@ control cond (TagField tag) =
 -- TODO: improve and put in another file
 main :: IO ()
 main = do
-  let inp = ()
-      circ () = processor
-      (_,nl,_) = synthesizeBarebonesNetlist circ inp
-  writeFile "foobar.net" . unlines . map show $ nl
+  let circ () = processor
+  writeFile "processor.net" . unlines . map show $ nl
 
 
