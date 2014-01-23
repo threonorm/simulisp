@@ -75,6 +75,9 @@ tagNum (TPrim PIsgt24   ) = 23
 tagNum (TPrim PPrintSec ) = 24
 tagNum (TPrim PPrintMin ) = 25
 tagNum (TPrim PPrintHour) = 26
+tagNum (TPrim PPrintDay ) = 27
+tagNum (TPrim PPrintMonth)= 28
+tagNum (TPrim PPrintYear) = 29
 
 
 -- 00 suffix: bootloading segment

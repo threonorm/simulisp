@@ -52,7 +52,8 @@ secondPass (labels, instructions) = map (second f) instructions
 
 assembleMicrocode :: [Instruction] -> String
 assembleMicrocode = g . f 0 . secondPass . firstPass
-  where f currentAddr instructions@((wantedAddr, instruction):rest)
+  where f _ [] = []
+        f currentAddr instructions@((wantedAddr, instruction):rest)
           | wantedAddr < currentAddr = error "assembly doesn't fit????"
           | wantedAddr > currentAddr = padding microInstrS
                                        ++ f (currentAddr+1) instructions

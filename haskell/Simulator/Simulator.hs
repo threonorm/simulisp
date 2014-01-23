@@ -2,8 +2,7 @@ module Simulator.Simulator (iteratedSimulation,
                             WireState,
                             initialWireState,
                             valueToList,
-                            valueToInt,
-                            binaryToInt) where
+                            valueToInt) where
 
 import Control.Arrow
 import Control.Applicative
@@ -18,6 +17,7 @@ import Data.IntMap (IntMap)
 
 import Netlist.AST
 import Util.ListUtil
+import Util.BinUtils
 
 type WireState = Environment Value
 type ROMs = Environment (Array Int [Bool]) -- immutable arrays
@@ -72,12 +72,7 @@ compute st (Econcat a1 a2) =
 
 valueToInt :: Value -> Int
 valueToInt (VBit b) = if b then 1 else 0
-valueToInt (VBitArray bs) = binaryToInt bs
-
-binaryToInt :: [Bool] -> Int
-binaryToInt bs =
-  foldl' (\acc digit -> acc*2+digit) 0 . map (valueToInt . VBit) . reverse $ bs
-  
+valueToInt (VBitArray bs) = boolsToInt bs
 
 valueToList :: Value -> [Bool]
 valueToList (VBit b)       = [b]

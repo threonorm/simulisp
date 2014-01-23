@@ -13,6 +13,7 @@ import Processor.Parameters
 import Processor.Microcode hiding (main)
 import Processor.MicroAssembler
 import Simulator.DisplayClock
+import Util.BinUtils
 
 data WordTag = T Tag | R ReturnTag deriving (Eq, Show)
 data WordData = N Int | P (Word, Word)
@@ -137,15 +138,16 @@ main = displayClock . makeCommandThread $ \commands -> do
             ~(P ptrRead) = dataRead
             
         if interactWithOutside instr
-          then case outsideOpcode instr of
-          [True,  True ] -> do
+          then case boolsToInt (outsideOpcode instr) of
+          7 -> do
             nc <- readIORef numCycles
             writeIORef numCycles 0
             printLog $ show nc ++ " cycles since the previous second."
             waitNextSec commands
-          [False, True ] -> setHour   commands intRead
-          [True , False] -> setMinute commands intRead
-          [False, False] -> setSecond commands intRead
+          3 -> setHour   commands intRead
+          2 -> setMinute commands intRead
+          1 -> setSecond commands intRead
+          _ -> return ()
 
           else do
             let dest | writeTemp instr = Temp
