@@ -161,15 +161,15 @@ iteratedSimulation prog maybeInputs maybeROMs =
   where initRegs = Map.fromList . flip zip (repeat (VBit False)) $ regs
         regs = map fst . filter isReg $ p_eqs prog
         rams = map fst . filter isRam $ p_eqs prog
-        romSizes = Map.fromList [ (ident, wordSize)
-                                | (ident, (Erom _ wordSize _)) <- p_eqs prog ]
+        romSizes = Map.fromList [ (ident, (addrSize, wordSize))
+                                | (ident, (Erom addrSize wordSize _)) <- p_eqs prog ]
         isRam (_, (Eram _ _ _ _ _ _)) = True
         isRam _ = False
         isReg (_, (Ereg _)) = True
         isReg _             = False
         initROMs = Map.mapWithKey initROM
-        initROM ident bits = Array.listArray (0, size - 1) $ splits size bits
-          where size = romSizes Map.! ident
+        initROM ident bits = Array.listArray (0, 2^addrSize - 1) $ splits wordSize bits
+          where (addrSize, wordSize) = romSizes Map.! ident
 
 
 programRegisters :: Program -> [(Ident, Ident)]
