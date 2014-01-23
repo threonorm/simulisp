@@ -176,9 +176,7 @@ return = [ (RFirst    , standardRestore ++
          , (RApplyOne , standardRestore ++
                         allocSingleton Value Args ++
                         pushWithReturn RApply Args ++
-                        [ moveToTemp Args
-                        , allocConsWithReturn RApply Stack Stack
-                        , dispatchEval ])
+                        [ dispatchEval ])
            
          , (RLet      , standardRestore ++
                         allocSingleton Value Value ++

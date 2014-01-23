@@ -109,7 +109,7 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
 
      codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
      dataMem <- Cons <$> accessRAM ramAddrS consS
-                                   (addrR, allocCons, freeCounter, consRegTemp)
+                                   (addrR, allocCons, freeCounter, consTempReg)
                                    -- write to next free cell iff allocating
          
      let freeCellPtr = DataField $ freeCounter ++ [wireOne]
@@ -120,7 +120,7 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
      
   where (_, DataField ptr) = decomposeWord regBus
         (addrR,[codeOrData]) = splitAt ramAddrS ptr
-        (Cons consRegTemp) = recomposeCons regBus tempBus
+        (Cons consTempReg) = recomposeCons tempBus regBus
         ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
 
 
