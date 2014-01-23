@@ -4,7 +4,7 @@ import Lisp.SCode
 import Processor.Parameters
 import Util.BinUtils
 import Data.List
-
+import Data.Function
 
 
 --unfoldStep :: State Int (Queue (SWord,Int,Maybe Int)) -> State Int (Maybe ((SWord,Int,Maybe Int),Queue (SWord,Int,Maybe Int)))  
@@ -36,22 +36,23 @@ assemble prog =
 linearizeProg :: SProgram -> Int -> [(String,[(SWord,Int)],Int)]
 linearizeProg [] n = []
 linearizeProg ((stg,sword):q) n = 
-  (stg,list,pos) :(linearizeProg q pos )   
+  (stg, hack list, n):(linearizeProg q pos )   
   where (list,pos) = unfoldTree sword n
+        hack (t:q) = t:((snil, 0):q)
 
 
 interToString :: [(String,[(SWord,Int)],Int)] -> [[String]]
 interToString list = 
   map functionToString $ list 
   where functionToString (a,b,c) = 
-          map swordToString $ b 
+          map swordToString .sortBy (compare `on` snd) $ b 
         swordToString (SWord tag d,b) =
           tagToString tag ++ 
           case d of
             SPtr cons  -> (decToBin (dataS-1) $ b+1)++"0" --Code in ROM
             SNum i     -> decToBin dataS $ i
             SLocal i j -> (decToBin lowerS $ j) ++ (decToBin upperS $ i )   
-            SGlobal s  -> (decToBin (dataS-1) $ posGlobal s list) ++ "0" --idem
+            SGlobal s  -> (decToBin (dataS-1)  $ posGlobal s list) ++ "0" --idem
         posGlobal s ((a,b,c):q)= if a == s then c else posGlobal s q 
         posGlobal s [] = undefined  --We suppose that the global exist
 
@@ -60,7 +61,7 @@ interToString list =
 unfoldTree :: SWord -> Int -> ([(SWord,Int)],Int)
 unfoldTree tree pos =
   case ptr tree of
-    Nothing -> ([(tree,pos)],pos+1)
+    Nothing -> ([(tree,pos)],pos)
     Just (w1,w2) -> let (t1,intPos) = unfoldTree w1 $ pos + 1
                         (t2,newPos) = unfoldTree w2 $ intPos in
                     ((tree,pos):(t1++t2),newPos)

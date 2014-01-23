@@ -5,6 +5,7 @@ module Lisp.ClockProgram where
 import Lisp.MultilineQuote
 import Lisp.MiniLispParser
 import Lisp.MiniLispCompiler
+import Lisp.AsmScode
 
 import Text.Parsec
 
