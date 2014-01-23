@@ -5,7 +5,7 @@ import Processor.Parameters
 import Util.BinUtils
 import Data.List
 import Data.Function
-
+import qualified Debug.Trace as T
 
 --unfoldStep :: State Int (Queue (SWord,Int,Maybe Int)) -> State Int (Maybe ((SWord,Int,Maybe Int),Queue (SWord,Int,Maybe Int)))  
 --unfoldStep monQueue = do queue <- monQueue
@@ -36,16 +36,15 @@ assemble prog =
 linearizeProg :: SProgram -> Int -> [(String,[(SWord,Int)],Int)]
 linearizeProg [] n = []
 linearizeProg ((stg,sword):q) n = 
-  (stg, hack list, n):(linearizeProg q pos )   
+        T.trace (show n ++ " | " ++ show list ++"\n") $ (stg, list, n):(linearizeProg q (pos+1) )   
   where (list,pos) = unfoldTree sword n
-        hack (t:q) = t:((snil, 0):q)
 
 
 interToString :: [(String,[(SWord,Int)],Int)] -> [[String]]
 interToString list = 
   map functionToString $ list 
   where functionToString (a,b,c) = 
-          map swordToString .sortBy (compare `on` snd) $ b 
+          map swordToString . hack .sortBy (compare `on` snd) $ b 
         swordToString (SWord tag d,b) =
           tagToString tag ++ 
           case d of
@@ -55,7 +54,7 @@ interToString list =
             SGlobal s  -> (decToBin (dataS-1)  $ posGlobal s list) ++ "0" --idem
         posGlobal s ((a,b,c):q)= if a == s then c else posGlobal s q 
         posGlobal s [] = undefined  --We suppose that the global exist
-
+        hack (t:q) = t:((snil, 0):q)
 
 
 unfoldTree :: SWord -> Int -> ([(SWord,Int)],Int)
