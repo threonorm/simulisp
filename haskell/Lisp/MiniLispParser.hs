@@ -1,7 +1,8 @@
 module Lisp.MiniLispParser (miniLispParser,
                             LispProgram,
                             LispDefun(..),
-                            LispExpr(..)) where
+                            LispExpr(..),
+                            LispIdent) where
 
 import Prelude hiding (lex)
 
@@ -29,12 +30,17 @@ data LispExpr = LNil
               | LVar LispIdent -- includes primitives
               | LApp LispExpr [LispExpr]
               -- hardcoding special operators directly...
-              | LQuoteList [LispExpr] -- support only a special case of quote               
+              | LQuoteList LLiteral -- support only a special case of quote               
               | LIf LispExpr LispExpr LispExpr
               | LLambda [LispIdent] [LispExpr]
               | LLet [(LispIdent, LispExpr)] [LispExpr]
               | LBegin [LispExpr]
               | LSync  [LispExpr]
+              deriving (Show)
+
+data LLiteral = LLitNum Int
+              | LLitNil
+              | LLitList [LLiteral]
               deriving (Show)
 
 type LispIdent = String
@@ -65,7 +71,7 @@ defun = parens lex $ symbol lex "defun" *>
 expr = choice $ map try [ LNil <$ symbol lex "()"
                         , LNum . fromInteger <$> natural lex
                         , LVar <$> identifier lex
-                        , symbol lex "\'" *> (LQuoteList <$> listOf expr)
+                        , symbol lex "\'" *> (LQuoteList <$> quotedList)
                         ]
                 ++ [ parens lex composite ]
 
@@ -82,5 +88,11 @@ operation ident    = LApp (LVar ident) <$> many expr
 
 letBindings = parens lex $ many binding
   where binding = parens lex $ (,) <$> identifier lex <*> expr
+
+
+quotedList = LLitList <$> listOf quotedExpr
+  where quotedExpr = choice [ LLitNil <$ try (symbol lex "()")
+                            , LLitNum . fromInteger <$> try (natural lex)
+                            , quotedList ]
 
 

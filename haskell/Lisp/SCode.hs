@@ -24,7 +24,10 @@ type SCons = (SWord, SWord)
 
 data SWord = SWord Tag SData -- be careful not to cut yourself
 
-data SData = SPtr SCons | SNum Int | SGlobal String
+data SData = SPtr SCons | SNum Int | SLocal Int Int | SGlobal String
 
 type SProgram = [(String, SWord)]
+
+svoid :: SData
+svoid = SNum 0
 
