@@ -26,3 +26,12 @@ executable software-model
     ghc-options:    -O2 -main-is Processor.SoftwareModel
     build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
 
+executable clock-program 
+    main-is:        Lisp/ClockProgram.hs
+    ghc-options:    -O2 -main-is Lisp.ClockProgram
+    build-depends:  array, base, template-haskell, containers, mtl, parsec >= 3.0 
+
+executable generate-microprogram 
+    main-is:        Processor/Microcode.hs
+    ghc-options:    -O2 -main-is Processor.Microcode
+    build-depends:  array, base, containers, mtl, parsec >= 3.0 

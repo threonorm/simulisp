@@ -1,4 +1,4 @@
-module Processor.Microcode (microprogram) where
+module Processor.Microcode (microprogram,main) where
 
 import Prelude hiding (return)
 
@@ -10,6 +10,10 @@ import Processor.MicroAssembler
 import Processor.Parameters
 import Lisp.SCode
 import Lisp.Primitives
+
+main :: IO()
+main =
+  putStrLn $ "rom_microcode:" ++ assembleMicrocode microprogram 
 
 selfEvaluating = [ Value ^= Expr,
                    dispatchReturn ]
