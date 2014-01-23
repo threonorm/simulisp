@@ -34,10 +34,10 @@ printProg prog =
           p [(map toUpper . show $ binop), formatArg arg1, formatArg arg2]
         f (Emux arg1 arg2 arg3) =
           p $ "MUX" : map formatArg [arg1,arg2,arg3]
-        f (Erom int2 int1 arg) =
-          p ["ROM", show int2, show int1, formatArg arg] 
+        f (Erom int1 int2 arg) =
+          p ["ROM", show int1, show int2, formatArg arg] 
         f (Eram int1 int2 arg1 arg2 arg3 arg4) =
-          p $ ["RAM", show int2, show int1]
+          p $ ["RAM", show int1, show int2]
               ++ (map formatArg [arg1,arg2,arg3,arg4])  
         f (Econcat arg1 arg2) =
           p ["CONCAT", formatArg arg1, formatArg arg2]
