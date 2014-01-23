@@ -91,7 +91,10 @@ tagBinGeneric = go tagS
   where go 0 _ = []
         go k n = (n `mod` 2 /= 0) : go (k-1) (n `div` 2)
 
+tagBin :: Tag -> [Bool]
 tagBin    = tagBinGeneric . tagNum
+
+returnBin :: ReturnTag-> [Bool]
 returnBin = tagBinGeneric . returnNum
 
 -- microinstruction format
