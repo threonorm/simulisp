@@ -2,7 +2,8 @@ module Lisp.MiniLispParser (miniLispParser,
                             LispProgram,
                             LispDefun(..),
                             LispExpr(..),
-                            LispIdent) where
+                            LispIdent,
+                            LLiteral(..)) where
 
 import Prelude hiding (lex)
 

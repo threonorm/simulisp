@@ -31,3 +31,6 @@ type SProgram = [(String, SWord)]
 svoid :: SData
 svoid = SNum 0
 
+snil :: SWord
+snil = SWord TNil svoid
+
