@@ -12,4 +12,7 @@ data Primitive = PCar
                | PPrintSec
                | PPrintMin
                | PPrintHour
+               | PPrintDay
+               | PPrintMonth
+               | PPrintYear
                deriving (Eq, Show)
