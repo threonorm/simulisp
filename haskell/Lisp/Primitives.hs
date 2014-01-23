@@ -1,6 +1,5 @@
 module Lisp.Primitives where
 
--- TODO: add print-day, etc.
 
 data Primitive = PCar
                | PCdr 

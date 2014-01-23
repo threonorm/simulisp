@@ -2,8 +2,8 @@ module Lisp.AsmScode where
 
 import Lisp.SCode
 import Processor.Parameters
+import Util.BinUtils
 import Data.List
-import Control.Monad.State
 
 
 
@@ -48,13 +48,12 @@ interToString list =
         swordToString (SWord tag d,b) =
           tagToString tag ++ 
           case d of
-             SPtr cons  -> decToBin $ b+1
-             SNum i     -> decToBin $ i
-             SLocal i j -> undefined --TODO 
-             SGlobal s  -> decToBin $ posGlobal s list
+            SPtr cons  -> (decToBin (dataS-1) $ b+1)++"0" --Code in ROM
+            SNum i     -> decToBin dataS $ i
+            SLocal i j -> undefined --TODO 
+            SGlobal s  -> (decToBin (dataS-1) $ posGlobal s list) ++ "0" --idem
         posGlobal s ((a,b,c):q)= if a == s then c else posGlobal s q 
         posGlobal s [] = undefined  --We suppose that the global exist
-        decToBin = undefined
 
 
 
@@ -77,11 +76,3 @@ tagToString tag = map boolToChar . tagBin $ tag
     where boolToChar True = '1'
           boolToChar False = '0'
 
-sdataToString :: Int -> SData -> String
-sdataToString pos d = undefined
-
-      
---getAddr :: Int -> [(SWord,Int)] -> Int
---getAddr int list =
---  head $ findIndices pred list
---  where pred = \(x,y)-> y==int
