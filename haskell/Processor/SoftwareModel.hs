@@ -7,6 +7,8 @@ import Data.List
 import Data.IntMap (IntMap, (!))
 import qualified Data.IntMap as IntMap
 
+import Lisp.SCode
+import Lisp.Primitives
 import Processor.Parameters
 import Processor.Microcode
 import Processor.MicroAssembler
@@ -45,17 +47,17 @@ initRegs = do
 
 clockProgram :: Word
 clockProgram = (T TSequence,
-                P ((T TApplyOne, P (localVar 0 1, (T TPrintMin, N 0))),
+                P ((T TApplyOne, P (localVar 0 1, (T (TPrim PPrintMin), N 0))),
                    (T TSequence,
-                    P ((T TApplyOne, P (localVar 0 0, (T TPrintSec, N 0))),
+                    P ((T TApplyOne, P (localVar 0 0, (T (TPrim PPrintSec), N 0))),
                        (T TLet,
-                        P ((T TApplyOne, P (localVar 0 0, (T TIncr, N 0))),
+                        P ((T TApplyOne, P (localVar 0 0, (T (TPrim PIncr), N 0))),
                            (T TSequence,
-                            P ((T TApplyOne, P (localVar 0 0, (T TIsgt60, N 0))),
+                            P ((T TApplyOne, P (localVar 0 0, (T (TPrim PIsgt60), N 0))),
                                (T TCond,
                                 P ((T TSync,
                                     P ((T TFirst,
-                                        P ((T TApplyOne, P (localVar 1 1, (T TIncr, N 0))),
+                                        P ((T TApplyOne, P (localVar 1 1, (T (TPrim PIncr), N 0))),
                                            (T TLast,
                                             P ((T TNum, N 0),
                                                (T TGlobal, PClock))))),
@@ -155,7 +157,9 @@ main = displayClock . makeCommandThread $ \commands -> do
                   | otherwise = return ()
             if useGC instr
               -- operation by GC 
-              then do let [alloc, carOrCdr] = gcOpcode instr
+              then do let opcode = gcOpcode instr
+                          alloc = opcode == GCAlloc
+                          carOrCdr = opcode == GCFetchCdr
                       if alloc
                         then do car <- readIORef $ regs Temp
                                 let cdr = wordRead
