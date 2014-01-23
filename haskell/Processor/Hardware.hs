@@ -168,8 +168,7 @@ miniAlu controlSignals inputWord = do
       secondOperand = sol ++ sou
       initialCarry = actOnLower
 
-  (result', finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
-  let result = take dataS result'
+  (result, finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
   overflowBit <- decr -^^- finalCarry
   
   tagOut <- bigMuxnWithConst tagS doSomething tag (tagBin TNum)
