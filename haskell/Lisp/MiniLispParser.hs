@@ -80,12 +80,12 @@ composite = (do header <- try $ identifier lex
                 operation header)
             <|> (LApp <$> expr <*> many expr)
             
-operation "if"     = LIf     <$> expr <*> expr <*> expr
-operation "lambda" = LLambda <$> listOf (identifier lex) <*> many expr
-operation "let"    = LLet    <$> letBindings <*> many expr
-operation "begin"  = LBegin  <$> many expr
-operation "sync"   = LSync   <$> many expr
-operation ident    = LApp (LVar ident) <$> many expr
+operation "if"          = LIf     <$> expr <*> expr <*> expr
+operation "lambda"      = LLambda <$> listOf (identifier lex) <*> many expr
+operation "let"         = LLet    <$> letBindings <*> many expr
+operation "begin"       = LBegin  <$> many expr
+operation "synchronize" = LSync   <$> many expr
+operation ident         = LApp (LVar ident) <$> many expr
 
 letBindings = parens lex $ many binding
   where binding = parens lex $ (,) <$> identifier lex <*> expr
