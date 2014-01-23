@@ -155,7 +155,9 @@ popToReg reg = [ fetchCar Stack reg
 standardRestore = popToReg Expr ++
                   popToReg Env
 
-return = [ (RFirst    , standardRestore ++
+return = [ (RNil      , [ dispatchReturn ]) -- infinite loop when finished
+
+         , (RFirst    , standardRestore ++
                         allocSingleton Value Args ++
                         [ dispatchEval ])
            

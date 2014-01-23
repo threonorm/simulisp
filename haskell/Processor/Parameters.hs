@@ -89,23 +89,27 @@ evalSuffix   = [True , False]
 applySuffix  = [False, True]
 returnSuffix = [True , True]
 
-data ReturnTag = RFirst
+data ReturnTag = RNil
+               | RFirst
                | RNext
                | RLast
                | RApplyOne           
                | RLet
                | RSequence
                | RApply
+               | RDummy
                deriving (Eq, Show)
 
 returnNum :: ReturnTag -> Int
-returnNum RFirst    = 0
-returnNum RNext     = 1
-returnNum RLast     = 2
-returnNum RApplyOne = 3
-returnNum RLet      = 4
-returnNum RSequence = 5
-returnNum RApply    = 6
+returnNum RNil      = 0
+returnNum RFirst    = 1
+returnNum RNext     = 2
+returnNum RLast     = 3
+returnNum RApplyOne = 4
+returnNum RLet      = 5
+returnNum RSequence = 6
+returnNum RApply    = 7
+returnNum RDummy    = 31
 
 
 tagBin :: Tag -> [Bool]
