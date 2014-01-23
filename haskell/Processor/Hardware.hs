@@ -112,14 +112,14 @@ memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
                                    (addrR, allocCons, freeCounter, consRegTemp)
                                    -- write to next free cell iff allocating
          
-     let freeCellPtr = DataField $ wireOne : freeCounter
+     let freeCellPtr = DataField $ freeCounter ++ [wireOne]
          allocResult = recomposeWord tagForNewCons freeCellPtr
      (car, cdr) <- decomposeCons <$> muxCons codeOrData codeMem dataMem
      fetchResult <- muxWord carOrCdr car cdr
      muxWord allocCons fetchResult allocResult
      
   where (_, DataField ptr) = decomposeWord regBus
-        (codeOrData:addrR) = ptr
+        (addrR,[codeOrData]) = splitAt ramAddrS ptr
         (Cons consRegTemp) = recomposeCons regBus tempBus
         ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
 
