@@ -1,6 +1,9 @@
-# Haskell compilation byproducts
+# Haskell / OCaml compilation byproducts
 *.hi
 *.o
+*.cmi
+*.cmo
+haskell/dist/
 
 # Old versions of text files
-*.hs~
+*~
