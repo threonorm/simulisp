@@ -148,7 +148,7 @@ loadConditional reg = makeInstr $ ground { regRead = reg
                                          }
 
 
-doGC :: [Bool] -> Immediate -> Reg -> Reg -> Instruction
+doGC :: GCOp -> Immediate -> Reg -> Reg -> Instruction
 doGC opc imm src Temp = makeInstr $ ground { regRead = src
                                            , writeTemp = True
                                            , gcOpcode = opc
@@ -164,19 +164,19 @@ doGC opc imm src dest = makeInstr $ ground { regRead = src
                                            } 
 
 fetchCar :: Reg -> Reg -> Instruction
-fetchCar = doGC [False, False] (ImmN 0)
+fetchCar = doGC GCFetchCar (ImmN 0)
  
 fetchCdr :: Reg -> Reg -> Instruction
-fetchCdr = doGC [False, True] (ImmN 0)
+fetchCdr = doGC GCFetchCdr (ImmN 0)
 
 allocCons :: Reg -> Reg -> Instruction -- By default tag = List
 allocCons = allocConsWithTag TList
 
 allocConsWithTag :: Tag -> Reg -> Reg -> Instruction
-allocConsWithTag tag = doGC [True, False] (ImmT tag)
+allocConsWithTag tag = doGC GCAlloc (ImmT tag)
 
 allocConsWithReturn :: ReturnTag -> Reg -> Reg -> Instruction
-allocConsWithReturn ret = doGC [True, False] (ImmR ret)
+allocConsWithReturn ret = doGC GCAlloc (ImmR ret)
 
 doALU :: ALUOp -> Int -> Reg -> Reg -> Instruction
 -- dest=Null => no write
@@ -230,7 +230,7 @@ ground = CS { regRead = Null
             , writeReg = False   
             , writeTemp = False        
             , useGC = False       
-            , gcOpcode = [False, False]
+            , gcOpcode = GCNop
             , aluCtrl = ALUNop
             , loadCondReg = False        
             , interactWithOutside = False

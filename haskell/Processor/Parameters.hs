@@ -3,6 +3,8 @@ module Processor.Parameters where
 import Lisp.SCode (Tag(..))
 import Lisp.Primitives
 
+import Caillou.Circuit
+
 -- Size constants
 
 consS, wordS, dataS, tagS, microInstrS, microAddrS, immediateS :: Int
@@ -13,7 +15,7 @@ wordS = tagS + dataS
 consS = 2 * wordS
 microInstrS = 24
 microAddrS = 12
-immediateS = 8 -- should not exceed dataS / 2, cf. ALU implementation
+immediateS = 6 -- should not exceed dataS / 2, cf. ALU implementation
 -- also: number of registers = 2^3
 
 data Reg = Null
@@ -106,15 +108,15 @@ data MicroInstruction = ExtInstr ExternalInstruction
                       | Dispatch Reg [Bool]
                       deriving (Show)
 
-type ExternalInstruction = GenericExternalInstruction Reg Bool ALUOp Immediate
+type ExternalInstruction = GenericExternalInstruction Reg Bool ALUOp GCOp Immediate
 
-data GenericExternalInstruction r s a i =
+data GenericExternalInstruction r s a g i =
   CS { regRead :: r
      , regWrite :: r
      , writeReg :: s
      , writeTemp :: s
      , useGC :: s
-     , gcOpcode :: [s]
+     , gcOpcode :: g
      , aluCtrl :: a
      , loadCondReg :: s
      , interactWithOutside :: s
@@ -127,13 +129,79 @@ data GenericExternalInstruction r s a i =
 data ALUOp = ALUNop | ALUIncr | ALUDecrUpper | ALUDecrImmediate
            deriving (Eq, Show)
 
--- This is actually a smart encoding, see ALU implementation to see the tricks used
+-- This is actually a smart encoding
+-- first bit means "do we act on the lower half?"
+-- second bit means "are we subtracting something?"
 encodeALUOp :: ALUOp -> (Bool, Bool)
 encodeALUOp ALUNop            = (False, False)
 encodeALUOp ALUIncr           = (True,  False)
 encodeALUOp ALUDecrUpper      = (False, True)
 encodeALUOp ALUDecrImmediate  = (True,  True)
 
+
+data GCOp = GCNop | GCAlloc | GCFetchCar | GCFetchCdr
+           deriving (Eq, Show)
+
+encodeGCOp :: GCOp -> (Bool, Bool)
+encodeGCOp GCNop       = (False, False)
+encodeGCOp GCFetchCar  = (True,  False)
+encodeGCOp GCFetchCdr  = (False, True)
+encodeGCOp GCAlloc     = (True,  True)
+                    
 data Immediate = ImmT Tag | ImmR ReturnTag | ImmN Int
                deriving (Eq, Show)
+
+
+-- Binary serialization of microinstructions
+
+
+-- Binary format spec
+-- ------------------
+--
+-- Signals stored in ROM: (total: 24 bits)
+--
+-- Name of field    | # of bits |
+--  internalControl |        2  |  2
+--  regRead         |        3  |  5 
+--  regWrite        |        3  |  8   
+--  writeReg        |        1  |  9
+--  writeTemp       |        1  | 10
+--  gcOpcode        |        2  | 12
+--  aluCtrl         |        2  | 14
+--  loadCondReg     |        1  | 15
+--  outsideOpcode   |        3  | 18
+--  immediate       |        6  | 24
+--
+-- Derived signals: useGC (1 bit) and interactWithOutside (1 bit)
+
+type ControlSignals s = GenericExternalInstruction
+                        (s,s,s) -- registers on 3 bits
+                        s       -- signal type
+                        (s,s)   -- aluCtrl on 2 bits
+                        (s,s)   -- gcOpcode on 2 bits
+                        [s]     -- immediate = list
+
+
+-- Takes EXTERNAL part of microinstruction from the ROM
+-- computes derived signals
+-- and returns the signals structured in a record
+decodeMicroInstruction :: (Circuit m s) => [s] -> m (ControlSignals s)
+decodeMicroInstruction extMicroInstr = do
+  ug  <- go1 -||- go2
+  iwo <- (oo1 -||- oo2) <||- oo3
+  return $ CS (rr1, rr2, rr3) (rw1, rw2, rw3) wr wt ug (go1, go2) (ac1, ac2) lcr
+              iwo [oo1, oo2, oo3] imm
+  where (rr1:rr2:rr3
+         :rw1:rw2:rw3
+         :wr
+         :wt
+         :go1:go2
+         :ac1:ac2
+         :lcr
+         :oo1:oo2:oo3
+         :imm) = extMicroInstr
+
+ 
+
+                        
   

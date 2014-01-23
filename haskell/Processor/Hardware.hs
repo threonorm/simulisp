@@ -15,62 +15,17 @@ import Caillou.Circuit
 import Netlist.AST
 import Netlist.Print
 
-
--- Prolegomena and specifications --
-------------------------------------
-
--- Size constants
-
 import Processor.Parameters
-
--- Control signals / microcode specification
-
-type ControlSignals s = GenericExternalInstruction (s,s,s) s (s,s) [s]
+import Lisp.SCode (Tag(..))
 
 
--- TODO: implement decodeMicroInstruction AFTER the binary format has been decided
--- this must be consistent with the microassembler
-                        
-decodeMicroInstruction :: [s] -- EXTERNAL control signals
-                              -- the 2 internal bits have already been removed
-                       -> ControlSignals s
--- decodeMicroInstruction microinstr = CS rr rw wf wt md go ac ua lcr im 
---   where external = drop 2 microinstr -- first 2 bits are internal to control
---         ^ attention, ça ça devient faux
---         (rr,q0) = splitAt 3 external
---         (rw,q1) = splitAt 3 q0
---         (wf:q2) = q1
---         (wt:q3) = q2
---         (md:q4) = q3
---         (go,q5) = splitAt 2 q4
---         (ac:ua:q6) = q5 -- throwaway suffix which is useless for now
---         (lcr:im) =  q6 
-
--------------------------------------------------------------
--- Thomas, tu te charges de ça !!!!!
--- !!!!!!!!!!!!!!!!!!
--- un truc possiblement pertinent serait de mettre
--- decodeMicroInstruction et la fonction
--- microinstruction -> (0|1)* côte à côte dans un fichier
--- afin de pouvoir vérifier d'un coup d'oeil la cohérence
---
--- attention aussi au dispatchsuffix juste au dessous
--- note: je choisis d'utiliser les bits du suffixe pour
--- décider eval vs apply vs return dans dispatch
--- mais il faut pas que ces bits viennent influencer,
--- par exemple, l'écriture de registres
--- je les mets dans immediate parce que ça me paraît
--- inoffensif, mais si tu as mieux, n'hésites pas
--- à changer !
--------------------------------------------------------------
-
-decodeMicroInstruction = undefined
+-- Using immediate part of microinstruction
+-- to specify dispatch (eval vs apply vs return)
 
 dispatchSuffix :: [s] -- raw unformatted *external* microinstruction
                -> [s] -- 2 bits which indicate whether we should execute
                       -- eval, apply or return
-dispatchSuffix = take 2 . immediate . decodeMicroInstruction
-
+dispatchSuffix = take 2 . drop 18 -- CHECK CONSISTENCY! cf. parameters.hs
 
 
 -- Strong typing for the win!
@@ -115,30 +70,26 @@ recomposeCons (Word t) (Word d) = Cons $ t ++ d
 processor :: (MemoryCircuit m s) => m [s]
 processor = 
   do rec controlSignals <- control condReg regOutTag
-
          condReg <- delay =<< mux3 (loadCondReg controlSignals,
                                     aluOverflow,
                                     regIsNil)
-         let (regOutTag@(TagField tag), (DataField df)) =
-               decomposeWord regOut
+         let (regOutTag@(TagField tag), (DataField df)) = decomposeWord regOut
          regIsNil <- dichotomicFold or2 tag
 
          regIn <- muxWord (useGC controlSignals) aluOut gcOut
-
          gcOut <- memorySystem (gcOpcode controlSignals)
                                regOut
                                tempOut
                                (TagField . take tagS . immediate
                                 $ controlSignals)
          (aluOut, aluOverflow) <- miniAlu controlSignals regOut
-                                  
+
          regOut <- registerArray controlSignals regIn
          tempOut <- singleRegister (writeTemp controlSignals) regIn
-         
      
      return (interactWithOutside controlSignals
              : outsideOpcode controlSignals
-             ++ df)
+             ++ take 7 df)
 
 
 -- Definitions for the functional blocks --
@@ -147,22 +98,26 @@ processor =
 -- Memory system (in charge of implementing alloc_cons, fetch_car, fetch_cdr)
 
 memorySystem :: (MemoryCircuit m s) =>
-                [s] -> Word s -> Word s -> TagField s -> m (Word s)
-memorySystem opCode regBus tempBus tagForNewCons =
+                (s,s) -> Word s -> Word s -> TagField s -> m (Word s)
+memorySystem (opcode0, opcode1) regBus tempBus tagForNewCons =
   do wireOne <- one
-     rec codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
-         dataMem <- Cons <$> accessRAM ramAddrS consS
-                                       (addrR,
-                                        allocCons, freeCounter, consRegTemp)
-                             -- write to next free cell iff allocating
-         freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
+     allocCons <- opcode0 -&&- opcode1
+     let carOrCdr = opcode1
+         
+     rec freeCounter <- bigDelayn ramAddrS =<< addBitToWord (allocCons, freeCounter)
+
+     codeMem <- Cons <$> accessROM "rom_code" ramAddrS consS addrR
+     dataMem <- Cons <$> accessRAM ramAddrS consS
+                                   (addrR, allocCons, freeCounter, consRegTemp)
+                                   -- write to next free cell iff allocating
+         
      let freeCellPtr = DataField $ wireOne : freeCounter
          allocResult = recomposeWord tagForNewCons freeCellPtr
      (car, cdr) <- decomposeCons <$> muxCons codeOrData codeMem dataMem
      fetchResult <- muxWord carOrCdr car cdr
      muxWord allocCons fetchResult allocResult
-  where [carOrCdr, allocCons] = opCode
-        (_, DataField ptr) = decomposeWord regBus
+     
+  where (_, DataField ptr) = decomposeWord regBus
         (codeOrData:addrR) = ptr
         (Cons consRegTemp) = recomposeCons regBus tempBus
         ramAddrS = dataS - 1 -- 1 bit reserved to choose between ROM and RAM
@@ -196,20 +151,26 @@ miniAlu controlSignals inputWord = do
   -- TODO: test with quickcheck
   -- Abbreviations: so(l|u) = second operand (lower|upper) half
   -- 
-  -- Operation | sol       | sou           | initial carry
+  -- Operation | sou       | sol           | initial carry
   -- -----------------------------------------------------
   -- Nop       | zero      | zero          | 0
   -- Incr      | zero      | zero          | 1
   -- DecrUpper | 11...11   | zero          | 0
   -- DecrImm   | 11...11   | 11..not(imm)  | 1
+  --
+  -- Note: in the above table, the numbers are written with
+  -- with the strongest bit to the left,
+  -- but in the code, the first element of a list is
+  -- the *weakest* bit
 
   solImm <- mapMn immediateS (\i -> decrImm -&&> neg i) imm
-  let sol = replicate (lowerS - immediateS) decrImm ++ solImm
+  let sol = solImm ++ replicate (lowerS - immediateS) decrImm
       sou = replicate upperS decr
       secondOperand = sol ++ sou
       initialCarry = actOnLower
 
-  (result, finalCarry) <- adder (initialCarry, zip df secondOperand)
+  (result', finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
+  let result = take dataS result'
   overflowBit <- decr -^^- finalCarry
   
   tagOut <- bigMuxnWithConst tagS doSomething tag (tagBin TNum)
@@ -221,10 +182,10 @@ miniAlu controlSignals inputWord = do
         bigMuxnWithConst n ctrl ~(s:ss) ~(b:bs)
           -- if ctrl then true  else s
           | b         = (:) <$> (ctrl -||- s)
-                            <*> bigMuxnWithConst n ctrl ss bs
+                            <*> bigMuxnWithConst (n-1) ctrl ss bs
           -- if ctrl then false else s
           | otherwise = (:) <$> (neg ctrl <&&- s)
-                            <*> bigMuxnWithConst n ctrl ss bs
+                            <*> bigMuxnWithConst (n-1) ctrl ss bs
                         
 
 -- Registers
@@ -282,16 +243,16 @@ control cond (TagField tag) =
 
      notJump <- neg jump
      neutralized <- mapM (notJump -&&-) external
-     return $ decodeMicroInstruction neutralized
+     decodeMicroInstruction neutralized
 
 
 -- Output netlist
 -- TODO: improve and put in another file
 main :: IO ()
 main = do
-  let inp = ()
-      circ () = processor
-      (_,nl,_) = synthesizeBarebonesNetlist circ inp
-  writeFile "foobar.net" . unlines . map show $ nl
+  let circ () = processor
+      outf = zip [ "o" ++ show i | i <- [0..] ]
+      ast = synthesizeNetlistAST circ () [] outf
+  printProgToFile ast "processor.net"
 
 
