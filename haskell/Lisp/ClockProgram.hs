@@ -6,6 +6,7 @@ import Lisp.MultilineQuote
 import Lisp.MiniLispParser
 import Lisp.MiniLispCompiler
 import Lisp.AsmScode
+import Lisp.AsmScode2
 
 import Text.Parsec
 
@@ -37,6 +38,6 @@ scode = compileProgram lispProg
 
 main =
   let Just compiled = scode in 
-  putStrLn $"rom_code:"++assemble compiled
+  putStrLn $"rom_code:"++serializeSCode compiled
 
 
