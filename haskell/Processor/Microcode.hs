@@ -178,9 +178,7 @@ return = [ (RNil      , [ dispatchReturn ]) -- infinite loop when finished
          , (RApplyOne , standardRestore ++
                         allocSingleton Value Args ++
                         pushWithReturn RApply Args ++
-                        [ moveToTemp Args
-                        , allocConsWithReturn RApply Stack Stack
-                        , dispatchEval ])
+                        [ dispatchEval ])
            
          , (RLet      , standardRestore ++
                         allocSingleton Value Value ++
@@ -193,6 +191,8 @@ return = [ (RNil      , [ dispatchReturn ]) -- infinite loop when finished
 
          , (RApply    , popToReg Args ++
                         [ dispatchApply ])
+
+         , (RDummy    , [ dispatchReturn ])
          ]
 
 microprogram :: [Instruction]
@@ -218,7 +218,7 @@ microprogram = boot ++ eval' ++ apply' ++ return'
 
 push :: Reg -> [Instruction]                 
 push reg = [ moveToTemp reg
-           , allocCons Stack Stack]
+           , allocConsWithReturn RDummy Stack Stack]
 
 pushWithReturn :: ReturnTag -> Reg -> [Instruction]
 pushWithReturn retTag reg = [ moveToTemp reg
