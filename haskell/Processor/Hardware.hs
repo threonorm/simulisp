@@ -167,12 +167,24 @@ miniAlu controlSignals inputWord = do
       sou = replicate upperS decr
       secondOperand = sol ++ sou
       initialCarry = actOnLower
+  
 
-  (result, finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
+  (result', finalCarry) <- adder (initialCarry, zipWithn dataS (,) df secondOperand)
   overflowBit <- decr -^^- finalCarry
+     
+     -- Now, in order to implement the ALU's intended behavior for decr
+     -- (that is, decr(n,k) = max(0, n-k))
+     -- we need to cut the outputs with the overflow bit
+ 
+  cutUpper <- neg overflowBit
+  cutLower <- cutUpper -||> neg actOnLower
+  let (resLower', resUpper') = splitAt lowerS result'
+  resLower <- mapMn lowerS (cutLower -&&-) resLower'
+  resUpper <- mapMn upperS (cutUpper -&&-) resUpper'
+  let result = resLower ++ resUpper                       
   
   tagOut <- bigMuxnWithConst tagS doSomething tag (tagBin TNum)
-  
+     
   return (recomposeWord (TagField tagOut) (DataField result),
           overflowBit)
 
