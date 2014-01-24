@@ -168,8 +168,10 @@ iteratedSimulation prog maybeInputs maybeROMs =
         isReg (_, (Ereg _)) = True
         isReg _             = False
         initROMs = Map.mapWithKey initROM
-        initROM ident bits = Array.listArray (0, 2^addrSize - 1) $ splits wordSize bits
+        initROM ident bits = Array.listArray (0, romActualSize - 1) romContent
           where (addrSize, wordSize) = romSizes Map.! ident
+                romContent = splits wordSize bits
+                romActualSize = length romContent
 
 
 programRegisters :: Program -> [(Ident, Ident)]
