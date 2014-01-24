@@ -119,15 +119,18 @@ simulateCycle prog oldMem inputWires =
   $ p_eqs prog
   where gatherOutputs finalWires =
           map (\i -> (i, finalWires Map.! i)) $ p_outputs prog
-        newMem finalWires = oldMem {
-          registers = Map.fromList . map getNewVal $ programRegisters prog,
-          ram = foldl' (\currentMap (ident,addr,datum) ->
-                         Map.adjust (IntMap.insert addr (valueToList datum))
-                                    ident currentMap)
-                       (ram oldMem)
-                       (ramToUpdate prog finalWires)
-          }
+        newMem finalWires =
+          newRegisters `seq` newRam `seq`
+          oldMem { registers = newRegisters
+                 , ram       = newRam }
           where getNewVal = second (finalWires Map.!)              
+                newRegisters = Map.fromList . map getNewVal
+                               $ programRegisters prog
+                newRam = foldl' (\currentMap (ident,addr,datum) ->
+                                  Map.adjust (IntMap.insert addr (valueToList datum))
+                                  ident currentMap)
+                         (ram oldMem)
+                           (ramToUpdate prog finalWires)
 
 
 initialWireState :: Program -- Sorted netlist

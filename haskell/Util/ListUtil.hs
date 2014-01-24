@@ -1,6 +1,8 @@
--- List combinators
+{-# LANGUAGE BangPatterns #-}
 
 module Util.ListUtil where
+
+-- List combinators
 
 -- for some reason this is not in the standard libraries
 unintersperse :: (Eq a) => a -> [a] -> [[a]]
@@ -13,11 +15,12 @@ unintersperse x xs = let (y, rest) = break (== x) xs
 -- trace f a0 [x0, ...] = [y1, ...]
 -- where (a1, y1) = f a0 x0
 --       (a2, y2) = f a1 x1
---       etc. 
+--       etc.
+-- Note: trace is *strict* in the "accumulator"
 trace :: (a -> b -> (a, c)) -> a -> [b] -> [c]
 trace _ _  []      = []
-trace f a0 (x0:xs) = let (a1, y1) = f a0 x0
-                     in y1 : trace f a1 xs
+trace f !a0 (x0:xs) = let (a1, y1) = f a0 x0
+                      in y1 : trace f a1 xs
 
 -- Cut a list into sublists of length n
 
