@@ -11,9 +11,11 @@ import Data.Array.IArray (Array)
 import qualified Data.Array.IArray as Array
 import Data.List
 import Data.Maybe
-import qualified Data.Map as Map
-import qualified Data.IntMap as IntMap
-import Data.IntMap (IntMap)
+import qualified Data.Map.Strict as Map
+import qualified Data.IntMap.Strict as IntMap
+import Data.IntMap.Strict (IntMap)
+
+import qualified Debug.Trace as DT
 
 import Netlist.AST
 import Util.ListUtil
@@ -80,9 +82,8 @@ valueToList (VBitArray bs) = bs
 
 simulationStep :: Memory -> WireState -> Equation -> WireState
 simulationStep memory oldWireState (ident, expr) =
-  let val = f expr in
-  -- evaluate strictly before inserting in the map
-  val `seq` Map.insert ident val oldWireState
+  -- Using Map.Strict: (f expr) is evaluated strictly before inserting in the map
+  Map.insert ident (f expr) oldWireState
   
   where f (Ereg _) = registers memory Map.! ident
 

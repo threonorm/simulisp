@@ -8,7 +8,7 @@ import Control.Monad
 import Control.Concurrent
 import Data.List
 import Data.Maybe
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 import System.Environment
 import System.Console.GetOpt
 import System.Exit

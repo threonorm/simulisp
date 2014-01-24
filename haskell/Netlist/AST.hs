@@ -1,13 +1,13 @@
 module Netlist.AST where
 
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 
 type Ident = String
 type Environment t = Map.Map Ident t
 
 data Ty = TBit | TBitArray Int
         deriving (Show)
-data Value = VBit Bool | VBitArray [Bool]
+data Value = VBit !Bool | VBitArray ![Bool]
            deriving (Eq, Show)
 
 data Binop = Or | Xor | And | Nand
