@@ -68,7 +68,8 @@ compute st (Econcat a1 a2) =
 simulationStep :: Memory -> WireState -> Equation -> WireState
 simulationStep memory oldWireState (ident, expr) =
   -- Using Map.Strict: (f expr) is evaluated strictly before inserting in the map
-  Map.insert ident (f expr) oldWireState
+  let val = f expr in
+  val `seq` Map.insert ident val oldWireState
   
   where f (Ereg _) = registers memory Map.! ident
 
