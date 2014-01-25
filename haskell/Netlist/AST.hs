@@ -1,6 +1,6 @@
 module Netlist.AST where
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map as Map
 import Util.BinUtils
 
 type Ident = String
