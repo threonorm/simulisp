@@ -1,6 +1,7 @@
 module Netlist.AST where
 
 import qualified Data.Map.Strict as Map
+import Util.BinUtils
 
 type Ident = String
 type Environment t = Map.Map Ident t
@@ -10,9 +11,21 @@ data Ty = TBit | TBitArray Int
 data Value = VBit !Bool | VBitArray ![Bool]
            deriving (Eq, Show)
 
+valueToInt :: Value -> Int
+valueToInt (VBit b) = if b then 1 else 0
+valueToInt (VBitArray bs) = boolsToInt bs
+
+valueToList :: Value -> [Bool]
+valueToList (VBit b)       = [b]
+valueToList (VBitArray bs) = bs
+
 data Binop = Or | Xor | And | Nand
            deriving (Show)
 
+binopFn Or = (||)
+binopFn Xor = \p q -> (p || q) && not (p && q)
+binopFn And = (&&)
+binopFn Nand = \p q -> not $ p && q
 
 -- argument of operators (variable or constant) 
 data Arg = Avar Ident -- x 
@@ -53,4 +66,7 @@ data Program = Pr { p_inputs  :: [Ident]        -- inputs
                   , p_eqs     :: [Equation]     -- equations 
                   }
              deriving (Show)
+
+
+
 

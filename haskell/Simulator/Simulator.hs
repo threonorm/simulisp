@@ -46,15 +46,10 @@ compute st (Earg a) =
 compute st (Enot a) =
   vNot . extractArg st $ a
 compute st (Ebinop op a1 a2) =
-  vLogic opTransf vA1 vA2
+  vLogic (binopFn op) vA1 vA2
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
-        opTransf = transfo op
-        transfo x = case x of
-           And  -> (&&) 
-           Nand -> \p q -> not $ p && q
-           Xor  -> \p q -> (p || q) && not (p && q)
-           Or   -> (||)
+
 compute st (Emux a1 a2 a3) =
   VBit $ if vA1 then vA3 else vA2
   where (VBit vA1) = extractArg st a1
@@ -69,14 +64,6 @@ compute st (Econcat a1 a2) =
   where vA1 = extractArg st a1
         vA2 = extractArg st a2 
 
-
-valueToInt :: Value -> Int
-valueToInt (VBit b) = if b then 1 else 0
-valueToInt (VBitArray bs) = boolsToInt bs
-
-valueToList :: Value -> [Bool]
-valueToList (VBit b)       = [b]
-valueToList (VBitArray bs) = bs
 
 simulationStep :: Memory -> WireState -> Equation -> WireState
 simulationStep memory oldWireState (ident, expr) =
