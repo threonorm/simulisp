@@ -12,15 +12,30 @@ import Text.Parsec
 
 clockProgram = [multilineQuote|
 (defun main ()
-  (clock 0 0))
+  (count-hours 18))
 
-(defun clock (sec min)
-  (print-minute min)
+(defun count-seconds (sec)
   (print-second sec)
   (let ((new-sec (+1 sec)))
     (if (>=60? new-sec)
-        (synchronize (clock 0 (+1 min)))
-        (synchronize (clock new-sec min)))))
+        ()
+        (synchronize (count-seconds new-sec)))))
+
+(defun count-minutes (min)
+  (print-minute min)
+  (count-seconds 0)
+  (let ((new-min (+1 min)))
+    (if (>=60? new-min)
+        ()
+        (synchronize (count-minutes new-min)))))
+
+(defun count-hours (hr)
+  (print-hour hr)
+  (count-minutes 0)
+  (let ((new-hr (+1 hr)))
+    (if (>=24? new-hr)
+        (synchronize (count-hours 0))
+        (synchronize (count-hours new-hr)))))
 |]
 
 (Right lispProg) = parse miniLispParser "" clockProgram
