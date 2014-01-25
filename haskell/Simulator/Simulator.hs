@@ -13,6 +13,7 @@ import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
+import Data.IntMap (IntMap)
 
 import Netlist.AST
 import Util.ListUtil
