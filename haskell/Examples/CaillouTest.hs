@@ -1,5 +1,7 @@
 {-# LANGUAGE DoRec #-}
 
+module Examples.CaillouTest where
+
 import Control.Monad
 import Control.Applicative
 
@@ -21,9 +23,9 @@ clockProc = do
   wireOne  <- one
   rec ctr2 <- mapMn 2 delay newctr2
       (newctr2,_) <- adder (wireZero, zip [wireOne, wireZero] ctr2)
-  rec ctr4 <- mapMn 4 delay newctr4
+  rec ctr4 <- accessRAM 2 4 (ctr2, wireOne, ctr2, newctr4)
       (newctr4,_) <- adder (wireZero, zip (wireOne:replicate 3 wireZero) ctr4)
-  return $ [wireOne] ++ ctr2 ++ ctr4
+  return $ ctr4 ++ newctr4
   
 
 -- simpler test: 2-bit counter
