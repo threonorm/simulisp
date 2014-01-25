@@ -11,8 +11,11 @@ import Data.Array.IArray (Array)
 import qualified Data.Array.IArray as Array
 import Data.List
 import Data.Maybe
-import qualified Data.Map.Strict as Map
-import qualified Data.IntMap.Strict as IntMap
+-- import qualified Data.Map.Strict as Map
+-- import qualified Data.IntMap.Strict as IntMap
+-- import Data.IntMap.Strict (IntMap)
+import qualified Data.Map as Map
+import qualified Data.IntMap as IntMap
 import Data.IntMap.Strict (IntMap)
 
 import Netlist.AST

@@ -11,7 +11,7 @@ import Data.Maybe
 import Data.Foldable (sequenceA_)
 import Data.Traversable (sequenceA)
 import Data.Map (Map)
-import qualified Data.Map.Strict as Map
+import qualified Data.Map as Map
 
 import Control.Monad.ST.Strict
 import qualified Control.Monad.ST.Lazy as LazyST
