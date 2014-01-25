@@ -21,6 +21,7 @@ import Netlist.AST
 import Netlist.Parser
 import Simulator.Scheduler
 import Simulator.Simulator
+import Simulator.MultiTrackDrifting
 import Simulator.InputParser
 import Simulator.DisplayClock
 import Util.BinUtils
@@ -69,7 +70,7 @@ launchBasicSimulation netlist maybeCycles maybeInputs maybeROMs = do
 
 launchClockSimulation :: Program -> Maybe (Environment [Bool]) -> IO ()
 launchClockSimulation netlist maybeROMs = displayClock . makeCommandThread $ \commands -> do
-  let outputs = iteratedSimulation netlist Nothing maybeROMs
+  let outputs = awesomeSimulation netlist maybeROMs
   forM_ outputs $ \assocList -> do
     let (b1:b2:b3:b4:rest) = concatMap (valueToList . snd) assocList
     when b1 $ case boolsToInt [b2, b3, b4] of

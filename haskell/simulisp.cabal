@@ -14,7 +14,8 @@ source-repository head
 executable simulator
     main-is:        Simulator/Main.hs
     ghc-options:    -O2 -main-is Simulator.Main
-    build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
+    build-depends:  array, base, containers, mtl, parsec >= 3.0,
+                    vector >= 0.10, primitive >= 0.5, SDL >= 0.6.5
 
 executable generate-processor
     main-is:        Processor/Hardware.hs
@@ -24,7 +25,7 @@ executable generate-processor
 executable software-model
     main-is:        Processor/SoftwareModel.hs
     ghc-options:    -O2 -main-is Processor.SoftwareModel
-    build-depends:  array, base, containers, mtl, parsec >= 3.0, SDL >= 0.6.5
+    build-depends:  array, base, containers, mtl, SDL >= 0.6.5
 
 executable clock-program 
     main-is:        Lisp/ClockProgram.hs
@@ -34,4 +35,4 @@ executable clock-program
 executable generate-microprogram 
     main-is:        Processor/Microcode.hs
     ghc-options:    -O2 -main-is Processor.Microcode
-    build-depends:  array, base, containers, mtl, parsec >= 3.0 
+    build-depends:  array, base, containers, mtl
