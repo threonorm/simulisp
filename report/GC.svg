@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="714.10144"
+   height="654.10754"
+   id="svg3597"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="GC.svg">
+  <defs
+     id="defs3599" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="354.24752"
+     inkscape:cy="327.99698"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="768"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata3602">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-13.663537,-25.527182)">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
+       d="m 65.447615,75.412591 0,53.224029 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.224029 -9.12294,0 z"
+       id="rect3001-3-4-5-88"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="68.828827"
+       y="41.961182"
+       id="text3674"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3676"
+         x="68.828827"
+         y="41.961182">gcOpcode</tspan><tspan
+         sodipodi:role="line"
+         x="68.828827"
+         y="69.461182"
+         id="tspan3678"> 2 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="263.04425"
+       y="41.763184"
+       id="text3680"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3682"
+         x="263.04425"
+         y="41.763184">outputRA</tspan><tspan
+         sodipodi:role="line"
+         x="263.04425"
+         y="69.263184"
+         id="tspan3684">24 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="471.68652"
+       y="41.763184"
+       id="text3686"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3688"
+         x="471.68652"
+         y="41.763184">outputTemp</tspan><tspan
+         sodipodi:role="line"
+         x="471.68652"
+         y="69.263184"
+         id="tspan3690">24 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="666.32269"
+       y="41.763184"
+       id="text3692"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3694"
+         x="666.32269"
+         y="41.763184">newTag</tspan><tspan
+         sodipodi:role="line"
+         x="666.32269"
+         y="69.263184"
+         id="tspan3696">5 bits</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1.24435353"
+       id="rect3698"
+       width="712.85712"
+       height="457.88867"
+       x="14.285714"
+       y="149.79076" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1.84521985"
+       id="rect3700"
+       width="171.1255"
+       height="443.61566"
+       x="21.428572"
+       y="155.50504" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="28.285713"
+       y="179.26105"
+       id="text3702"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3704"
+         x="28.285713"
+         y="179.26105">00 : Nop</tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="206.76105"
+         id="tspan3843" /><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="234.26105"
+         id="tspan3863" /><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="261.76105"
+         id="tspan3847" /><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="289.26105"
+         id="tspan3706">10 : Fetch CAR</tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="316.76105"
+         id="tspan3708"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="344.26105"
+         id="tspan3851"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="371.76105"
+         id="tspan3853"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="399.26105"
+         id="tspan3861">01 : Fetch CDR</tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="426.76105"
+         id="tspan3710"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="454.26105"
+         id="tspan3855"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="481.76105"
+         id="tspan3857"></tspan><tspan
+         sodipodi:role="line"
+         x="28.285713"
+         y="509.26105"
+         id="tspan3859">00 : Alloc</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.24260587"
+       d="m 201.32975,165.88868 34.47317,0 0.0606,-8.33535 6.85378,11.52951 -6.85378,11.51678 -0.0606,-8.32262 -34.47317,0 0,-6.38832 z"
+       id="rect3001-3-4-5-88-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.24260587"
+       d="m 201.32975,276.50768 34.47317,0 0.0606,-8.33535 6.85378,11.52951 -6.85378,11.51678 -0.0606,-8.32262 -34.47317,0 0,-6.38832 z"
+       id="rect3001-3-4-5-88-2-8"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.24260587"
+       d="m 201.32975,385.12679 34.47317,0 0.0606,-8.33535 6.85378,11.52951 -6.85378,11.51678 -0.0606,-8.32262 -34.47317,0 0,-6.38832 z"
+       id="rect3001-3-4-5-88-2-1"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.24260587"
+       d="m 201.32975,497.74582 34.47317,0 0.0606,-8.33535 6.85378,11.52951 -6.85378,11.51678 -0.0606,-8.32262 -34.47317,0 0,-6.38832 z"
+       id="rect3001-3-4-5-88-2-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
+       d="m 259.73333,75.412592 0,53.224028 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.224028 -9.12294,0 z"
+       id="rect3001-3-4-5-88-72"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
+       d="m 464.01904,75.412593 0,53.224027 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.224027 -9.12294,0 z"
+       id="rect3001-3-4-5-88-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
+       d="m 665.44762,75.412593 0,53.224027 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.224027 -9.12294,0 z"
+       id="rect3001-3-4-5-88-59"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="242.85715"
+       y="649.505"
+       id="text3805"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3807"
+         x="242.85715"
+         y="649.505">outputGC</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
+       d="m 362.87619,615.55545 0,53.22403 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.22403 -9.12294,0 z"
+       id="rect3001-3-4-5-88-6"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="246"
+       y="176.36218"
+       id="text3827"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3829"
+         x="246"
+         y="176.36218">outputGC := outputRA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="246"
+       y="285.12408"
+       id="text3831"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3833"
+         x="246"
+         y="285.12408">outputGC := ReadRAM(outputRA.data).CAR </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="249.604"
+       y="545.11926"
+       id="text3835"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="249.604"
+         y="545.11926"
+         id="tspan3875">outputGC := {tag = newTag, data=freeCellPtr} </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="246"
+       y="394.64789"
+       id="text3839"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3841"
+         x="246"
+         y="394.64789">outputGC := ReadRAM(outputRA.data).CDR </tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.87066245"
+       id="rect3865"
+       width="162.85715"
+       height="43.317318"
+       x="564.28571"
+       y="563.33063" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="593.64545"
+       y="593.0083"
+       id="text3867"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3869"
+         x="593.64545"
+         y="593.0083">freeCellPtr</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="250"
+       y="584.64789"
+       id="text3871"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3873"
+         x="250"
+         y="584.64789">freeCellPtr := freeCellPtr +1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="248.28572"
+       y="507.79074"
+       id="text3877"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3879"
+         x="248.28572"
+         y="507.79074">WriteRAM(freeCellPtr, outputRA ++ outputTemp)</tspan></text>
+  </g>
+</svg>

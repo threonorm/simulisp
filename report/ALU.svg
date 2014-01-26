@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="721.888"
+   height="407.94879"
+   id="svg3035"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="ALU.svg">
+  <defs
+     id="defs3037" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="351.4405"
+     inkscape:cy="150.48412"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="768"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata3040">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-8.2258697,-30.801104)">
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="54.548237"
+       y="71.504059"
+       id="text3098"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3100"
+         x="54.548237"
+         y="71.504059" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="27.192892"
+       y="49.237103"
+       id="text3102"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3104"
+         x="27.192892"
+         y="49.237103">aluOP : 2 bits</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.44935495"
+       d="m 355.07647,56.989289 0,82.815141 -11.90341,0.14537 16.46489,16.4649 16.4467,-16.4649 -11.88524,-0.14537 0,-82.815141 -9.12294,0 z"
+       id="rect3001-3-4-5"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="277.86731"
+       y="49.072105"
+       id="text3124"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3126"
+         x="277.86731"
+         y="49.072105">immediate : 6 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="623.91418"
+       y="46.839104"
+       id="text3146"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="623.91418"
+         y="46.839104"
+         id="tspan3150">outputRA :24 words</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.67657942"
+       id="rect3152"
+       width="721.21143"
+       height="145.99808"
+       x="8.5641594"
+       y="169.41275" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1.08925545"
+       id="rect3154"
+       width="218.46782"
+       height="115.74471"
+       x="25.558392"
+       y="178.50412" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="36.314972"
+       y="202.98047"
+       id="text3156"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3158"
+         x="36.314972"
+         y="202.98047">00 : Nop </tspan><tspan
+         sodipodi:role="line"
+         x="36.314972"
+         y="230.48047"
+         id="tspan3160">10 : Incr </tspan><tspan
+         sodipodi:role="line"
+         x="36.314972"
+         y="257.98047"
+         id="tspan3162">01 : Decr upper</tspan><tspan
+         sodipodi:role="line"
+         x="36.314972"
+         y="285.48047"
+         id="tspan3164">11 : Decr immediate</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.2405645"
+       d="m 251.76135,280.95388 41.46115,0 0.0728,-6.81435 8.2431,9.42565 -8.2431,9.41524 -0.0728,-6.80394 -41.46115,0 0,-5.2226 z"
+       id="rect3001-3-4-4-1-7"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="235.61441"
+       y="395.07275"
+       id="text3245"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3247"
+         x="235.61441"
+         y="395.07275">outputALU</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="305.31482"
+       y="197.59549"
+       id="text3251"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3253"
+         x="305.31482"
+         y="197.59549">output := outputRA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="305.31482"
+       y="227.59045"
+       id="text3255"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3257"
+         x="305.31482"
+         y="227.59045">output := outputRA{data=data+1}</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="305.31482"
+       y="287.58029"
+       id="text3259"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3261"
+         x="305.31482"
+         y="287.58029">output := outputRA{data=data-immediate}</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.2405645"
+       d="m 251.76135,250.65609 41.46115,0 0.0728,-6.81435 8.2431,9.42565 -8.2431,9.41524 -0.0728,-6.80394 -41.46115,0 0,-5.2226 z"
+       id="rect3001-3-4-4-1-7-6"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.2405645"
+       d="m 251.76135,220.35824 41.46115,0 0.0728,-6.81435 8.2431,9.42565 -8.2431,9.41524 -0.0728,-6.80394 -41.46115,0 0,-5.2226 z"
+       id="rect3001-3-4-4-1-7-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.2405645"
+       d="m 251.76135,190.06046 41.46114,0 0.0728,-6.81435 8.2431,9.42565 -8.2431,9.41524 -0.0728,-6.80394 -41.46114,0 0,-5.2226 z"
+       id="rect3001-3-4-4-1-7-5-2"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="305.31482"
+       y="257.58539"
+       id="text3335"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3337"
+         x="305.31482"
+         y="257.58539">output := outputRA{upper=upper-1}</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.44935495"
+       d="m 85.094936,56.989283 0,82.815157 -11.903409,0.14537 16.464889,16.4649 16.446704,-16.4649 -11.885244,-0.14537 0,-82.815157 -9.12294,0 z"
+       id="rect3001-3-4-5-0"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.44935495"
+       d="m 619.3068,56.989284 0,82.815146 -11.90341,0.14538 16.46489,16.4649 16.4467,-16.4649 -11.88524,-0.14538 0,-82.815146 -9.12294,0 z"
+       id="rect3001-3-4-5-88"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.44935495"
+       d="m 355.07647,339.09981 0,82.81514 -11.90341,0.14537 16.46489,16.4649 16.4467,-16.4649 -11.88524,-0.14537 0,-82.81514 -9.12294,0 z"
+       id="rect3001-3-4-5-5"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

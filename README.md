@@ -1,4 +1,4 @@
-Simulisp 0.2
+Li(sp)Monade (Simulisp) 0.2
 ============
 
 A very basic processor simulated at the logic gate level, based on an
@@ -28,6 +28,15 @@ Installation
 
 ### Building
 
+The easy way to build the complete project is use 
+
+    ./build.sh
+
+Be patient! Compilation can take a few minutes. If you are in a hurry
+you can delete the -O2 options in the file ./haskell/.simulisp.cabal
+
+If you prefer a more hands-on way :
+
 We use Cabal as our build system.
 
     cd ./simulisp/haskell
@@ -38,6 +47,16 @@ The binaries generated are:
 - the simulator in `dist/build/simulator/simulator`
 - a program to generate the netlist of the processor
   in `dist/build/generate-processor/generate-processor`
+- a program to generate the microprogram of the processor
+  in `dist/build/generate-microprogram/generate-microprogram`
+- a program to generate the binary file of the clock
+  in `dist/build/clock-program/clock-program`
+
+You can build the rom file in the good form using the script :
+      
+      ./generateRom.sh
+
+It uses the last two binaries which we just presented.
 
 Simulator usage
 ---------------

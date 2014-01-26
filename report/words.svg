@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="567.81921"
+   height="412.60114"
+   id="svg3063"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="words.svg">
+  <defs
+     id="defs3065" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.80069832"
+     inkscape:cx="265.20818"
+     inkscape:cy="256.1184"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1362"
+     inkscape:window-height="729"
+     inkscape:window-x="0"
+     inkscape:window-y="18"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showborder="false" />
+  <metadata
+     id="metadata3068">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-66.118273,-31.492618)">
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.48815531"
+       id="rect3079"
+       width="457.14285"
+       height="63.31855"
+       x="175.85669"
+       y="62.80484" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.42221299"
+       id="rect3079-7"
+       width="341.9787"
+       height="63.31855"
+       x="290.91141"
+       y="62.80484" />
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="202.09628"
+       y="106.12811"
+       id="text3872"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3874"
+         x="202.09628"
+         y="106.12811">TAG</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="417.9975"
+       y="106.12811"
+       id="text3876"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3878"
+         x="417.9975"
+         y="106.12811">DATA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="193.37584"
+       y="54.820618"
+       id="text3880"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3882"
+         x="193.37584"
+         y="54.820618">5 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="413.76849"
+       y="54.820618"
+       id="text3884"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3886"
+         x="413.76849"
+         y="54.820618">19 bits</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.48815531"
+       id="rect3079-1"
+       width="457.14285"
+       height="63.31855"
+       x="176.26566"
+       y="228.81018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 176.59669,228.6774 289.63511,126.23634"
+       id="path3945"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 632.2828,228.6774 0,-102.44106"
+       id="path3949"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.48815531"
+       id="rect3079-1-5"
+       width="457.14285"
+       height="63.31855"
+       x="176.26566"
+       y="303.06329" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.48815531"
+       id="rect3079-1-5-0"
+       width="457.14285"
+       height="63.31855"
+       x="176.41269"
+       y="380.52176" />
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="370.99234"
+       y="271.89346"
+       id="text4005"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4007"
+         x="370.99234"
+         y="271.89346">Num</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.37739235"
+       id="rect3079-1-5-8"
+       width="273.22601"
+       height="63.31855"
+       x="175.81633"
+       y="303.06329" />
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="206.44073"
+       y="342.89856"
+       id="text4047"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4049"
+         x="206.44073"
+         y="342.89856">j : 10 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="487.84174"
+       y="346.14658"
+       id="text4051"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4053"
+         x="487.84174"
+         y="346.14658">i : 9 bits </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="63.558273"
+       y="346.14658"
+       id="text4055"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4057"
+         x="63.558273"
+         y="346.14658">Local</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="80.256027"
+       y="423.63141"
+       id="text4059"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4061"
+         x="80.256027"
+         y="423.63141">Ptr</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="219.34933"
+       y="423.60504"
+       id="text4063"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4065"
+         x="219.34933"
+         y="423.60504">Address : 18 bits</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.27216294"
+       id="rect3079-1-5-0-2"
+       width="142.09995"
+       height="63.31855"
+       x="491.68686"
+       y="380.52176" />
+    <text
+       xml:space="preserve"
+       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="476.8808"
+       y="487.1701"
+       id="text4085"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4087"
+         x="476.8808"
+         y="487.1701" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="476.8808"
+       y="483.63766"
+       id="text4089"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4091"
+         x="476.8808"
+         y="483.63766" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="499.81589"
+       y="406.42804"
+       id="text4093"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4095"
+         x="499.81589"
+         y="406.42804">Select : 1 bit</tspan><tspan
+         sodipodi:role="line"
+         x="499.81589"
+         y="433.92804"
+         id="tspan4097">Code/Data</tspan></text>
+  </g>
+</svg>

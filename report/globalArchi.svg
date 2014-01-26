@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="716.89563"
+   height="854.68195"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="globalArchi.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="415.63326"
+     inkscape:cy="-190.91477"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1362"
+     inkscape:window-height="729"
+     inkscape:window-x="0"
+     inkscape:window-y="18"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-7.1043559,-88.5625)">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.8602457"
+       d="m 587.69816,255.06548 0,342.83913 -49.27794,0.60187 68.16155,68.16159 68.08634,-68.16159 -49.20271,-0.60187 0,-342.83913 -37.76724,0 z"
+       id="rect3001-0"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.56460869"
+       id="rect2995"
+       width="234.7211"
+       height="149.00681"
+       x="488.99658"
+       y="88.858765" />
+    <text
+       xml:space="preserve"
+       style="font-size:60.20880127px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="489.13916"
+       y="191.11015"
+       id="text2997"
+       sodipodi:linespacing="125%"
+       transform="scale(1.0355154,0.96570268)"><tspan
+         sodipodi:role="line"
+         id="tspan2999"
+         x="489.13916"
+         y="191.11015">Control</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.69105911"
+       d="m 599.35608,249.76245 0,127.36066 -18.30617,0.22358 25.32121,25.32122 25.29326,-25.32122 -18.27822,-0.22358 0,-127.36066 -14.03008,0 z"
+       id="rect3001"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.56460869"
+       id="rect2995-3"
+       width="234.7211"
+       height="149.00681"
+       x="488.99658"
+       y="413.57306" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.56460869"
+       id="rect2995-7"
+       width="234.7211"
+       height="149.00681"
+       x="71.782303"
+       y="88.858765" />
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="188.29485"
+       y="151.53816"
+       id="text3075"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3077"
+         x="188.29485"
+         y="151.53816">Memory</tspan><tspan
+         sodipodi:role="line"
+         x="188.29485"
+         y="191.53816"
+         id="tspan3079">System</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.69105911"
+       d="m 473.59558,156.3611 -127.36066,0 -0.22359,-18.30617 -25.32121,25.32121 25.32121,25.29326 0.22359,-18.27822 127.36066,0 0,-14.03008 z"
+       id="rect3001-7"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.46569854"
+       id="rect3099"
+       width="52.557407"
+       height="33.264183"
+       x="494.07843"
+       y="418.79373" />
+    <text
+       xml:space="preserve"
+       style="font-size:14.90235329px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="501.38678"
+       y="439.23337"
+       id="text3101"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3103"
+         x="501.38678"
+         y="439.23337">Temp</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15951228"
+       d="m 272.1443,252.95118 -60.06345,0 0.0371,60.02637 21.94911,-21.43004 34.8887,34.88872 116.23388,116.23386 34.85161,34.85164 -21.43003,21.9491 60.06345,0.0742 -0.0371,-60.10052 -21.94909,21.43003 -34.85164,-34.85163 -116.23387,-116.23386 -34.8887,-34.88871 21.43003,-21.94912 z"
+       id="rect3001-7-4-6"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.56460869"
+       id="rect2995-3-5"
+       width="234.7211"
+       height="149.00681"
+       x="488.99658"
+       y="690.43024" />
+    <text
+       xml:space="preserve"
+       style="font-size:78.26678467px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="532.52771"
+       y="792.75751"
+       id="text3216"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3218"
+         x="532.52771"
+         y="792.75751">ALU</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.40776169"
+       d="m 662.72614,673.37403 0,-75.14959 -10.80161,-0.13192 14.94086,-14.94087 14.92437,14.94087 -10.78512,0.13192 0,75.14959 -8.2785,0 z"
+       id="rect3001-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.40776169"
+       d="m 527.58328,583.15165 0,75.14959 -10.80161,0.13192 14.94086,14.94087 14.92437,-14.94087 -10.78512,-0.13192 0,-75.14959 -8.2785,0 z"
+       id="rect3001-3-4"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="605.0769"
+       y="476.25244"
+       id="text3030"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3032"
+         x="605.0769"
+         y="476.25244">Register</tspan><tspan
+         sodipodi:role="line"
+         x="605.0769"
+         y="516.25244"
+         id="tspan3034">Array</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="292.57144"
+       y="405.21933"
+       id="text4064"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4066"
+         x="292.57144"
+         y="405.21933">1.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="500.57141"
+       y="639.60681"
+       id="text4068"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4070"
+         x="500.57141"
+         y="639.60681">2.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="393.14285"
+       y="199.21933"
+       id="text4072"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4074"
+         x="393.14285"
+         y="199.21933">3.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="636.85712"
+       y="329.50504"
+       id="text4076"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4078"
+         x="636.85712"
+         y="329.50504">4.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="551.42859"
+       y="396.36218"
+       id="text4080"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4082"
+         x="551.42859"
+         y="396.36218">5.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="681.14288"
+       y="639.60681"
+       id="text4084"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4086"
+         x="681.14288"
+         y="639.60681">2.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="3.8403568"
+       y="662.93359"
+       id="text4088"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4090"
+         x="3.8403568"
+         y="662.93359">1 : Read/Write bus, 24 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="6.0163574"
+       y="731.69128"
+       id="text4092"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4094"
+         x="6.0163574"
+         y="731.69128">2 : Feedback bus via ALU, 24 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="6.0803566"
+       y="801.02502"
+       id="text4092-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4094-1"
+         x="6.0803566"
+         y="801.02502">3 : Control memory system, 2 bits </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="6.2083569"
+       y="869.78271"
+       id="text4092-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4094-3"
+         x="6.2083569"
+         y="869.78271">4 : Control Register Array, 3+3+1+1 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="5.9843559"
+       y="938.54047"
+       id="text4092-0-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4094-3-6"
+         x="5.9843559"
+         y="938.54047">5 : Control ALU, 2 bits</tspan></text>
+  </g>
+</svg>
