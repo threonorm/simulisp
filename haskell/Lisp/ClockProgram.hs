@@ -14,6 +14,14 @@ clockProgram = [multilineQuote|
 (defun main ()
   (count-hours 18))
 
+(defun count-hours (hr)
+  (print-hour hr)
+  (count-minutes 0)
+  (let ((new-hr (+1 hr)))
+    (if (>=24? new-hr)
+        (synchronize (count-hours 0))
+        (synchronize (count-hours new-hr)))))
+
 (defun count-seconds (sec)
   (print-second sec)
   (let ((new-sec (+1 sec)))
@@ -29,13 +37,6 @@ clockProgram = [multilineQuote|
         ()
         (synchronize (count-minutes new-min)))))
 
-(defun count-hours (hr)
-  (print-hour hr)
-  (count-minutes 0)
-  (let ((new-hr (+1 hr)))
-    (if (>=24? new-hr)
-        (synchronize (count-hours 0))
-        (synchronize (count-hours new-hr)))))
 |]
 
 (Right lispProg) = parse miniLispParser "" clockProgram
@@ -53,6 +54,6 @@ scode = compileProgram lispProg
 
 main =
   let Just compiled = scode in 
-  putStrLn $"rom_code:"++serializeSCode compiled
+  putStrLn $"rom_code:"++assemble compiled
 
 
