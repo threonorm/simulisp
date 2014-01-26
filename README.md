@@ -1,4 +1,4 @@
-LispMonade(Simulisp) 0.2
+Li(sp)Monade (Simulisp) 0.2
 ============
 
 A very basic processor simulated at the logic gate level, based on an
