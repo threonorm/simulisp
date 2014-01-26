@@ -1,0 +1,74 @@
+\documentclass[a4paper, 11pt]{article}
+
+% Locale/encoding with XeTeX: UTF-8 by default, use fontspec
+\usepackage{unicode-math}
+\usepackage{polyglossia} % Modern replacement for Babel
+\setmainlanguage{english}
+\usepackage{csquotes} % guillemets
+\usepackage{listings}
+% Other
+\usepackage{fullpage}
+%\usepackage{enumerate}
+%\usepackage{graphicx}
+
+\begin{document}
+
+\title{Final report on the Digital Systems course project}
+\author{Nguyễn Lê Thành Dũng \and Thomas Bourgeat}
+
+\maketitle
+
+\section{Summary}
+
+The project's objectives were to design a synchronous circuit usable as a general-purpose processor, and to simulate this processor at the logic gate level using a simulator we wrote ourselves. In the end, blah clock qmlkdsfj.
+Those objectives have been met.
+
+Since there's a lot to say here, we will refer you to our two previous intermediate reports for information on the work we did previously.
+
+What follows here is a high-level view of our architecture, combined with a rough description of how we developed the processor. All the details are confined to the appendices.
+
+\section{What's new since last time}
+
+\begin{itemize}
+\item In the simulator, we fixed some bugs, and added all the features needed in order to run our processor at a reasonable performance and make the clock demo work. More details in Appendix foobar.
+\item In our report on the processor design, we described the kind of architecture we wanted to implement and the rough shape of its machine language. Since then, we have kept the same ideas and filled in the details, following the plans we sketched in that report to their completion.
+\item 
+\end{itemize}
+
+
+
+\section{Designing an instruction set}
+
+First, we needed to fix an instruction set that would be expressive enough for our purposes, that is, writing a clock. We concurrently developed, in a single OCaml file, a syntax tree for the S-code (our assembly language), an interpreter for this language, and a program which would count seconds and minutes. 
+
+Our interpreter was meant as a model of what 
+
+\section{From an imperative S-code interpreter to hardware}
+
+
+
+
+\newpage
+\appendix
+
+\section{Mini-Lisp and S-Code illustrated through the clock program}
+
+
+\section{Functional units in the processor}
+
+\section{The microprogram}
+
+
+
+\section{The Caillou netlist description language}
+
+\section{Source files in the project}
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
