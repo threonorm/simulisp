@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -165,15 +165,15 @@
          sodipodi:role="line"
          x="28.285713"
          y="316.76105"
-         id="tspan3708"></tspan><tspan
+         id="tspan3708" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="344.26105"
-         id="tspan3851"></tspan><tspan
+         id="tspan3851" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="371.76105"
-         id="tspan3853"></tspan><tspan
+         id="tspan3853" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="399.26105"
@@ -181,15 +181,15 @@
          sodipodi:role="line"
          x="28.285713"
          y="426.76105"
-         id="tspan3710"></tspan><tspan
+         id="tspan3710" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="454.26105"
-         id="tspan3855"></tspan><tspan
+         id="tspan3855" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="481.76105"
-         id="tspan3857"></tspan><tspan
+         id="tspan3857" /><tspan
          sodipodi:role="line"
          x="28.285713"
          y="509.26105"
@@ -231,15 +231,19 @@
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
-       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
-       x="242.85715"
-       y="649.505"
+       style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="289.07468"
+       y="639.505"
        id="text3805"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3807"
-         x="242.85715"
-         y="649.505">outputGC</tspan></text>
+         x="289.07468"
+         y="639.505">outputGC</tspan><tspan
+         sodipodi:role="line"
+         x="289.07468"
+         y="667.005"
+         id="tspan4124">24 bits</tspan></text>
     <path
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36023718"
        d="m 362.87619,615.55545 0,53.22403 -11.90341,0.0934 16.46489,10.58175 16.4467,-10.58175 -11.88524,-0.0934 0,-53.22403 -9.12294,0 z"

@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="718.57355"
+   height="619.15106"
+   id="svg3582"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="control.svg">
+  <defs
+     id="defs3584" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="353.86798"
+     inkscape:cy="198.75289"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="768"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata3587">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-14.13626,-5.4571525)">
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1.72747922"
+       id="rect3642"
+       width="716.84607"
+       height="451.77206"
+       x="15"
+       y="91.21933" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.90397596"
+       d="m 406.78125,207.625 -28.46875,16.46875 28.46875,16.4375 0.25,-11.875 80.375,0 0,328.28125 -11.90625,0.59375 16.46875,66.625 16.4375,-66.625 -11.90625,-0.59375 0,-328.28125 53.71875,0 0,-9.125 -143.1875,0 -0.25,-11.90625 z"
+       id="rect3001-3-4-5-0-9-8"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="231.10046"
+       y="18.903152"
+       id="text3630"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3632"
+         x="231.10046"
+         y="18.903152">TAG</tspan><tspan
+         sodipodi:role="line"
+         x="231.10046"
+         y="41.403152"
+         id="tspan3634">5 bits</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="144.28482"
+       y="18.903152"
+       id="text3636"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3638"
+         x="144.28482"
+         y="18.903152">Cond</tspan><tspan
+         sodipodi:role="line"
+         x="144.28482"
+         y="41.403152"
+         id="tspan3640">1 bit</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.7701816"
+       id="rect3644"
+       width="212.85715"
+       height="46.18327"
+       x="511.53714"
+       y="336.93362" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="529.28845"
+       y="364.62424"
+       id="text3646"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3648"
+         x="529.28845"
+         y="364.62424">Microprogram counter</tspan></text>
+    <path
+       style="fill:none;stroke:#000000"
+       d="m 437.71874,348.04524 -0.0937,11.875 -44.25,0 0,9.125 0.40625,0 0,117.59375 13.125,0 119.5625,0 0,0.0625 13.125,0 0,-100 -13.125,0 0,86.8125 -119.5625,0 0,-104.46875 30.71875,0 0.0937,11.90625 8.78125,-16.46875 -8.78125,-16.4375 z"
+       id="rect3650"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.76396918"
+       id="rect3768"
+       width="68.690376"
+       height="73.696808"
+       x="434.53815"
+       y="444.30872" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="453.08847"
+       y="487.58313"
+       id="text3770"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3772"
+         x="453.08847"
+         y="487.58313">Incr</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000"
+       id="rect3774"
+       width="26.263966"
+       height="82.832512"
+       x="448.66"
+       y="301.52948" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.23455985"
+       d="m 479.6078,368.6707 22.56514,0 0.0396,11.90341 4.48629,-16.46489 -4.48629,-16.4467 -0.0396,11.88524 -22.56514,0 0,9.12294 z"
+       id="rect3001-3-4-5-0-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.53077316"
+       d="m 139.37102,55.13664 0,115.54432 -11.90341,0.20282 16.46489,22.97196 16.4467,-22.97196 -11.88524,-0.20282 0,-115.54432 -9.12294,0 z"
+       id="rect3001-3-4-5-0-7"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="454.745"
+       y="327.00674"
+       id="text3805"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3807"
+         x="454.745"
+         y="327.00674">M</tspan><tspan
+         sodipodi:role="line"
+         x="454.745"
+         y="349.50674"
+         id="tspan3809">U</tspan><tspan
+         sodipodi:role="line"
+         x="454.745"
+         y="372.00674"
+         id="tspan3811">X</tspan></text>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000"
+       id="rect3813"
+       width="164.65486"
+       height="104.04572"
+       x="559.62451"
+       y="206.51932" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="562.69684"
+       y="263.30316"
+       id="text3815"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3817"
+         x="562.69684"
+         y="263.30316">ROM Microprogram</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.10569965"
+       d="m 643.1826,331.23656 0,-11.75172 4.64139,-0.0206 -6.42001,-2.33642 -6.41291,2.33642 4.6343,0.0206 0,11.75172 3.55723,0 z"
+       id="rect3001-3-4-5-0-3-9"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.81736732"
+       id="rect3859"
+       width="348.87531"
+       height="172.17116"
+       x="23.079151"
+       y="203.59549" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="28.487316"
+       y="224.80869"
+       id="text3861"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3863"
+         x="28.487316"
+         y="224.80869">case <tspan
+   style="fill:#800000"
+   id="tspan3958">microI.internalControl</tspan>  of</tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="247.30869"
+         id="tspan3869">   00 -&gt; selMux := 0 </tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="269.80869"
+         id="tspan3873">   01 -&gt; out := dispatch(TAG), selMux := 1</tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="292.30869"
+         id="tspan3871">   10 -&gt; out := <tspan
+   style="fill:#800000"
+   id="tspan3960">microI.addrM</tspan>, selMux := 1</tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="314.80869"
+         id="tspan3875">   11 -&gt; IF cond THEN </tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="337.30869"
+         id="tspan3956">            out := <tspan
+   style="fill:#800000"
+   id="tspan3962">microI.addrM</tspan>, selMux := 1</tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="359.80869"
+         id="tspan3919">            ELSE selMux := 0</tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="382.30869"
+         id="tspan3917">                           </tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="404.80869"
+         id="tspan3867"> </tspan><tspan
+         sodipodi:role="line"
+         x="28.487316"
+         y="427.30869"
+         id="tspan3865" /></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.36451271"
+       d="m 376.49527,327.44739 54.49493,0 0.0956,11.90341 10.83442,-16.46489 -10.83442,-16.4467 -0.0956,11.88524 -54.49493,0 0,9.12294 z"
+       id="rect3001-3-4-5-0-7-2-9"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="412.02042"
+       y="215.71732"
+       id="text3913"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3915"
+         x="412.02042"
+         y="215.71732"><tspan
+   style="fill:#800000"
+   id="tspan3966">microI</tspan> : 24 bits</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.25378749"
+       d="m 457.90625,251.875 0,0.46875 -81.0625,0 0,5.78125 81.0625,0 0,30 -8.6875,0.0625 12,7.21875 11.96875,-7.21875 -8.65625,-0.0625 0,-36.25 -6.625,0 z"
+       id="rect3001-3-4-5-0-7-2-9-5"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="381.83768"
+       y="268.24527"
+       id="text3944"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3946"
+         x="381.83768"
+         y="268.24527"
+         style="font-size:14px">selMux</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="391.93918"
+       y="315.72241"
+       id="text3948"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3950"
+         x="391.93918"
+         y="315.72241">out</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="450.54834"
+       y="382.41278"
+       id="text3952"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3954"
+         x="450.54834"
+         y="382.41278"
+         style="font-size:14px">0</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:TeXGyreHeros;-inkscape-font-specification:TeXGyreHeros"
+       x="543.83026"
+       y="571.29102"
+       id="text3987"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3989"
+         x="546.32635"
+         y="571.29102">microI </tspan><tspan
+         sodipodi:role="line"
+         x="543.83026"
+         y="593.79102"
+         id="tspan3991"> 24 bits</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.53077316"
+       d="m 227.7827,55.13664 0,115.54432 -11.90341,0.20282 16.46489,22.97196 16.4467,-22.97196 -11.88524,-0.20282 0,-115.54432 -9.12294,0 z"
+       id="rect3001-3-4-5-0-7-7"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

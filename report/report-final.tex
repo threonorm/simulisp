@@ -8,9 +8,10 @@
 \usepackage{listings}
 % Other
 \usepackage{fullpage}
+\usepackage{graphicx}
 %\usepackage{enumerate}
 %\usepackage{graphicx}
-
+\lstset{language=Lisp}   
 \begin{document}
 
 \title{Final report on the Digital Systems course project}
@@ -113,13 +114,63 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 \section{Mini-Lisp and S-Code illustrated through the clock program}
 
 
+\begin{lstlisting}
+(defun main ()
+  (count-hours 18))
+
+(defun count-seconds (sec)
+  (print-second sec)
+  (let ((new-sec (+1 sec)))
+    (if (>=60? new-sec)
+        ()  
+        (synchronize (count-seconds new-sec)))))
+
+(defun count-minutes (min)
+  (print-minute min)
+  (count-seconds 0)
+  (let ((new-min (+1 min)))
+    (if (>=60? new-min)
+        ()  
+        (synchronize (count-minutes new-min)))))
+\end{lstlisting}
+
+\newpage
 \section{Functional units in the processor}
+\subsection{ALU}
+\begin{figure}[h]
+\center
+\caption{Schematic of the ALU}
+   \includegraphics[scale=0.5]{ALU.eps}
+\end{figure}
+
+\newpage
+\subsection{Memory system}
+\begin{figure}[h]
+\center
+\caption{Schematic of the memory system}
+   \includegraphics[scale=0.5]{GC.eps}
+\end{figure}
+\newpage
+\subsection{Register Array}
+\begin{figure}[h]
+\center
+\caption{Schematic of the register array}
+   \includegraphics[scale=0.5]{RA.eps}
+\end{figure}
+\newpage
+\subsection{Control unit}
+\begin{figure}[h]
+\center
+\caption{Schematic of the control unit}
+   \includegraphics[scale=0.5]{control.eps}
+\end{figure}
+
 
 \section{The microprogram}
 
 
-
 \section{The Caillou netlist description language}
+
 
 \section{Source files in the project}
 
