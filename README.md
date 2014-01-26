@@ -32,6 +32,8 @@ The easy way to build the complete project is use
 
     ./build.sh
 
+Be patient! Compilation can take a few minutes. If you are in a hurry
+you can delete the -O2 options in the file ./haskell/.simulisp.cabal
 
 If you prefer a more hands-on way :
 
