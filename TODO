@@ -13,8 +13,8 @@ Despite having made a lot of progress, there's still tons of work to do!
   * Fix the problem about readtemp --> unnecessary
 
 * Microcode-level:
-  * Code a microassembler (Haskell EDSL?) -> Mostly OK
-  * Write microprogram -> mostly done!
+  * Code a microassembler (Haskell EDSL?) -> OK
+  * Write microprogram -> Done!
   * ???
   * Profit!
 

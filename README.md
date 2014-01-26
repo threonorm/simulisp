@@ -28,6 +28,13 @@ Installation
 
 ### Building
 
+The easy way to build the complete project is use 
+
+    ./build.sh
+
+
+If you prefer a more hands-on way :
+
 We use Cabal as our build system.
 
     cd ./simulisp/haskell
@@ -38,6 +45,16 @@ The binaries generated are:
 - the simulator in `dist/build/simulator/simulator`
 - a program to generate the netlist of the processor
   in `dist/build/generate-processor/generate-processor`
+- a program to generate the microprogram of the processor
+  in `dist/build/generate-microprogram/generate-microprogram`
+- a program to generate the binary file of the clock
+  in `dist/build/clock-program/clock-program`
+
+You can build the rom file in the good form using the script :
+      
+      ./generateRom.sh
+
+It uses the last two binaries which we just presented.
 
 Simulator usage
 ---------------
