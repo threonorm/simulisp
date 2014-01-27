@@ -144,6 +144,7 @@ You can see the real program in "./haskell/Lisp/ClockProgram.hs".
 
 \newpage
 \section{Functional units in the processor}
+
 \subsection{ALU}
 \begin{figure}[h]
 \center
@@ -151,13 +152,37 @@ You can see the real program in "./haskell/Lisp/ClockProgram.hs".
    \includegraphics[scale=0.5]{ALU.eps}
 \end{figure}
 
+The ALU is very bare-bones, it can only do 4 different instructions, one of which is a special-purpose operation used only for local variables.
+\begin{itemize}
+\item Nop: does nothing. In this mode, the output of the ALU has the same tag as its input (so, really, it's as if it weren't there). In other modes, the output has tag Num.
+\item Incr: interpreting the data part of the input (taken from the register array) as a binary number, increment it.
+\item DecrUpper: decrement the 9-bit upper half of the input's data part.
+\item DecrImmediate: subtract the 6-bits immediate operand from the input's data part.
+\end{itemize}
+Note that the Decr* operations actually output zero in case of overflow: they act like the predecessor function over the natural numbers. They also serve as comparison operations: the overflow bit, which is stored in a 1-bit register, gives the result of the comparison.
+
 \newpage
 \subsection{Memory system}
+
 \begin{figure}[h]
 \center
 \caption{Schematic of the memory system}
    \includegraphics[scale=0.5]{GC.eps}
 \end{figure}
+
+The memory system is implemented using:
+\begin{itemize}
+\item A ROM array containing the S-code of the program
+\item A RAM array containing the data allocated during execution
+\end{itemize}
+They both have a 18-bit address space; the 19th bit of a pointer selects between code and data. From the outside, it looks like a contiguous 19-bit address space with two halves.
+
+Why do we not load both code and data into the same memory, since our machine language is homoiconic? The reasons are very pragmatic. First, we can only load ROMs with our simulator, and we need a RAM for mutable data in our memory. But it is also a hack to avoid the need for a garbage collector.
+
+A honest memory system would provide the illusion of infinite memory by collecting unused cells with a garbage collector. What we do instead is maintain a counter to the next free cell in the RAM, which is always incremented after an allocation. When the counter exceeds the maximum address, it rewinds to zero. In general, there's no guarantee the zeroth cell isn't used, but it's true for programs which only dynamically allocate transient, short-lived data, such as our clock program. The separation of the transient data from the persistent, immutable code (which may also contain statically allocated data) makes sure this works.
+
+
+
 \newpage
 \subsection{Register Array}
 \begin{figure}[h]
@@ -165,6 +190,18 @@ You can see the real program in "./haskell/Lisp/ClockProgram.hs".
 \caption{Schematic of the register array}
    \includegraphics[scale=0.5]{RA.eps}
 \end{figure}
+
+Not much to say here. The register array is implemented in the netlist language using a RAM component with address space $2^3$, which takes care of selecting the register to read/write depending on the input on each cycle. The purposes of the registers are:
+\begin{itemize}
+\item Null: always contains the constant Nil
+\item Value: contains the result of the last fully evaluated expression
+\item Expr: the expression currently being evaluated
+\item Env: the lexical environment
+\item Args: list of arguments in a function call
+\item Stack: the control stack
+\end{itemize}
+
+
 \newpage
 \subsection{Control unit}
 \begin{figure}[h]
@@ -174,92 +211,81 @@ You can see the real program in "./haskell/Lisp/ClockProgram.hs".
 \end{figure}
 
 
-\section{The microprogram}
-
-\begin{figure}[h]
-\center
-\caption{Schematic of the microinstruction}
-   \includegraphics[scale=0.5]{microInstr.eps}
-\end{figure}
-
-
-\section{The Caillou netlist description language}
-
-\newpage
 \section{Source files in the project}
 \begin{itemize}
-\item "README.md" : Self describing
-\item "build.sh" : a script to build the entire project. It generates : rom,
+\item \enquote{README.md} : Self describing
+\item \enquote{build.sh} : a script to build the entire project. It generates : rom,
 simulator and processor.net. See the README for more precisions.
 \end{itemize}
 \subsection{./haskell}
 \begin{itemize}
-\item "generateRom.sh": To generate microprogram and compile the Lisp code.
-\item "simulisp.cabal": Configuration file for cabal.
+\item \enquote{generateRom.sh}: To generate microprogram and compile the Lisp code.
+\item \enquote{simulisp.cabal}: Configuration file for cabal.
 \item ./Caillou:
 \begin{itemize}
-\item "Arithmetic.hs":  common arithmetical circuits
-\item "Circuit.hs": the core interface and typeclasses of Caillou
-\item "Examples.hs": some examples of elementary circuits with delays. It was a sandbox.
-\item "NetlistGen.hs": Implementation of "Circuit.hs" to generate a Netlist.
-\item "Pattern.hs": common combinators for circuits.
-\item "Simulation.hs": Implementation of "Circuit.hs" to simulate a circuit.
+\item \enquote{Arithmetic.hs}:  common arithmetical circuits
+\item \enquote{Circuit.hs}: the core interface and typeclasses of Caillou
+\item \enquote{Examples.hs}: some examples of elementary circuits with delays. It was a sandbox.
+\item \enquote{NetlistGen.hs}: Implementation of "Circuit.hs" to generate a Netlist.
+\item \enquote{Pattern.hs}: common combinators for circuits.
+\item \enquote{Simulation.hs}: Implementation of "Circuit.hs" to simulate a circuit.
 \end{itemize}
 \item ./Lisp : 
 \begin{itemize}
-\item "AsmScode.hs : Assembler number 1 from Scode to binary file.
-\item "AsmScode2.hs": Assembler number 2 from Scode to binary file. Why? Because
+\item \enquote{AsmScode.hs} : Assembler number 1 from Scode to binary file.
+\item \enquote{AsmScode2.hs}: Assembler number 2 from Scode to binary file. Why? Because
 it's not the same algorithm!
-\item "ClockProgram.hs": The Lisp source code of the clock program. Embedded in
+\item \enquote{ClockProgram.hs}: The Lisp source code of the clock program. Embedded in
 a haskell file using Template Haskell.
-\item "MiniLispCompiler.hs": Compiler from miniLisp to Scode.
-\item "MiniLispParser.hs": miniLisp parser
-\item "MultilineQuote.hs": Template haskell hack to include multiline string
+\item \enquote{MiniLispCompiler.hs}: Compiler from miniLisp to Scode.
+\item \enquote{MiniLispParser.hs}: miniLisp parser
+\item \enquote{MultilineQuote.hs}: Template haskell hack to include multiline string
 literals such as lisp source code.
-\item "Primitives.hs": Lisp primitives
-\item "SCode.hs": the SCode grammar.  
+\item \enquote{Primitives.hs}: Lisp primitives
+\item \enquote{SCode.hs}: the SCode grammar.  
 \end{itemize}
 \item ./Processor 
 \begin{itemize}
-\item "Hardware.hs": Caillou description of our processor. 
-\item "MicroAssembler.hs": Assembler from microinstructions to binary file.
-\item "Microde.hs": Microprogram of our processor.
-\item "Parameters.hs": The parameters of our processor.
-\item "SoftwareModel.hs": Tool to debug the microcode independently of the
+\item \enquote{Hardware.hs}: Caillou description of our processor. 
+\item \enquote{MicroAssembler.hs}: Assembler from microinstructions to binary file.
+\item \enquote{Microde.hs}: Microprogram of our processor.
+\item \enquote{Parameters.hs}: The parameters of our processor.
+\item \enquote{SoftwareModel.hs}: Tool to debug the microcode independently of the
 hardware implementation of the processor.  
 \end{itemize}
 \item ./Simulator
 \begin{itemize}
-\item "DisplayClock.hs": self describing.
-\item "Main.hs": The main file: the plumbing.
-\item "Scheduler.hs": self describing.
-\item "InputParser.hs": Parser for inputs of the simulator (ROM,Inputs...)
-\item "Simulator.hs": The core of the simulator.
-\item "MultiTrackDrifting.hs": Optimized version of the simulator.
+\item \enquote{DisplayClock.hs}: self describing.
+\item \enquote{Main.hs}: The main file: the plumbing.
+\item \enquote{Scheduler.hs}: self describing.
+\item \enquote{InputParser.hs}: Parser for inputs of the simulator (ROM,Inputs...)
+\item \enquote{Simulator.hs}: The core of the simulator.
+\item \enquote{MultiTrackDrifting.hs}: Optimized version of the simulator.
 \end{itemize}
 \item ./Netlist 
 \begin{itemize}
-\item "AST.hs": self describing.
-\item "Parser.hs": self describing.
-\item "Print.hs": self describing.
+\item \enquote{AST.hs}: self describing.
+\item \enquote{Parser.hs}: self describing.
+\item \enquote{Print.hs}: self describing.
 \end{itemize}
 \item ./Util
 \begin{itemize}
-\item "BinUtils.hs": Tools to operate on binary numbers.
-\item "Digraph.hs": Tools to operate on directed graphs, especially topological sort.
-\item "ListUtil.hs": self describing.
-\item "TopSortTest.hs": Fun with quickcheck!
+\item \enquote{BinUtils.hs}: Tools to operate on binary numbers.
+\item \enquote{Digraph.hs}: Tools to operate on directed graphs, especially topological sort.
+\item \enquote{ListUtil.hs}: self describing.
+\item \enquote{TopSortTest.hs}: Fun with quickcheck!
 \end{itemize}
 \item ./test : some old tests.
 \end{itemize}
 
 \subsection{./ocaml}
 \begin{itemize}
-\item "scode.ml" : Our software implementation of the processor. 
+\item \enquote{scode.ml} : Our software implementation of the processor. 
 \end{itemize}
 \subsection{./report}
 \begin{itemize}
-\item Your struly
+\item the two previous reports
+\item Yours truly
 \end{itemize}
 
 

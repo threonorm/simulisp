@@ -15,7 +15,8 @@ simple netlist language
 * A high-level hardware description language embedded in Haskell,
   inspired by Lava
 * A toolset to write the microcode
-* An assembler (yet to come)
+* A Mini-Lisp compiler and an assembler
+
 
 
 Installation
@@ -23,7 +24,9 @@ Installation
 
 ### Requirements
 
-- Haskell Platform >= 2013.2.0.0
+- Haskell Platform >= 2013.2.0.0, including the GHC compiler >= 7.6
+  and the Parsec and Vector packages
+- (For the simulator's clock-mode) hsSDL >= 0.6.5
 - (For the emulator only) OCaml >= 4.00
 
 ### Building
@@ -33,7 +36,7 @@ The easy way to build the complete project is use
     ./build.sh
 
 Be patient! Compilation can take a few minutes. If you are in a hurry
-you can delete the -O2 options in the file ./haskell/.simulisp.cabal
+you can delete the -O2 options in the file ./haskell/simulisp.cabal
 
 The script will also briefly explains you how to test the clock program.
 
