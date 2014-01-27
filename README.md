@@ -35,6 +35,8 @@ The easy way to build the complete project is use
 Be patient! Compilation can take a few minutes. If you are in a hurry
 you can delete the -O2 options in the file ./haskell/.simulisp.cabal
 
+The script will also briefly explains you how to test the clock program.
+
 If you prefer a more hands-on way :
 
 We use Cabal as our build system.
