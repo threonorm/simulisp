@@ -111,12 +111,12 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 \appendix
 
 
-\section{Mini-Lisp and S-Code illustrated through the clock program}
+\section{Mini-Lisp and S-Code illustrated through the simplest clock program}
 
 
 \begin{lstlisting}
 (defun main ()
-  (count-hours 18))
+  (count-seconds 18))
 
 (defun count-seconds (sec)
   (print-second sec)
@@ -124,14 +124,6 @@ In addition to the simulator, and the aforementioned graphical program, we devel
     (if (>=60? new-sec)
         ()  
         (synchronize (count-seconds new-sec)))))
-
-(defun count-minutes (min)
-  (print-minute min)
-  (count-seconds 0)
-  (let ((new-min (+1 min)))
-    (if (>=60? new-min)
-        ()  
-        (synchronize (count-minutes new-min)))))
 \end{lstlisting}
 
 \newpage
