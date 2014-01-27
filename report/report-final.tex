@@ -113,10 +113,9 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 
 \section{Mini-Lisp and S-Code illustrated through the simplest clock program}
 
-
 \begin{lstlisting}
 (defun main ()
-  (count-seconds 18))
+  (count-seconds 42))
 
 (defun count-seconds (sec)
   (print-second sec)
@@ -125,6 +124,8 @@ In addition to the simulator, and the aforementioned graphical program, we devel
         ()  
         (synchronize (count-seconds new-sec)))))
 \end{lstlisting}
+
+You can see the real program in "./haskell/Lisp/ClockProgram.hs".
 
 \newpage
 \section{Functional units in the processor}
@@ -160,6 +161,12 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 
 \section{The microprogram}
 
+\begin{figure}[h]
+\center
+\caption{Schematic of the microinstruction}
+   \includegraphics[scale=0.5]{microInstr.eps}
+\end{figure}
+
 
 \section{The Caillou netlist description language}
 
@@ -171,9 +178,46 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 simulator and processor.net. See the README for more precisions.
 \end{itemize}
 \subsection{./haskell}
+\begin{itemize}
+\item "generateRom.sh": To generate microprogram and compile the Lisp code.
+\item "simulisp.cabal": Configuration file for cabal.
+\item ./Caillou:
+\begin{itemize}
+\item "Arithmetic.hs":  common arithmetical circuits
+\item "Circuit.hs": the core interface and typeclasses of Caillou
+\item "Examples.hs": some examples of elementary circuits with delays. It was a sandbox.
+\item "NetlistGen.hs": Implementation of "Circuit.hs" to generate a Netlist.
+\item "Pattern.hs": common combinators for circuits.
+\item "Simulation.hs": Implementation of "Circuit.hs" to simulate a circuit.
+\end{itemize}
+\item ./Lisp : 
+\begin{itemize}
+\item "AsmScode.hs" : Assembler number 1 from Scode to binary file.
+\item "AsmScode2.hs": Assembler number 2 from Scode to binary file. Why? Because
+it's not the same algorithm!
+\item "ClockProgram.hs"
+\end{itemize}
+\item ./Processor :
+\begin{itemize}
+\end{itemize}
+\item ./Simulator :
+\begin{itemize}
+\end{itemize}
+\item ./Netlist :
+\begin{itemize}
+\end{itemize}
+\item ./Util :
+\begin{itemize}
+\end{itemize}
+\item ./test :
+\begin{itemize}
+\end{itemize}
+\end{itemize}
 
 \subsection{./ocaml}
-
+\begin{itemize}
+\item "scode.ml" : Our software implementation of the processor. 
+\end{itemize}
 \subsection{./report}
 \begin{itemize}
 \item Your struly
