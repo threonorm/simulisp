@@ -192,26 +192,50 @@ simulator and processor.net. See the README for more precisions.
 \end{itemize}
 \item ./Lisp : 
 \begin{itemize}
-\item "AsmScode.hs" : Assembler number 1 from Scode to binary file.
+\item "AsmScode.hs : Assembler number 1 from Scode to binary file.
 \item "AsmScode2.hs": Assembler number 2 from Scode to binary file. Why? Because
 it's not the same algorithm!
-\item "ClockProgram.hs"
+\item "ClockProgram.hs": The Lisp source code of the clock program. Embedded in
+a haskell file using Template Haskell.
+\item "MiniLispCompiler.hs": Compiler from miniLisp to Scode.
+\item "MiniLispParser.hs": miniLisp parser
+\item "MultilineQuote.hs": Template haskell hack to include multiline string
+literals such as lisp source code.
+\item "Primitives.hs": Lisp primitives
+\item "SCode.hs": the SCode grammar.  
 \end{itemize}
-\item ./Processor :
+\item ./Processor 
 \begin{itemize}
+\item "Hardware.hs": Caillou description of our processor. 
+\item "MicroAssembler.hs": Assembler from microinstructions to binary file.
+\item "Microde.hs": Microprogram of our processor.
+\item "Parameters.hs": The parameters of our processor.
+\item "SoftwareModel.hs": Tool to debug the microcode independently of the
+hardware implementation of the processor.  
 \end{itemize}
-\item ./Simulator :
+\item ./Simulator
 \begin{itemize}
+\item "DisplayClock.hs": self describing.
+\item "Main.hs": The main file: the plumbing.
+\item "Scheduler.hs": self describing.
+\item "InputParser.hs": Parser for inputs of the simulator (ROM,Inputs...)
+\item "Simulator.hs": The core of the simulator.
+\item "MultiTrackDrifting.hs": Optimized version of the simulator.
 \end{itemize}
-\item ./Netlist :
+\item ./Netlist 
 \begin{itemize}
+\item "AST.hs": self describing.
+\item "Parser.hs": self describing.
+\item "Print.hs": self describing.
 \end{itemize}
-\item ./Util :
+\item ./Util
 \begin{itemize}
+\item "BinUtils.hs": Tools to operate on binary numbers.
+\item "Digraph.hs": Tools to operate on directed graphs, especially topological sort.
+\item "ListUtil.hs": self describing.
+\item "TopSortTest.hs": Fun with quickcheck!
 \end{itemize}
-\item ./test :
-\begin{itemize}
-\end{itemize}
+\item ./test : some old tests.
 \end{itemize}
 
 \subsection{./ocaml}
