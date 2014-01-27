@@ -47,6 +47,14 @@ The \texttt{ocaml/scode.ml} contains the results of this work, including, at the
 \item Primitive functions, e.g. consing 2 words. We included a lot of special-purpose operations for the project, such as printing a number of seconds to the clock's display.
 \end{itemize}
 
+
+\begin{figure}[h]
+\center
+\caption{Schematic of an instruction}
+   \includegraphics[scale=0.5]{words.eps}
+\end{figure}
+
+
 \section{From an imperative S-code interpreter to hardware}
 
 The next step was to bridge the gap between a program running on a sophisticated runtime, and the facilities that we could provide with a circuit. On the software side, we converted non-tail function calls into explicit handling of a stack (a global variable), so as to rely only on state transitions (i.e. tail calls) for control. On the hardware side, we needed to implement:
