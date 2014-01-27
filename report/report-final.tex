@@ -63,7 +63,15 @@ Actually, the necessity of executing multiple elementary operations, taking a va
 
 \subsection{At the hardware level}
 
-The processor's circuit can be divided into multiple functional units, illustrated by figure bloup.
+The processor's circuit can be divided into multiple functional units,
+illustrated by figure~\ref{general}.
+
+\begin{figure}[h]
+\center
+\caption{\label{general}Schematic of the general architecture.}
+   \includegraphics[scale=0.5]{globalArchi.eps}
+\end{figure}
+
 \begin{itemize}
 \item The \emph{control unit}, which handles stepping through the microprogram (which is stored in a ROM), maintaining a microprogram counter. It is responsible for conditionals, and issues control signals to the rest of the processor. 
 \item The \emph{memory system}, which handles anything memory-related: allocation of cons cells, and dereferencing pointers. It offers a kind of hardware-level abstraction layer: by sending the appropriate opcode, one can allocate a fresh cell without worrying finding an unused memory location. It does \emph{not} do garbage collection (even though we kept the nickname \enquote{GC} from the AI Memos), but is featureful enough to allow our clock to run indefinitely. (See appendix for details.)
@@ -124,6 +132,13 @@ In addition to the simulator, and the aforementioned graphical program, we devel
         ()  
         (synchronize (count-seconds new-sec)))))
 \end{lstlisting}
+
+
+\begin{figure}[h]
+\center
+\caption{SCode of the simplest clock}
+   \includegraphics[scale=0.5]{clock.eps}
+\end{figure}
 
 You can see the real program in "./haskell/Lisp/ClockProgram.hs".
 
