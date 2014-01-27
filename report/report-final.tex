@@ -136,6 +136,7 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 
 \newpage
 \section{Functional units in the processor}
+
 \subsection{ALU}
 \begin{figure}[h]
 \center
@@ -143,13 +144,37 @@ In addition to the simulator, and the aforementioned graphical program, we devel
    \includegraphics[scale=0.5]{ALU.eps}
 \end{figure}
 
+The ALU is very bare-bones, it can only do 4 different instructions, one of which is a special-purpose operation used only for local variables.
+\begin{itemize}
+\item Nop: does nothing. In this mode, the output of the ALU has the same tag as its input (so, really, it's as if it weren't there). In other modes, the output has tag Num.
+\item Incr: interpreting the data part of the input (taken from the register array) as a binary number, increment it.
+\item DecrUpper: decrement the 9-bit upper half of the input's data part.
+\item DecrImmediate: subtract the 6-bits immediate operand from the input's data part.
+\end{itemize}
+Note that the Decr* operations actually output zero in case of overflow: they act like the predecessor function over the natural numbers. They also serve as comparison operations: the overflow bit, which is stored in a 1-bit register, gives the result of the comparison.
+
 \newpage
 \subsection{Memory system}
+
 \begin{figure}[h]
 \center
 \caption{Schematic of the memory system}
    \includegraphics[scale=0.5]{GC.eps}
 \end{figure}
+
+The memory system is implemented using:
+\begin{itemize}
+\item A ROM array containing the S-code of the program
+\item A RAM array containing the data allocated during execution
+\end{itemize}
+They both have a 18-bit address space; the 19th bit of a pointer selects between code and data. From the outside, it looks like a contiguous 19-bit address space with two halves.
+
+Why do we not load both code and data into the same memory, since our machine language is homoiconic? The reasons are very pragmatic. First, we can only load ROMs with our simulator, and we need a RAM for mutable data in our memory. But it is also a hack to avoid the need for a garbage collector.
+
+A honest memory system would provide the illusion of infinite memory by collecting unused cells with a garbage collector. What we do instead is maintain a counter to the next free cell in the RAM, which is always incremented after an allocation. When the counter exceeds the maximum address, it rewinds to zero. In general, there's no guarantee the zeroth cell isn't used, but it's true for programs which only dynamically allocate transient, short-lived data, such as our clock program. The separation of the transient data from the persistent, immutable code (which may also contain statically allocated data) makes sure this works.
+
+
+
 \newpage
 \subsection{Register Array}
 \begin{figure}[h]
@@ -157,6 +182,18 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 \caption{Schematic of the register array}
    \includegraphics[scale=0.5]{RA.eps}
 \end{figure}
+
+Not much to say here. The register array is implemented in the netlist language using a RAM component with address space $2^3$, which takes care of selecting the register to read/write depending on the input on each cycle. The purposes of the registers are:
+\begin{itemize}
+\item Null: always contains the constant Nil
+\item Value: contains the result of the last fully evaluated expression
+\item Expr: the expression currently being evaluated
+\item Env: the lexical environment
+\item Args: list of arguments in a function call
+\item Stack: the control stack
+\end{itemize}
+
+
 \newpage
 \subsection{Control unit}
 \begin{figure}[h]
@@ -164,12 +201,6 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 \caption{Schematic of the control unit}
    \includegraphics[scale=0.5]{control.eps}
 \end{figure}
-
-
-\section{The microprogram}
-
-
-\section{The Caillou netlist description language}
 
 
 \section{Source files in the project}
