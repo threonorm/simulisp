@@ -198,74 +198,74 @@ Not much to say here. The register array is implemented in the netlist language 
 
 \section{Source files in the project}
 \begin{itemize}
-\item "README.md" : Self describing
-\item "build.sh" : a script to build the entire project. It generates : rom,
+\item \enquote{README.md} : Self describing
+\item \enquote{build.sh} : a script to build the entire project. It generates : rom,
 simulator and processor.net. See the README for more precisions.
 \end{itemize}
 \subsection{./haskell}
 \begin{itemize}
-\item "generateRom.sh": To generate microprogram and compile the Lisp code.
-\item "simulisp.cabal": Configuration file for cabal.
+\item \enquote{generateRom.sh}: To generate microprogram and compile the Lisp code.
+\item \enquote{simulisp.cabal}: Configuration file for cabal.
 \item ./Caillou:
 \begin{itemize}
-\item "Arithmetic.hs":  common arithmetical circuits
-\item "Circuit.hs": the core interface and typeclasses of Caillou
-\item "Examples.hs": some examples of elementary circuits with delays. It was a sandbox.
-\item "NetlistGen.hs": Implementation of "Circuit.hs" to generate a Netlist.
-\item "Pattern.hs": common combinators for circuits.
-\item "Simulation.hs": Implementation of "Circuit.hs" to simulate a circuit.
+\item \enquote{Arithmetic.hs}:  common arithmetical circuits
+\item \enquote{Circuit.hs}: the core interface and typeclasses of Caillou
+\item \enquote{Examples.hs}: some examples of elementary circuits with delays. It was a sandbox.
+\item \enquote{NetlistGen.hs}: Implementation of "Circuit.hs" to generate a Netlist.
+\item \enquote{Pattern.hs}: common combinators for circuits.
+\item \enquote{Simulation.hs}: Implementation of "Circuit.hs" to simulate a circuit.
 \end{itemize}
 \item ./Lisp : 
 \begin{itemize}
-\item "AsmScode.hs : Assembler number 1 from Scode to binary file.
-\item "AsmScode2.hs": Assembler number 2 from Scode to binary file. Why? Because
+\item \enquote{AsmScode.hs} : Assembler number 1 from Scode to binary file.
+\item \enquote{AsmScode2.hs}: Assembler number 2 from Scode to binary file. Why? Because
 it's not the same algorithm!
-\item "ClockProgram.hs": The Lisp source code of the clock program. Embedded in
+\item \enquote{ClockProgram.hs}: The Lisp source code of the clock program. Embedded in
 a haskell file using Template Haskell.
-\item "MiniLispCompiler.hs": Compiler from miniLisp to Scode.
-\item "MiniLispParser.hs": miniLisp parser
-\item "MultilineQuote.hs": Template haskell hack to include multiline string
+\item \enquote{MiniLispCompiler.hs}: Compiler from miniLisp to Scode.
+\item \enquote{MiniLispParser.hs}: miniLisp parser
+\item \enquote{MultilineQuote.hs}: Template haskell hack to include multiline string
 literals such as lisp source code.
-\item "Primitives.hs": Lisp primitives
-\item "SCode.hs": the SCode grammar.  
+\item \enquote{Primitives.hs}: Lisp primitives
+\item \enquote{SCode.hs}: the SCode grammar.  
 \end{itemize}
 \item ./Processor 
 \begin{itemize}
-\item "Hardware.hs": Caillou description of our processor. 
-\item "MicroAssembler.hs": Assembler from microinstructions to binary file.
-\item "Microde.hs": Microprogram of our processor.
-\item "Parameters.hs": The parameters of our processor.
-\item "SoftwareModel.hs": Tool to debug the microcode independently of the
+\item \enquote{Hardware.hs}: Caillou description of our processor. 
+\item \enquote{MicroAssembler.hs}: Assembler from microinstructions to binary file.
+\item \enquote{Microde.hs}: Microprogram of our processor.
+\item \enquote{Parameters.hs}: The parameters of our processor.
+\item \enquote{SoftwareModel.hs}: Tool to debug the microcode independently of the
 hardware implementation of the processor.  
 \end{itemize}
 \item ./Simulator
 \begin{itemize}
-\item "DisplayClock.hs": self describing.
-\item "Main.hs": The main file: the plumbing.
-\item "Scheduler.hs": self describing.
-\item "InputParser.hs": Parser for inputs of the simulator (ROM,Inputs...)
-\item "Simulator.hs": The core of the simulator.
-\item "MultiTrackDrifting.hs": Optimized version of the simulator.
+\item \enquote{DisplayClock.hs}: self describing.
+\item \enquote{Main.hs}: The main file: the plumbing.
+\item \enquote{Scheduler.hs}: self describing.
+\item \enquote{InputParser.hs}: Parser for inputs of the simulator (ROM,Inputs...)
+\item \enquote{Simulator.hs}: The core of the simulator.
+\item \enquote{MultiTrackDrifting.hs}: Optimized version of the simulator.
 \end{itemize}
 \item ./Netlist 
 \begin{itemize}
-\item "AST.hs": self describing.
-\item "Parser.hs": self describing.
-\item "Print.hs": self describing.
+\item \enquote{AST.hs}: self describing.
+\item \enquote{Parser.hs}: self describing.
+\item \enquote{Print.hs}: self describing.
 \end{itemize}
 \item ./Util
 \begin{itemize}
-\item "BinUtils.hs": Tools to operate on binary numbers.
-\item "Digraph.hs": Tools to operate on directed graphs, especially topological sort.
-\item "ListUtil.hs": self describing.
-\item "TopSortTest.hs": Fun with quickcheck!
+\item \enquote{BinUtils.hs}: Tools to operate on binary numbers.
+\item \enquote{Digraph.hs}: Tools to operate on directed graphs, especially topological sort.
+\item \enquote{ListUtil.hs}: self describing.
+\item \enquote{TopSortTest.hs}: Fun with quickcheck!
 \end{itemize}
 \item ./test : some old tests.
 \end{itemize}
 
 \subsection{./ocaml}
 \begin{itemize}
-\item "scode.ml" : Our software implementation of the processor. 
+\item \enquote{scode.ml} : Our software implementation of the processor. 
 \end{itemize}
 \subsection{./report}
 \begin{itemize}
