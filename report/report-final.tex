@@ -119,9 +119,11 @@ In addition to the simulator, and the aforementioned graphical program, we devel
 \appendix
 
 
-\section{Mini-Lisp and S-Code illustrated through the simplest clock program}
+\section{Mini-Lisp and S-Code illustrated through a minimal clock program}
 
-\begin{lstlisting}
+Here's a little program which counts passing seconds until 60 and then stops:
+
+\begin{lstlisting}[language=Lisp]
 (defun main ()
   (count-seconds 42))
 
@@ -133,6 +135,7 @@ In addition to the simulator, and the aforementioned graphical program, we devel
         (synchronize (count-seconds new-sec)))))
 \end{lstlisting}
 
+Here is a representation of the compiled assembly. You can see the structural similarity.
 
 \begin{figure}[h]
 \center
@@ -140,7 +143,7 @@ In addition to the simulator, and the aforementioned graphical program, we devel
    \includegraphics[scale=0.5]{clock.eps}
 \end{figure}
 
-You can see the real program in "./haskell/Lisp/ClockProgram.hs".
+You can see the real, more sophisticated program in "./haskell/Lisp/ClockProgram.hs".
 
 \newpage
 \section{Functional units in the processor}
