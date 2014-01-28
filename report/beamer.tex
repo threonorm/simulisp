@@ -52,7 +52,7 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Main originalities}
+\begin{frame}{Main peculiarities}
 \begin{itemize}
 \item An non-linear assembly language!
 \begin{itemize}
@@ -99,6 +99,19 @@
 
 \end{frame}
 
+\begin{frame}
+\begin{itemize}
+\item To explain to you our processor, we are going to attack a more general
+question 
+\pause
+\item The answer to the universe!
+\begin{figure}
+\center
+\includegraphics[scale=0.2]{hitch.jpg}
+\includegraphics[scale=0.5]{panic.jpg}
+\end{figure}
+\end{itemize}
+\end{frame}
 \section{The S-Code assembly language.}
 
 \begin{frame}[fragile]
@@ -138,31 +151,69 @@ operations.
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Sample of microprogram}
+\frametitle{How to execute this imperatively}
 \begin{itemize}
-\item Apply1:
+\item EvalApplyOne:
 \begin{lstlisting}
 push Env 
-pushWithReturn RApplyOne Expr
+pushWithReturn ReturnApplyOne Expr
 fetchCar Expr Expr
 dispatchEval (*Dispatch on expr*) 
 \end{lstlisting}
-\item Num:
+\item EvalNum:
 \begin{lstlisting}
-Value:=Expr
+Value:=Expr (*Self evaluating expression*)
 dispatchReturn (*Dispatch on stack*)
 \end{lstlisting}
 \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{How to execute this imperatively}
+\begin{itemize}
+\item ReturnApplyOne:
+\begin{lstlisting}
+popToReg Expr
+popToReg Env
+ (*Build the list of arguments*) 
+allocSingleton Value Args
+pushWithReturn ReturnApply Args 
+dispatchEval (* Dispatch on expr*)
+\end{lstlisting}
+\item ReturnApply:
+\begin{lstlisting}
+popToReg Args
+dispatchApply (*Dispatch on expr*)
+\end{lstlisting}
+\item +1 is also self-evaluating.
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}{Hardware implementation}
 \begin{itemize}
-\item The microinstructions are easier to execute than instructions.  
-\item The crux of the problem is to trigger several microinstructions from one
+\item We have seen that we can decompose the complicated instructions into:
+\begin{itemize}
+\item Elementary \emph{microinstructions} executable in one cycle.
+\item A dispatch mechanism.
+\end{itemize}
+\item The crux of the problem is to trigger several \emph{microinstructions} from one
 instruction.  
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+\begin{itemize}
+\item We use a CISC trick: a \emph{control unit} with its own \emph{microprogram
+counter}.
+\item The microinstructions are stored in a ROM 
+\item Dispatch mechanism:
+\begin{itemize}
+\item The initialization of the microprogram counter with a tag. 
+\end{itemize}
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Hardware implementation(2)}
 \begin{figure}[h]
@@ -172,6 +223,22 @@ instruction.
 \end{frame}
 
 \section{Functional units of the processor}
+
+\begin{frame}
+\begin{itemize}
+\item For each cycle, the control unit broadcasts a microinstruction to the rest
+of the processor. 
+\item How does the latter fullfill its orders?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\center
+\includegraphics[scale=0.3]{globalArchi.eps}
+\end{figure}
+\end{frame}
+
 \begin{frame}{ALU}
 \begin{figure}[h]
 \center
@@ -209,10 +276,24 @@ pointers.
 \begin{itemize}
 \item \emph{Lisp/S-code:} A \enquote{synchronize} instruction which wait for the next
 system second to resume the computation.
-\item \emph{Harware:} A microinstruction which results in an output signal from
+\item \emph{Hardware:} A microinstruction which results in an output signal from
 the circuit.
 \item \emph{Simulator:} Reacts to the signal by suspending the computation. 
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\item Thank you for your attention!
+\pause
+\item Our partners
+\end{itemize}
+\pause
+\begin{figure}
+\includegraphics[scale=0.25]{haskell.jpg}
+\includegraphics[scale=0.5]{knight.jpg}
+\end{figure} 
+
 \end{frame}
 
 \end{document}
